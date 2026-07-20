@@ -1,3 +1,5 @@
+<img src="assets/icon.png" alt="DespawnedItems icon" width="120" align="right">
+
 # DespawnedItems
 
 [![CI](https://img.shields.io/github/actions/workflow/status/1fairyfox/papermc-despawned-items/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/1fairyfox/papermc-despawned-items/actions/workflows/ci.yml)
