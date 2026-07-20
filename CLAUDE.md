@@ -1,4 +1,8 @@
-# DespawnedItems — AI Context
+# PaperMC Despawned Items — AI Context
+
+> Display/listed name: **PaperMC Despawned Items**. The repo slug
+> (`papermc-despawned-items`) and the Bukkit plugin id (`DespawnedItems`, no spaces
+> allowed) are unchanged.
 
 A Paper (Minecraft) server plugin that intercepts items about to despawn on the
 ground and relocates them into a registered network of nearby containers, cookers,

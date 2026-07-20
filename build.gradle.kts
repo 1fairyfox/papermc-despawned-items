@@ -60,7 +60,7 @@ kotlin {
 // API docs (Dokka), re-skinned to wear the fairyfox palette + a way-home link so the
 // generated site reads as a page of fairyfox.io. Build with `./gradlew dokkaGenerate`.
 dokka {
-    moduleName.set("DespawnedItems")
+    moduleName.set("PaperMC Despawned Items")
     pluginsConfiguration.html {
         customStyleSheets.from(layout.projectDirectory.file("docs-theme/dokka-fairyfox.css"))
         customAssets.from(layout.projectDirectory.file("assets/icon.png"))
