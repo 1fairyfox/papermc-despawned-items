@@ -46,16 +46,18 @@ class DespawnEffect(val locationEntry: LocationEntry, private val plugin: Despaw
 
         task = object : BukkitRunnable() {
             override fun run() {
-                // Two bursts spreading out along the +/- X and Z axes.
+                // Two bursts spreading out along the +/- X and Z axes. The trailing
+                // data argument is null for data-less particles and e.g. DustOptions
+                // for DUST — resolved and validated once at config load.
                 world.spawnParticle(
                     cfg.particleFX, center,
                     cfg.particleCountEveryNthTick / 2,
-                    radius, 0.0, radius,
+                    radius, 0.0, radius, cfg.particleData,
                 )
                 world.spawnParticle(
                     cfg.particleFX, center,
                     cfg.particleCountEveryNthTick / 2,
-                    -radius, 0.0, -radius,
+                    -radius, 0.0, -radius, cfg.particleData,
                 )
                 self.loopEnd()
             }

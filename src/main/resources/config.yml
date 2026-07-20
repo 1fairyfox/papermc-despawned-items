@@ -22,7 +22,15 @@ particles:
   # Particle to use, as a Minecraft particle key (namespaced or plain).
   # See https://minecraft.wiki/w/Particles for the full list, e.g.
   # happy_villager, cloud, crit
+  # Particles that need data this plugin doesn't model fall back to happy_villager
+  # with a console warning (rather than erroring).
   particle: happy_villager
+
+  # Colour for DUST-type particles only (#RRGGBB); ignored by other particles.
+  color: '#FFC800'
+
+  # Size multiplier for DUST-type particles, 0.01–4.0.
+  dust-size: 1.0
 
   # How long, in seconds, particles keep emitting on the container.
   length-seconds: 3
