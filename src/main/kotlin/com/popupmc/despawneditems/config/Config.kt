@@ -1,7 +1,6 @@
 package com.popupmc.despawneditems.config
 
 import com.popupmc.despawneditems.DespawnedItems
-import org.bukkit.Color
 import org.bukkit.Particle
 import org.bukkit.configuration.file.FileConfiguration
 
@@ -129,8 +128,14 @@ class FileConfig(private val plugin: DespawnedItems) {
         val c = plugin.config
 
         particlesEnabled = c.getBoolean("particles.enabled", true)
-        particleFX = resolveParticle(c.getString("particles.particle") ?: DEFAULT_PARTICLE_KEY)
-        particleData = resolveParticleData(c)
+        val resolvedParticle = ParticleData.resolve(
+            c.getString("particles.particle") ?: ParticleData.DEFAULT_PARTICLE_KEY,
+            c.getString("particles.color"),
+            c.getDouble("particles.dust-size", 1.0),
+        )
+        particleFX = resolvedParticle.particle
+        particleData = resolvedParticle.data
+        resolvedParticle.warning?.let { plugin.logger.warning(it) }
         particleLengthSeconds = c.getInt("particles.length-seconds", 3)
         newParticlesEveryNthTick = c.getInt("particles.new-every-nth-tick", 2)
         particleCountEveryNthTick = c.getInt("particles.count-every-nth-tick", 15)
@@ -142,50 +147,4 @@ class FileConfig(private val plugin: DespawnedItems) {
         soundPitch = c.getDouble("sound.pitch", 1.0).toFloat()
     }
 
-    /** Resolves a particle from a config key, tolerating namespaces and case. */
-    private fun resolveParticle(name: String): Particle {
-        val key = name.substringAfter(':').uppercase()
-        return runCatching { Particle.valueOf(key) }.getOrElse {
-            plugin.logger.warning("Unknown particle '$name' in config; using $DEFAULT_PARTICLE")
-            DEFAULT_PARTICLE
-        }
-    }
-
-    /**
-     * Resolves any extra data the configured [particleFX] requires. Particles needing
-     * no data return null; DUST-style particles are built from an optional
-     * `particles.color` / `particles.dust-size`. If the particle needs data this
-     * plugin doesn't model, it is swapped for [DEFAULT_PARTICLE] with a warning rather
-     * than crashing at spawn time — the previous code always passed no data and threw
-     * for any data-bearing particle.
-     */
-    private fun resolveParticleData(c: FileConfiguration): Any? =
-        when (particleFX.dataType) {
-            Void::class.java -> null
-            Particle.DustOptions::class.java -> {
-                val color = parseColor(c.getString("particles.color"))
-                val size = c.getDouble("particles.dust-size", 1.0).toFloat().coerceIn(0.01f, 4.0f)
-                Particle.DustOptions(color, size)
-            }
-            else -> {
-                plugin.logger.warning(
-                    "Particle '$particleFX' requires data this plugin can't supply " +
-                        "(${particleFX.dataType.simpleName}); using $DEFAULT_PARTICLE instead.",
-                )
-                particleFX = DEFAULT_PARTICLE
-                null
-            }
-        }
-
-    /** Parses a `#RRGGBB` (or `RRGGBB`) hex colour; falls back to white on any error. */
-    private fun parseColor(hex: String?): Color {
-        val cleaned = hex?.removePrefix("#")?.trim()
-        if (cleaned == null || cleaned.length != 6) return Color.WHITE
-        return runCatching { Color.fromRGB(cleaned.toInt(16)) }.getOrDefault(Color.WHITE)
-    }
-
-    companion object {
-        private val DEFAULT_PARTICLE: Particle = Particle.HAPPY_VILLAGER
-        private const val DEFAULT_PARTICLE_KEY = "happy_villager"
-    }
 }

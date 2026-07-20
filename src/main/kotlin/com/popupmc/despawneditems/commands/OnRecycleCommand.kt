@@ -1,6 +1,7 @@
 package com.popupmc.despawneditems.commands
 
 import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.RecycleProgress
 import com.popupmc.despawneditems.RewardPool
 import com.popupmc.despawneditems.despawn.DespawnProcess
 import com.popupmc.despawneditems.sendColored
@@ -15,8 +16,8 @@ import org.bukkit.persistence.PersistentDataType
 
 /**
  * `/recycle` — despawns the item in the player's main hand and tracks progress
- * toward a reward: every [ITEMS_PER_REWARD] recycles grants one random "safe"
- * material back to the player.
+ * toward a reward: every [RecycleProgress.ITEMS_PER_REWARD] recycles grants one random
+ * "safe" material back to the player.
  *
  * Progress is stored per player in the player's [org.bukkit.persistence.PersistentDataContainer],
  * which persists across sessions and needs no server-side scoreboard setup (the
@@ -60,19 +61,14 @@ class OnRecycleCommand(private val plugin: DespawnedItems) : CommandExecutor {
     /** Advances the player's recycle progress and pays out a reward at the threshold. */
     private fun awardProgress(player: Player) {
         val pdc = player.persistentDataContainer
-        val progress = (pdc.get(progressKey, PersistentDataType.INTEGER) ?: 0) + 1
+        val current = pdc.get(progressKey, PersistentDataType.INTEGER) ?: 0
+        val result = RecycleProgress.advance(current)
+        pdc.set(progressKey, PersistentDataType.INTEGER, result.stored)
 
-        if (progress < ITEMS_PER_REWARD) {
-            pdc.set(progressKey, PersistentDataType.INTEGER, progress)
-            player.sendColored(
-                "${ITEMS_PER_REWARD - progress} left before a random item...",
-                NamedTextColor.GRAY,
-            )
+        if (!result.rewarded) {
+            player.sendColored("${result.remaining} left before a random item...", NamedTextColor.GRAY)
             return
         }
-
-        // Threshold reached: reset progress and drop one random reward.
-        pdc.set(progressKey, PersistentDataType.INTEGER, 0)
 
         val reward = RewardPool.random()
         if (reward == null) {
@@ -81,10 +77,5 @@ class OnRecycleCommand(private val plugin: DespawnedItems) : CommandExecutor {
         }
         player.world.dropItem(player.location, ItemStack(reward))
         player.sendColored("You earned a random item for recycling!", NamedTextColor.GREEN)
-    }
-
-    companion object {
-        /** How many recycles earn one reward. */
-        const val ITEMS_PER_REWARD = 64
     }
 }
