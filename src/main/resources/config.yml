@@ -1,3 +1,18 @@
+# Large-server safety limits for the automatic despawn-relocation pipeline. These bound
+# how much work happens per tick so a flood of despawning items never storms the server.
+performance:
+  # New relocations started per server tick (20 ticks = 1 second).
+  max-per-tick: 20
+
+  # Maximum relocations processing at once.
+  max-concurrent: 200
+
+  # Maximum items waiting to be relocated.
+  max-queue: 10000
+
+  # When the queue is full: true = ignore new items, false = drop the oldest.
+  drop-when-full: true
+
 # Where despawn locations are stored.
 storage:
   # yaml  — flat files under userdata/ (default, zero setup, fine for most servers)

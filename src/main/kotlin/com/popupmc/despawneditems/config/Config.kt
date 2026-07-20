@@ -19,6 +19,9 @@ class Config(val plugin: DespawnedItems) {
     lateinit var storage: StorageSettings
         private set
 
+    lateinit var performance: PerformanceSettings
+        private set
+
     init {
         load()
     }
@@ -30,7 +33,27 @@ class Config(val plugin: DespawnedItems) {
         plugin.reloadConfig()
         fileConfig = FileConfig(plugin)
         storage = StorageSettings(plugin.config)
+        performance = PerformanceSettings(plugin.config)
     }
+}
+
+/**
+ * Large-server safety limits for the automatic despawn-relocation pipeline, read from
+ * the `performance:` section. These bound how much relocation work happens per tick so
+ * a flood of despawning items can never storm the server.
+ */
+class PerformanceSettings(c: FileConfiguration) {
+    /** New relocations started per server tick. */
+    val maxPerTick: Int = c.getInt("performance.max-per-tick", 20).coerceAtLeast(1)
+
+    /** Maximum relocations processing simultaneously. */
+    val maxConcurrent: Int = c.getInt("performance.max-concurrent", 200).coerceAtLeast(1)
+
+    /** Maximum items waiting to be relocated. */
+    val maxQueue: Int = c.getInt("performance.max-queue", 10_000).coerceAtLeast(1)
+
+    /** When the queue is full: true = ignore new items, false = drop the oldest. */
+    val dropWhenFull: Boolean = c.getBoolean("performance.drop-when-full", true)
 }
 
 /**

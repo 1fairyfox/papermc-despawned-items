@@ -5,6 +5,7 @@ import com.popupmc.despawneditems.commands.OnRecycleCommand
 import com.popupmc.despawneditems.config.Config
 import com.popupmc.despawneditems.despawn.DespawnEffect
 import com.popupmc.despawneditems.despawn.DespawnProcess
+import com.popupmc.despawneditems.despawn.DespawnScheduler
 import com.popupmc.despawneditems.despawn.into.AbstractDespawnInto
 import com.popupmc.despawneditems.despawn.into.DespawnBlockIntoAir
 import com.popupmc.despawneditems.despawn.into.DespawnIntoCooker
@@ -51,6 +52,10 @@ open class DespawnedItems : JavaPlugin() {
     lateinit var strategies: List<AbstractDespawnInto>
         private set
 
+    /** Bounds the automatic despawn pipeline so large servers stay smooth under load. */
+    lateinit var despawnScheduler: DespawnScheduler
+        private set
+
     /** Effects currently playing — held so they are not garbage collected. */
     val effectsPlaying: MutableList<DespawnEffect> = mutableListOf()
 
@@ -76,6 +81,9 @@ open class DespawnedItems : JavaPlugin() {
             DespawnIntoStorage(this), // finally into containers
         )
 
+        despawnScheduler = DespawnScheduler(this)
+        despawnScheduler.start()
+
         Bukkit.getPluginManager().registerEvents(OnItemDespawnEvent(this), this)
 
         val despi = getCommand("despi")
@@ -100,6 +108,7 @@ open class DespawnedItems : JavaPlugin() {
     }
 
     override fun onDisable() {
+        if (this::despawnScheduler.isInitialized) despawnScheduler.stop()
         if (this::locations.isInitialized) locations.shutdown()
         logger.info("DespawnedItems is disabled")
     }

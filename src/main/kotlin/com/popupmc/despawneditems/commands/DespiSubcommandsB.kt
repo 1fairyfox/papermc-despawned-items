@@ -78,7 +78,10 @@ class OnDespiCommandDespawn(plugin: DespawnedItems) :
     override fun showDescription(sender: CommandSender, args: Array<String>): Boolean = canBeElevated(sender)
 
     private fun sendCount(sender: CommandSender): Boolean {
-        success("Despawn Count: ${plugin.despawnProcesses.size}", sender)
+        success(
+            "Despawns: ${plugin.despawnProcesses.size} active, ${plugin.despawnScheduler.queued} queued",
+            sender,
+        )
         return true
     }
 
