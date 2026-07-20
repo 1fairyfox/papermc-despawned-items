@@ -1,6 +1,6 @@
 name: papermc-despawned-items
 version: '${version}'
-main: com.popupmc.despawneditems.PaperMcDespawnedItems
+main: io.fairyfox.papermc.despawneditems.PaperMcDespawnedItems
 description: Relocates despawning ground items into nearby containers, cookers, entities, or empty space instead of deleting them.
 author: Fairy Fox
 website: https://github.com/1fairyfox/papermc-despawned-items
