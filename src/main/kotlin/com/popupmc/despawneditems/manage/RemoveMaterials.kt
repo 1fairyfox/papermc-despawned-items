@@ -1,10 +1,10 @@
 package com.popupmc.despawneditems.manage
 
 import com.popupmc.despawneditems.DespawnedItems
-import com.popupmc.despawneditems.config.LocationEntry
-import com.popupmc.despawneditems.despawn.DespawnProcess
+import com.popupmc.despawneditems.location.DespawnLocation
 import com.popupmc.despawneditems.sendColored
 import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.command.CommandSender
 import org.bukkit.inventory.ItemStack
@@ -12,9 +12,9 @@ import org.bukkit.scheduler.BukkitRunnable
 import java.util.UUID
 
 /**
- * A long-running, tick-spread bulk removal: walks every relevant despawn
- * location one per tick and removes matching materials (or a specific item) from
- * each, reporting progress to [sender]. Only one may run at a time per sender.
+ * A long-running, tick-spread bulk removal: walks the relevant despawn locations one
+ * per tick and removes matching materials (or a specific item) from each, reporting
+ * progress to [sender]. Only one may run at a time per sender.
  */
 class RemoveMaterials(
     private val sender: CommandSender,
@@ -26,12 +26,12 @@ class RemoveMaterials(
 ) {
 
     private var locationIndex = 0
-    private var senderLocationEntries: MutableList<LocationEntry> = mutableListOf()
+    private var targets: List<DespawnLocation> = emptyList()
     private var invalid = false
 
     init {
         when {
-            plugin.settings.fileLocations.locationEntries.isEmpty() -> forceSelfDestroy()
+            plugin.locations.isEmpty() -> forceSelfDestroy()
 
             materials == null && item == null -> {
                 sender.sendColored(
@@ -47,13 +47,17 @@ class RemoveMaterials(
                     plugin.removeMaterialsInst[senderID] = this
                 }
 
-                senderLocationEntries = if (owner != null) {
-                    plugin.settings.fileLocations.existsAll(owner)
+                targets = if (owner != null) {
+                    plugin.locations.ofOwner(owner).toList()
                 } else {
-                    ArrayList(plugin.settings.fileLocations.locationEntries)
+                    plugin.locations.all()
                 }
 
-                newLoop()
+                if (targets.isEmpty()) {
+                    forceSelfDestroy()
+                } else {
+                    newLoop()
+                }
             }
         }
     }
@@ -62,7 +66,7 @@ class RemoveMaterials(
         if (invalid) return
         object : BukkitRunnable() {
             override fun run() {
-                loadWorld(senderLocationEntries[locationIndex])
+                loadWorld(targets[locationIndex])
             }
         }.runTaskLater(plugin, 1L)
     }
@@ -75,39 +79,42 @@ class RemoveMaterials(
 
     private fun checkSelfDestroy() {
         if (invalid) return
-        if (locationIndex >= senderLocationEntries.size) {
+        if (locationIndex >= targets.size) {
             forceSelfDestroy()
         } else {
             newLoop()
         }
     }
 
-    private fun loadWorld(locationEntry: LocationEntry) {
+    private fun loadWorld(despawnLocation: DespawnLocation) {
         if (invalid) return
-        val location = locationEntry.location
-        location.world.getChunkAtAsync(location).thenRun { worldIsLoaded(locationEntry) }
+        val location = despawnLocation.toLocation()
+        if (location == null) {
+            loopEnd() // world not loaded; skip this one
+            return
+        }
+        location.world.getChunkAtAsync(location).thenRun { worldIsLoaded(location) }
     }
 
-    private fun worldIsLoaded(locationEntry: LocationEntry) {
+    private fun worldIsLoaded(location: Location) {
         if (invalid) return
 
-        val location = locationEntry.location
         val block = location.world.getBlockAt(location.blockX, location.blockY, location.blockZ)
 
-        for (despawnInto in DespawnProcess.despawnIntos) {
+        for (strategy in plugin.strategies) {
             if (invalid) return
-            if (!despawnInto.doesApply(block)) continue
+            if (!strategy.doesApply(block)) continue
 
             materials?.forEach { material ->
                 if (invalid) return
-                despawnInto.removeFrom(material, block)
+                strategy.removeFrom(material, block)
             }
 
-            item?.let { despawnInto.removeFrom(it, block) }
+            item?.let { strategy.removeFrom(it, block) }
 
             if (locationIndex % 20 == 0) {
                 sender.sendColored(
-                    "Still processing... $locationIndex / ${senderLocationEntries.size}",
+                    "Still processing... $locationIndex / ${targets.size}",
                     NamedTextColor.YELLOW,
                 )
             }

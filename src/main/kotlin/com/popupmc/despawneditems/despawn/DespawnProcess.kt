@@ -1,47 +1,36 @@
 package com.popupmc.despawneditems.despawn
 
 import com.popupmc.despawneditems.DespawnedItems
-import com.popupmc.despawneditems.config.LocationEntry
-import com.popupmc.despawneditems.despawn.into.AbstractDespawnInto
-import com.popupmc.despawneditems.despawn.into.DespawnBlockIntoAir
-import com.popupmc.despawneditems.despawn.into.DespawnIntoCooker
 import com.popupmc.despawneditems.despawn.into.DespawnIntoResult
-import com.popupmc.despawneditems.despawn.into.DespawnIntoStorage
-import com.popupmc.despawneditems.despawn.into.DespawnIntoVoid
-import com.popupmc.despawneditems.despawn.into.DespawnItemIntoEntity
+import com.popupmc.despawneditems.location.DespawnLocation
+import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitRunnable
 
 /**
- * Drives a single item through the despawn pipeline: it repeatedly picks a random
- * despawn location, loads the chunk, and offers the item to each [AbstractDespawnInto]
- * strategy in priority order until the item is fully placed or the location budget
- * runs out.
+ * Drives a single item through the despawn pipeline: it repeatedly picks a random,
+ * not-yet-tried despawn location, loads that chunk, and offers the item to each
+ * despawn strategy ([DespawnedItems.strategies]) in priority order until the item is
+ * fully placed or the location budget runs out.
  *
- * [item] is nullable because the storage strategies null it out while
- * reconstructing oversized leftover stacks.
+ * [item] is nullable because the storage strategies null it out while reconstructing
+ * oversized leftover stacks.
  */
 class DespawnProcess(var item: ItemStack?, private val plugin: DespawnedItems) {
 
     private var loopsLeft: Int
+    private val tried: MutableSet<DespawnLocation> = HashSet()
+
     var invalid: Boolean = false
         private set
 
     init {
-        loopsLeft = plugin.settings.fileLocations.locationEntries.size
+        loopsLeft = plugin.locations.count
         plugin.despawnProcesses.add(this)
 
-        if (plugin.settings.fileLocations.locationEntries.isEmpty()) {
+        if (plugin.locations.isEmpty()) {
             selfDestroy()
         } else {
-            // Build the ordered strategy list once (shared across processes).
-            if (despawnIntos.isEmpty()) {
-                despawnIntos.add(DespawnIntoVoid(plugin))      // delete contraband first
-                despawnIntos.add(DespawnIntoCooker(plugin))    // then furnaces/smokers
-                despawnIntos.add(DespawnBlockIntoAir(plugin))  // then place as a block
-                despawnIntos.add(DespawnItemIntoEntity(plugin))// then onto entities
-                despawnIntos.add(DespawnIntoStorage(plugin))   // finally into containers
-            }
             newLoop()
         }
     }
@@ -50,16 +39,35 @@ class DespawnProcess(var item: ItemStack?, private val plugin: DespawnedItems) {
         if (invalid) return
         object : BukkitRunnable() {
             override fun run() {
-                loadWorld(plugin.despawnIndexes.randomChestCoord())
+                val next = nextLocation()
+                if (next == null) {
+                    selfDestroy()
+                    return
+                }
+                loadWorld(next)
             }
         }.runTaskLater(plugin, 1L)
     }
 
-    private fun loadWorld(locationEntry: LocationEntry) {
+    /** A random location not yet tried by this process, or null when exhausted. */
+    private fun nextLocation(): DespawnLocation? {
+        repeat(RANDOM_ATTEMPTS) {
+            val candidate = plugin.locations.random() ?: return null
+            if (tried.add(candidate)) return candidate
+        }
+        // Near-exhaustion fallback: pick any untried location deterministically.
+        return plugin.locations.all().firstOrNull { it !in tried }?.also { tried.add(it) }
+    }
+
+    private fun loadWorld(despawnLocation: DespawnLocation) {
         if (invalid) return
-        val location = locationEntry.location
-        location.world.getChunkAtAsync(location)
-            .thenRun { worldIsLoaded(locationEntry) }
+        val location = despawnLocation.toLocation()
+        if (location == null) {
+            // World isn't loaded right now — count the attempt and move on.
+            endLoop()
+            return
+        }
+        location.world.getChunkAtAsync(location).thenRun { worldIsLoaded(location) }
     }
 
     private fun endLoop() {
@@ -77,21 +85,20 @@ class DespawnProcess(var item: ItemStack?, private val plugin: DespawnedItems) {
         invalid = true
     }
 
-    private fun worldIsLoaded(locationEntry: LocationEntry) {
+    private fun worldIsLoaded(targetLocation: Location) {
         if (invalid) return
 
-        val targetLocation = locationEntry.location
         val targetBlock = targetLocation.world
             .getBlockAt(targetLocation.blockX, targetLocation.blockY, targetLocation.blockZ)
 
-        for (despawnInto in despawnIntos) {
+        for (strategy in plugin.strategies) {
             if (invalid) return
-            if (!despawnInto.doesApply(targetBlock)) continue
+            if (!strategy.doesApply(targetBlock)) continue
 
-            val result = despawnInto.despawnInto(this, targetBlock)
+            val result = strategy.despawnInto(this, targetBlock)
 
             if (result == DespawnIntoResult.PARTIALLY || result == DespawnIntoResult.FULLY) {
-                playEffect(locationEntry)
+                playEffect(targetLocation)
             }
 
             if (result == DespawnIntoResult.FULLY || result == DespawnIntoResult.CONTRABAND) {
@@ -107,16 +114,16 @@ class DespawnProcess(var item: ItemStack?, private val plugin: DespawnedItems) {
         endLoop()
     }
 
-    private fun playEffect(locationEntry: LocationEntry) {
+    private fun playEffect(location: Location) {
         if (invalid) return
         val cfg = plugin.settings.fileConfig
         if (cfg.soundEnabled || cfg.particlesEnabled) {
-            DespawnEffect(locationEntry, plugin)
+            DespawnEffect(location, plugin)
         }
     }
 
     companion object {
-        /** Ordered despawn strategies, shared across all processes. */
-        val despawnIntos: MutableList<AbstractDespawnInto> = mutableListOf()
+        /** How many random draws to try before falling back to a linear untried scan. */
+        private const val RANDOM_ATTEMPTS = 8
     }
 }

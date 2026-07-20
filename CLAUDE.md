@@ -1,10 +1,20 @@
-# DespawnedItems — AI Context
+# PaperMC Despawned Items — AI Context
+
+> Display/listed name: **PaperMC Despawned Items**. The repo slug
+> (`papermc-despawned-items`) and the Bukkit plugin id (`DespawnedItems`, no spaces
+> allowed) are unchanged.
 
 A Paper (Minecraft) server plugin that intercepts items about to despawn on the
 ground and relocates them into a registered network of nearby containers, cookers,
 entities, or empty space instead of deleting them. Also ships `/recycle`.
-Modern Kotlin rewrite targeting **Paper 26.1** / **Java 25**.
+Modern Kotlin rewrite targeting **Paper 1.21.x** (built against 1.21.11) / **Java 21**.
 Built by Fairy Fox (github.com/1fairyfox).
+
+> **Why 1.21.x, not 26.1?** The 1.21 line is the largest single install base and —
+> unlike the newer 26.x line — is supported by the MockBukkit test framework, so it
+> unlocks full integration testing. A 1.21-built plugin still loads on 26.1 servers
+> (Paper forward-compat); watch the 26.x registry changes and verify. Full rationale:
+> `notes/plans/refactor-2026-07.md`.
 
 ## Start Here
 
@@ -33,16 +43,18 @@ follows the shared living-notes standard. Highlights:
 - **`getConfig()` name clash.** The plugin's own config holder is exposed as
   `plugin.settings` (a `Config`), NOT `plugin.config` — `config` would collide with
   `JavaPlugin.getConfig()` (Bukkit's `FileConfiguration`).
-- **`api-version: '26.1'`** in `plugin.yml` — Paper accepts the year-based value.
-  Bumping the Paper API dep (`io.papermc.paper:paper-api`) in `build.gradle.kts` may
-  require re-checking this.
+- **`api-version: '1.21'`** in `plugin.yml` — matches the Paper API dep
+  (`io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT` in `build.gradle.kts`). Bumping
+  the Paper API dep may require re-checking this.
 - **Sound/particle config are keys, not enums.** `config.yml` stores a sound key
   (`block.fire.extinguish`) resolved via the `playSound(String, …)` overload, and a
   particle key resolved case-insensitively. This avoids the enum→registry churn.
-- **Can't drive a live client on 26.1 yet.** `node-minecraft-protocol`/Mineflayer
-  top out at 1.21.11, so automated in-game client tests aren't available for the
-  26.x protocol. Validate by (a) `./gradlew build` against the real Paper API and
-  (b) booting a headless Paper 26.1 server and confirming the plugin enables.
+- **In-game client automation is available on 1.21.11.** `node-minecraft-protocol`/
+  Mineflayer top out at 1.21.11 — which is exactly the target — so automated in-game
+  client tests are now possible (a reason to prefer 1.21.11). Validate by (a)
+  `./gradlew build` against the real Paper API, (b) booting a headless Paper 1.21.11
+  server and confirming the plugin enables, and (c) confirming it also loads on a
+  26.1 server (forward-compat check).
 - **Reference clone is read-only.** `assets/references/` is git-ignored; never commit
   it, never edit it.
 
@@ -56,10 +68,12 @@ follows the shared living-notes standard. Highlights:
 - **Build the plugin jar:** `./gradlew build` → `build/libs/DespawnedItems-<version>.jar`
   (a shaded jar with the Kotlin stdlib inside; drop it in a server's `plugins/`).
 - **API docs:** `./gradlew dokkaGenerate` → `build/dokka/html/`.
-- **Runtime smoke test:** download a Paper 26.1 server jar (fill.papermc.io), put the
-  built jar in `plugins/`, run `java -jar paper.jar --nogui`, confirm
-  `DespawnedItems is enabled` with no plugin stack traces.
-- **Toolchain:** JDK 25, Gradle wrapper 9.6.1, Kotlin 2.4.x, Paper API 26.1.2.
+- **Runtime smoke test:** download a Paper 1.21.11 server jar (fill.papermc.io), put
+  the built jar in `plugins/`, run `java -jar paper.jar --nogui`, confirm
+  `DespawnedItems is enabled` with no plugin stack traces. Repeat on a 26.1 jar to
+  confirm forward-compat.
+- **Toolchain:** JDK 21 (auto-provisioned via the foojay resolver in
+  `settings.gradle.kts`), Gradle wrapper 9.6.1, Kotlin 2.4.x, Paper API 1.21.11.
 
 ## Default Workflow — Do These By Default (a standing instruction)
 

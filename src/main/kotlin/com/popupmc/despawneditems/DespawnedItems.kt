@@ -4,9 +4,16 @@ import com.popupmc.despawneditems.commands.OnDespiCommand
 import com.popupmc.despawneditems.commands.OnRecycleCommand
 import com.popupmc.despawneditems.config.Config
 import com.popupmc.despawneditems.despawn.DespawnEffect
-import com.popupmc.despawneditems.despawn.DespawnIndexes
 import com.popupmc.despawneditems.despawn.DespawnProcess
+import com.popupmc.despawneditems.despawn.DespawnScheduler
+import com.popupmc.despawneditems.despawn.into.AbstractDespawnInto
+import com.popupmc.despawneditems.despawn.into.DespawnBlockIntoAir
+import com.popupmc.despawneditems.despawn.into.DespawnIntoCooker
+import com.popupmc.despawneditems.despawn.into.DespawnIntoStorage
+import com.popupmc.despawneditems.despawn.into.DespawnIntoVoid
+import com.popupmc.despawneditems.despawn.into.DespawnItemIntoEntity
 import com.popupmc.despawneditems.events.OnItemDespawnEvent
+import com.popupmc.despawneditems.location.LocationManager
 import com.popupmc.despawneditems.manage.RemoveMaterials
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -20,12 +27,13 @@ import java.util.UUID
  * despawn on the ground and instead relocates them into a registered network of
  * nearby containers, cookers, entities, or empty space.
  *
- * This is the modern Kotlin rewrite targeting Paper 26.1.
+ * `open` so MockBukkit (ByteBuddy) can subclass it in tests — Kotlin classes are
+ * final by default, which MockBukkit's plugin loader cannot proxy.
  */
-class DespawnedItems : JavaPlugin() {
+open class DespawnedItems : JavaPlugin() {
 
     /**
-     * Loaded configuration (main config + per-player despawn locations).
+     * Loaded configuration (effect + storage settings).
      *
      * Named `settings` rather than `config` so it does not collide with
      * [JavaPlugin.getConfig], which returns Bukkit's own [org.bukkit.configuration.file.FileConfiguration].
@@ -33,13 +41,20 @@ class DespawnedItems : JavaPlugin() {
     lateinit var settings: Config
         private set
 
-    /** Shuffled index used to pick despawn locations without repeats. */
-    lateinit var despawnIndexes: DespawnIndexes
+    /** Owns the despawn-location store and its persistent backend. */
+    lateinit var locations: LocationManager
         private set
 
-    /** True once [despawnIndexes] exists (it is created after the first config load). */
-    val isDespawnIndexesReady: Boolean
-        get() = this::despawnIndexes.isInitialized
+    /**
+     * The ordered despawn strategies, rebuilt each enable so they never capture a stale
+     * plugin instance across a reload (the previous static list did).
+     */
+    lateinit var strategies: List<AbstractDespawnInto>
+        private set
+
+    /** Bounds the automatic despawn pipeline so large servers stay smooth under load. */
+    lateinit var despawnScheduler: DespawnScheduler
+        private set
 
     /** Effects currently playing — held so they are not garbage collected. */
     val effectsPlaying: MutableList<DespawnEffect> = mutableListOf()
@@ -51,10 +66,23 @@ class DespawnedItems : JavaPlugin() {
     val despawnProcesses: MutableList<DespawnProcess> = mutableListOf()
 
     override fun onEnable() {
-        BlacklistedItems.setup()
+        RewardPool.setup()
 
         settings = Config(this)
-        despawnIndexes = DespawnIndexes(this)
+
+        locations = LocationManager(this)
+        locations.load()
+
+        strategies = listOf(
+            DespawnIntoVoid(this), // delete contraband first
+            DespawnIntoCooker(this), // then furnaces/smokers
+            DespawnBlockIntoAir(this), // then place as a block
+            DespawnItemIntoEntity(this), // then onto entities
+            DespawnIntoStorage(this), // finally into containers
+        )
+
+        despawnScheduler = DespawnScheduler(this)
+        despawnScheduler.start()
 
         Bukkit.getPluginManager().registerEvents(OnItemDespawnEvent(this), this)
 
@@ -80,6 +108,8 @@ class DespawnedItems : JavaPlugin() {
     }
 
     override fun onDisable() {
+        if (this::despawnScheduler.isInitialized) despawnScheduler.stop()
+        if (this::locations.isInitialized) locations.shutdown()
         logger.info("DespawnedItems is disabled")
     }
 }

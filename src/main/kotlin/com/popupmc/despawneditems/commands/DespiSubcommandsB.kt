@@ -1,8 +1,8 @@
 package com.popupmc.despawneditems.commands
 
 import com.popupmc.despawneditems.DespawnedItems
-import com.popupmc.despawneditems.config.LocationEntry
 import com.popupmc.despawneditems.despawn.DespawnProcess
+import com.popupmc.despawneditems.location.DespawnLocation
 import com.popupmc.despawneditems.manage.RemoveMaterials
 import com.popupmc.despawneditems.sendColored
 import net.kyori.adventure.text.format.NamedTextColor
@@ -78,7 +78,10 @@ class OnDespiCommandDespawn(plugin: DespawnedItems) :
     override fun showDescription(sender: CommandSender, args: Array<String>): Boolean = canBeElevated(sender)
 
     private fun sendCount(sender: CommandSender): Boolean {
-        success("Despawn Count: ${plugin.despawnProcesses.size}", sender)
+        success(
+            "Despawns: ${plugin.despawnProcesses.size} active, ${plugin.despawnScheduler.queued} queued",
+            sender,
+        )
         return true
     }
 
@@ -193,10 +196,10 @@ class OnDespiCommandExists(plugin: DespawnedItems) :
     }
 
     private fun existsAnyLocationByName(sender: CommandSender, owner: OfflinePlayer): Boolean {
-        val found = plugin.settings.fileLocations.exists(owner.uniqueId)
+        val found = plugin.locations.firstOfOwner(owner.uniqueId)
         if (found != null) {
             success("A location was found!", sender)
-            sender.sendColored(found.toString(), NamedTextColor.GOLD)
+            sender.sendColored(found.serialize(), NamedTextColor.GOLD)
         } else {
             warning("No location was found", sender)
         }
@@ -212,13 +215,13 @@ class OnDespiCommandExists(plugin: DespawnedItems) :
         val actualOwner = owner ?: sender
         val location = getTargetLocation(sender) ?: return false
 
-        val found = if (anyOwner) {
-            plugin.settings.fileLocations.exists(location)
+        val exists = if (anyOwner) {
+            plugin.locations.anyAt(location)
         } else {
-            plugin.settings.fileLocations.exists(location, actualOwner.uniqueId)
+            plugin.locations.has(location, actualOwner.uniqueId)
         }
 
-        if (found != null) success("Location does exist", sender) else warning("Location does not exist", sender)
+        if (exists) success("Location does exist", sender) else warning("Location does not exist", sender)
         return true
     }
 }
@@ -227,7 +230,7 @@ class OnDespiCommandExists(plugin: DespawnedItems) :
 class OnDespiCommandLocations(plugin: DespawnedItems) :
     AbstractDespiCommand(plugin, "locations", "Obtains all of your locations.") {
 
-    private val backupLocationEntries = mutableListOf<LocationEntry>()
+    private val backupLocationEntries = mutableListOf<DespawnLocation>()
 
     override fun runCommand(sender: CommandSender, args: Array<String>): Boolean {
         val playerName = getArg(2, args)
@@ -272,7 +275,7 @@ class OnDespiCommandLocations(plugin: DespawnedItems) :
 
     private fun totalLocationCount(sender: CommandSender): Boolean {
         if (!canBeElevated("You don't have permission to view location count", sender)) return false
-        success("Locations: ${plugin.settings.fileLocations.locationEntries.size}", sender)
+        success("Locations: ${plugin.locations.count}", sender)
         return true
     }
 
@@ -281,10 +284,9 @@ class OnDespiCommandLocations(plugin: DespawnedItems) :
         val player = isPlayer(sender) ?: return false
         val location = getTargetLocation(player) ?: return false
 
-        backupLocationEntries.addAll(plugin.settings.fileLocations.locationEntries)
-        plugin.settings.fileLocations.locationEntries.clear()
-        plugin.settings.fileLocations.locationEntries.add(LocationEntry(location, player.uniqueId, plugin))
-        plugin.despawnIndexes.rebuildIndexes()
+        backupLocationEntries.clear()
+        backupLocationEntries.addAll(plugin.locations.all())
+        plugin.locations.replaceWith(listOf(DespawnLocation.of(location, player.uniqueId)))
 
         success("Solo'd this location, /despi locations normal-mode to restore", sender)
         return true
@@ -293,9 +295,7 @@ class OnDespiCommandLocations(plugin: DespawnedItems) :
     private fun undoSolo(sender: CommandSender): Boolean {
         if (!canBeElevated("You don't have permission to undo solo-mode", sender)) return false
 
-        plugin.settings.fileLocations.locationEntries.addAll(backupLocationEntries)
-        plugin.settings.fileLocations.save()
-        plugin.settings.fileLocations.load()
+        plugin.locations.replaceWith(backupLocationEntries)
         backupLocationEntries.clear()
 
         success("Undid solo", sender)
@@ -310,12 +310,12 @@ class OnDespiCommandLocations(plugin: DespawnedItems) :
         val player: OfflinePlayer? = if (ownerName == null) isPlayer(sender) else getPlayer(ownerName)
         if (player == null) return false
 
-        val found = plugin.settings.fileLocations.existsAll(player.uniqueId)
+        val found = plugin.locations.ofOwner(player.uniqueId).toList()
         val label = ownerName ?: "you"
 
         if (found.isNotEmpty()) {
             success("${found.size} location(s) were found for $label", sender)
-            found.forEach { sender.sendColored(it.toString(), NamedTextColor.GOLD) }
+            found.forEach { sender.sendColored(it.serialize(), NamedTextColor.GOLD) }
         } else {
             warning("No locations found for $label", sender)
         }
@@ -328,7 +328,7 @@ class OnDespiCommandLocations(plugin: DespawnedItems) :
         val player = isPlayer(sender) ?: return false
         val location = getTargetLocation(player) ?: return false
 
-        val found = plugin.settings.fileLocations.existsAll(location)
+        val found = plugin.locations.atLocation(location)
         if (found.isNotEmpty()) {
             success("${found.size} owner(s) were found for this location", sender)
             found.forEach { sender.sendColored(Bukkit.getOfflinePlayer(it.owner).name ?: it.owner.toString(), NamedTextColor.GOLD) }
@@ -410,7 +410,7 @@ class OnDespiCommandRemove(plugin: DespawnedItems) :
     }
 
     private fun removeAnyLocationByName(sender: CommandSender, owner: OfflinePlayer): Boolean {
-        val removed = plugin.settings.fileLocations.remove(owner.uniqueId)
+        val removed = plugin.locations.removeOneOfOwner(owner.uniqueId)
         if (removed) success("A location was removed!", sender)
         else warning("No location was removed (Did the player have locations?)", sender)
         return true
@@ -426,9 +426,9 @@ class OnDespiCommandRemove(plugin: DespawnedItems) :
         val location = getTargetLocation(sender) ?: return false
 
         val removed = if (anyOwner) {
-            plugin.settings.fileLocations.remove(location)
+            plugin.locations.removeOneAt(location)
         } else {
-            plugin.settings.fileLocations.remove(location, actualOwner.uniqueId)
+            plugin.locations.remove(location, actualOwner.uniqueId)
         }
 
         if (removed) success("Location removed", sender) else warning("Location wasn't removed (Did it ever exist?)", sender)

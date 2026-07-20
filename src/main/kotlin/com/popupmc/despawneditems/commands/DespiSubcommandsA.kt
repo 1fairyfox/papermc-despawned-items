@@ -1,8 +1,8 @@
 package com.popupmc.despawneditems.commands
 
 import com.popupmc.despawneditems.DespawnedItems
-import com.popupmc.despawneditems.config.LocationEntry
 import com.popupmc.despawneditems.despawn.DespawnEffect
+import com.popupmc.despawneditems.limit.DespawnLimits
 import com.popupmc.despawneditems.sendColored
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -51,7 +51,18 @@ class OnDespiCommandAdd(plugin: DespawnedItems) :
         val actualOwner = owner ?: sender
         val location = getTargetLocation(sender) ?: return false
 
-        return if (plugin.settings.fileLocations.add(location, actualOwner.uniqueId)) {
+        // Enforce the per-user cap for self-service adds; admins adding for someone else
+        // (already gated behind despi.elevated) are not capped.
+        if (owner == null) {
+            val limits = plugin.settings.limits
+            val current = plugin.locations.countOfOwner(sender.uniqueId)
+            if (!DespawnLimits.canAddAnother(sender, current, limits)) {
+                error("You've reached your limit of ${DespawnLimits.resolve(sender, limits)} despawn location(s).", sender)
+                return false
+            }
+        }
+
+        return if (plugin.locations.add(location, actualOwner.uniqueId)) {
             success("Successfully added location!", sender)
             true
         } else {
@@ -102,7 +113,7 @@ class OnDespiCommandClear(plugin: DespawnedItems) :
         val player: OfflinePlayer? = if (ownerName == null) isPlayer(sender) else getPlayer(ownerName)
         if (player == null) return false
 
-        val removed = plugin.settings.fileLocations.removeAll(player.uniqueId)
+        val removed = plugin.locations.removeAllOfOwner(player.uniqueId)
         val label = ownerName ?: "you"
 
         if (removed > 0) success("$removed location(s) were removed for $label", sender)
@@ -115,7 +126,7 @@ class OnDespiCommandClear(plugin: DespawnedItems) :
         val player = isPlayer(sender) ?: return false
         val location = getTargetLocation(player) ?: return false
 
-        val removed = plugin.settings.fileLocations.removeAll(location)
+        val removed = plugin.locations.removeAllAt(location)
         if (removed > 0) success("$removed owner(s) were removed for this location", sender)
         else warning("No owners found to remove for this location.", sender)
         return true
@@ -130,7 +141,8 @@ class OnDespiCommandReload(plugin: DespawnedItems) :
         if (!canBeElevated(sender)) return false
         if (args.size != 2 || !args[1].equals("do", ignoreCase = true)) return false
         plugin.settings.load()
-        success("Config has been reloaded", sender)
+        plugin.locations.reload()
+        success("Config and storage have been reloaded", sender)
         return true
     }
 
@@ -154,8 +166,8 @@ class OnDespiCommandSave(plugin: DespawnedItems) :
     override fun runCommand(sender: CommandSender, args: Array<String>): Boolean {
         if (!canBeElevated(sender)) return false
         if (args.size != 2 || !args[1].equals("do", ignoreCase = true)) return false
-        plugin.settings.fileLocations.save()
-        success("Config has been saved", sender)
+        plugin.locations.saveNow()
+        success("Locations have been saved", sender)
         return true
     }
 
@@ -218,61 +230,8 @@ class OnDespiCommandEffects(plugin: DespawnedItems) :
     private fun create(sender: CommandSender): Boolean {
         val player = isPlayer(sender) ?: return false
         val location = getTargetLocation(player) ?: return false
-        DespawnEffect(LocationEntry(location, player.uniqueId, plugin), plugin)
+        DespawnEffect(location, plugin)
         success("Created fake effect at location", sender)
-        return true
-    }
-}
-
-/** `/despi indexes ...` — inspect/manage the despawn index. */
-class OnDespiCommandIndexes(plugin: DespawnedItems) :
-    AbstractDespiCommand(plugin, "indexes", "Manages despawn indexes, often for testing") {
-
-    override fun runCommand(sender: CommandSender, args: Array<String>): Boolean {
-        if (!canBeElevated(sender)) return false
-        return when (getArg(1, args)?.lowercase()) {
-            "rebuild" -> rebuild(sender)
-            "pull-one" -> pullOne(sender)
-            "count" -> sendCount(sender)
-            else -> false
-        }
-    }
-
-    override fun onTabComplete(sender: CommandSender, args: Array<String>): List<String>? {
-        if (!canBeElevated(sender)) return null
-        return if (args.size == 2) mutableListOf("count", "rebuild", "pull-one") else mutableListOf()
-    }
-
-    override fun displayHelp(sender: CommandSender, args: Array<String>) {
-        if (canBeElevated(sender)) {
-            sender.sendColored("/despi indexes count (Count of all indexes)", NamedTextColor.GRAY)
-            sender.sendColored("/despi indexes rebuild (Rebuild all indexes)", NamedTextColor.GRAY)
-            sender.sendColored("/despi indexes pull-one (Pull an index from the list)", NamedTextColor.GRAY)
-        } else {
-            sender.sendColored("You don't have access to this command", NamedTextColor.GRAY)
-        }
-    }
-
-    override fun showDescription(sender: CommandSender, args: Array<String>): Boolean = canBeElevated(sender)
-
-    private fun sendCount(sender: CommandSender): Boolean {
-        success("Index Count: ${plugin.despawnIndexes.locationEntryIndexes.size}", sender)
-        return true
-    }
-
-    private fun rebuild(sender: CommandSender): Boolean {
-        plugin.despawnIndexes.rebuildIndexes()
-        success("Rebuilt", sender)
-        return true
-    }
-
-    @Suppress("DEPRECATION")
-    private fun pullOne(sender: CommandSender): Boolean {
-        if (plugin.settings.fileLocations.locationEntries.isEmpty()) {
-            warning("No despawn locations exist anywhere by anyone", sender)
-        }
-        val entry = plugin.despawnIndexes.randomChestCoord()
-        success("Pulled $entry owned by ${Bukkit.getOfflinePlayer(entry.owner).name}", sender)
         return true
     }
 }

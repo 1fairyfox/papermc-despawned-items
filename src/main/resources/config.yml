@@ -1,3 +1,53 @@
+# How many despawn locations a player may own (self-service limits).
+limits:
+  # Default cap when a player has no limit permission.
+  default: 10
+
+  # Set true to remove the cap entirely for everyone.
+  unlimited: false
+
+  # Per-group / per-rank caps are granted via permissions instead of listing them here:
+  #   despi.limit.<number>   grants that number as the player's cap (highest wins)
+  #   despi.limit.bypass     ignores the cap (default: op)
+  # e.g. give a LuckPerms group the node  despi.limit.50  for a 50-location cap.
+
+# Large-server safety limits for the automatic despawn-relocation pipeline. These bound
+# how much work happens per tick so a flood of despawning items never storms the server.
+performance:
+  # New relocations started per server tick (20 ticks = 1 second).
+  max-per-tick: 20
+
+  # Maximum relocations processing at once.
+  max-concurrent: 200
+
+  # Maximum items waiting to be relocated.
+  max-queue: 10000
+
+  # When the queue is full: true = ignore new items, false = drop the oldest.
+  drop-when-full: true
+
+# Where despawn locations are stored.
+storage:
+  # yaml  — flat files under userdata/ (default, zero setup, fine for most servers)
+  # sqlite — an embedded database file (good for large single servers)
+  # mysql  — a MySQL/MariaDB server (share storage across a network of servers)
+  # Switching backends automatically migrates existing data on first start.
+  type: yaml
+
+  # Only used when type is mysql.
+  mysql:
+    host: localhost
+    port: 3306
+    database: despawneditems
+    username: root
+    password: ""
+    # Extra JDBC url parameters, joined with '&'.
+    properties: "useSSL=false&allowPublicKeyRetrieval=true"
+
+  # Connection pool sizing (sqlite is forced to 1 writer regardless).
+  pool:
+    maximum-pool-size: 10
+
 # Sound emitted once when a new item is added to a despawn container.
 sound:
   # Whether the sound is played at all.
@@ -22,7 +72,15 @@ particles:
   # Particle to use, as a Minecraft particle key (namespaced or plain).
   # See https://minecraft.wiki/w/Particles for the full list, e.g.
   # happy_villager, cloud, crit
+  # Particles that need data this plugin doesn't model fall back to happy_villager
+  # with a console warning (rather than erroring).
   particle: happy_villager
+
+  # Colour for DUST-type particles only (#RRGGBB); ignored by other particles.
+  color: '#FFC800'
+
+  # Size multiplier for DUST-type particles, 0.01–4.0.
+  dust-size: 1.0
 
   # How long, in seconds, particles keep emitting on the container.
   length-seconds: 3
