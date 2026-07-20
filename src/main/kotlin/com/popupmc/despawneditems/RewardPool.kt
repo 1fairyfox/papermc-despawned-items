@@ -31,14 +31,25 @@ object RewardPool {
 
     private var pool: List<Material> = emptyList()
 
-    /** (Re)builds the reward pool. Safe to call again on reload. */
+    /**
+     * (Re)builds the reward pool. Safe to call again on reload.
+     *
+     * Filters purely on each material's stable enum name and identity — deliberately
+     * avoiding server-backed calls like `Material.isAir()` (which routes through the
+     * block-type registry) so this stays fast and testable off the main thread.
+     */
     fun setup() {
         pool = Material.entries.filter { type ->
-            !type.isAir &&
+            val name = type.name
+            !isAir(name) &&
+                !name.startsWith("LEGACY_") &&
                 type !in EXCLUDED_MATERIALS &&
-                EXCLUDED_SUBSTRINGS.none { it in type.name.lowercase() }
+                EXCLUDED_SUBSTRINGS.none { it in name.lowercase() }
         }
     }
+
+    /** Name-based air test (AIR, CAVE_AIR, VOID_AIR) that needs no server. */
+    private fun isAir(name: String): Boolean = name == "AIR" || name.endsWith("_AIR")
 
     /** A random reward material, or null if the pool is empty. */
     fun random(): Material? = pool.randomOrNull()

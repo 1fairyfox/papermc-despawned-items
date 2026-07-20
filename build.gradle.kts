@@ -26,6 +26,16 @@ dependencies {
     // The Kotlin standard library is shaded into the plugin jar (see shadowJar
     // below) so the plugin is self-contained on a plain Paper server.
     implementation(kotlin("stdlib"))
+
+    // --- Testing ---
+    // MockBukkit mocks a live Paper 1.21 server for unit/integration tests (it
+    // supports the 1.21 line but not the newer 26.x — a key reason for the target).
+    // It also brings the Paper API and JUnit 5 onto the test classpath transitively.
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.110.0")
+    testImplementation(kotlin("test"))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // The Paper API is compileOnly for main; tests need it on their own classpath.
+    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
 }
 
 kotlin {
@@ -74,5 +84,14 @@ tasks {
     jar {
         // Avoid emitting an unused plain jar alongside the shaded one.
         enabled = false
+    }
+
+    test {
+        // JUnit 5 (Jupiter) is the test platform. `build` runs `check` → `test`, so
+        // the suite gates every build.
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
     }
 }

@@ -20,9 +20,12 @@ import java.util.UUID
  * despawn on the ground and instead relocates them into a registered network of
  * nearby containers, cookers, entities, or empty space.
  *
- * This is the modern Kotlin rewrite targeting Paper 26.1.
+ * This is the modern Kotlin rewrite targeting the Paper 1.21.x line.
+ *
+ * `open` so MockBukkit (ByteBuddy) can subclass it in tests — Kotlin classes are
+ * final by default, which MockBukkit's plugin loader cannot proxy.
  */
-class DespawnedItems : JavaPlugin() {
+open class DespawnedItems : JavaPlugin() {
 
     /**
      * Loaded configuration (main config + per-player despawn locations).
