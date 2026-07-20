@@ -17,9 +17,11 @@ repositories {
 }
 
 dependencies {
-    // Paper API for Minecraft 26.1.2 (build #74, the current stable line).
-    // compileOnly: the server provides it at runtime.
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.74-stable")
+    // Paper API for Minecraft 1.21.11 (latest 1.21 patch). Targeting the 1.21 line
+    // (not the newer 26.x) so the MockBukkit test framework — which supports 1.21.x
+    // but not 26.x yet — is available; a 1.21-built plugin still loads on 26.1
+    // servers (Paper forward-compat). compileOnly: the server provides it at runtime.
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
 
     // The Kotlin standard library is shaded into the plugin jar (see shadowJar
     // below) so the plugin is self-contained on a plain Paper server.
@@ -27,9 +29,12 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(25)
+    // Minecraft 1.21.x runs on Java 21; compile and target that so the jar loads on
+    // any 1.21+ (including 26.1) server. Gradle auto-provisions JDK 21 via the
+    // foojay resolver (see settings.gradle.kts) where it isn't already installed.
+    jvmToolchain(21)
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_25)
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 

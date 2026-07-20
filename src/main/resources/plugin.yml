@@ -4,7 +4,7 @@ main: com.popupmc.despawneditems.DespawnedItems
 description: Relocates despawning ground items into nearby containers, cookers, entities, or empty space instead of deleting them.
 author: junebug12851
 website: https://github.com/1fairyfox/papermc-despawned-items
-api-version: '26.1'
+api-version: '1.21'
 
 commands:
   despi:
