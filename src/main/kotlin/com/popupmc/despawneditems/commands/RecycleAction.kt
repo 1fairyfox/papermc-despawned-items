@@ -17,10 +17,12 @@ import org.bukkit.persistence.PersistentDataType
  * checks are handled by the Brigadier registration in [DespiCommand].
  */
 object RecycleAction {
-
     private const val PROGRESS_KEY = "recycle_progress"
 
-    fun recycle(plugin: DespawnedItems, player: Player) {
+    fun recycle(
+        plugin: DespawnedItems,
+        player: Player,
+    ) {
         val item = player.inventory.itemInMainHand
         if (item.type.isAir || item.amount == 0) {
             player.sendColored("There's nothing in your hand to recycle.", NamedTextColor.GOLD)
@@ -34,7 +36,10 @@ object RecycleAction {
         awardProgress(plugin, player)
     }
 
-    private fun awardProgress(plugin: DespawnedItems, player: Player) {
+    private fun awardProgress(
+        plugin: DespawnedItems,
+        player: Player,
+    ) {
         val key = NamespacedKey(plugin, PROGRESS_KEY)
         val pdc = player.persistentDataContainer
         val current = pdc.get(key, PersistentDataType.INTEGER) ?: 0

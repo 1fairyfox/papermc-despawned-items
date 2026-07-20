@@ -11,13 +11,17 @@ import kotlin.test.assertTrue
 
 /** Pure (no server) tests for the indexed [LocationStore]. */
 class LocationStoreTest {
-
     private lateinit var store: LocationStore
     private val alice: UUID = UUID.fromString("00000000-0000-0000-0000-00000000000a")
     private val bob: UUID = UUID.fromString("00000000-0000-0000-0000-00000000000b")
 
-    private fun loc(x: Int, y: Int, z: Int, owner: UUID, world: String = "world") =
-        DespawnLocation(world, x, y, z, owner)
+    private fun loc(
+        x: Int,
+        y: Int,
+        z: Int,
+        owner: UUID,
+        world: String = "world",
+    ) = DespawnLocation(world, x, y, z, owner)
 
     @BeforeTest
     fun setUp() {
@@ -38,7 +42,8 @@ class LocationStoreTest {
     fun `same block different owners coexist in the spatial index`() {
         val a = loc(1, 2, 3, alice)
         val b = loc(1, 2, 3, bob)
-        store.add(a); store.add(b)
+        store.add(a)
+        store.add(b)
         assertEquals(setOf(alice, bob), store.ownersAt(a.blockKey))
         assertEquals(2, store.at(a.blockKey).size)
         assertEquals(2, store.size)
@@ -58,7 +63,8 @@ class LocationStoreTest {
     fun `remove keeps all indexes consistent`() {
         val a = loc(1, 2, 3, alice)
         val b = loc(1, 2, 3, bob)
-        store.add(a); store.add(b)
+        store.add(a)
+        store.add(b)
         assertTrue(store.remove(a))
         assertFalse(store.contains(a))
         assertEquals(setOf(bob), store.ownersAt(a.blockKey))
@@ -72,7 +78,8 @@ class LocationStoreTest {
         store.add(loc(1, 1, 1, alice))
         store.add(loc(2, 2, 2, alice))
         val shared = loc(5, 5, 5, alice)
-        store.add(shared); store.add(loc(5, 5, 5, bob))
+        store.add(shared)
+        store.add(loc(5, 5, 5, bob))
 
         assertEquals(3, store.removeOwner(alice))
         assertEquals(0, store.countOfOwner(alice))

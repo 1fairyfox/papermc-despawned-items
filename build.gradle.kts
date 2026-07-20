@@ -4,6 +4,8 @@ plugins {
     kotlin("jvm") version "2.4.10"
     id("com.gradleup.shadow") version "9.6.0"
     id("org.jetbrains.dokka") version "2.2.0"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
 group = "com.popupmc"
@@ -55,6 +57,15 @@ kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)
     }
+}
+
+// Static analysis. Layers on the default rules (see config/detekt/detekt.yml); pre-existing
+// findings are captured in the baseline so detekt gates only new issues. Runs on the
+// JDK-21 Gradle daemon (see gradle/gradle-daemon-jvm.properties).
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(files("config/detekt/detekt.yml"))
+    baseline = file("config/detekt/baseline.xml")
 }
 
 // API docs (Dokka), re-skinned to wear the fairyfox palette + a way-home link so the

@@ -18,7 +18,6 @@ class YamlLocationRepository(
     private val dataFolder: File,
     private val logger: Logger,
 ) : LocationRepository {
-
     private val userDataDir: File get() = File(dataFolder, "userdata")
 
     override fun loadAll(): List<DespawnLocation> {
@@ -33,10 +32,11 @@ class YamlLocationRepository(
                 logger.warning("Ignoring non-UUID userdata file ${file.name}")
                 continue
             }
-            val yaml = runCatching { YamlConfiguration.loadConfiguration(file) }.getOrElse {
-                logger.warning("Failed to load ${file.name}: ${it.message}")
-                continue
-            }
+            val yaml =
+                runCatching { YamlConfiguration.loadConfiguration(file) }.getOrElse {
+                    logger.warning("Failed to load ${file.name}: ${it.message}")
+                    continue
+                }
             for (line in yaml.getStringList("locations")) {
                 val loc = DespawnLocation.parse(line, owner)
                 if (loc == null) {
@@ -49,7 +49,10 @@ class YamlLocationRepository(
         return result
     }
 
-    override fun saveOwners(owners: Collection<UUID>, locationsOf: (UUID) -> Collection<DespawnLocation>) {
+    override fun saveOwners(
+        owners: Collection<UUID>,
+        locationsOf: (UUID) -> Collection<DespawnLocation>,
+    ) {
         if (owners.isEmpty()) return
         val dir = userDataDir
         if (!dir.exists() && !dir.mkdirs()) {

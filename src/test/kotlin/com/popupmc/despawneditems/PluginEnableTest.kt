@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
  * that the whole plugin comes up under MockBukkit.
  */
 class PluginEnableTest {
-
     private lateinit var server: ServerMock
     private lateinit var plugin: DespawnedItems
 

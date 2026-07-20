@@ -30,7 +30,6 @@ import java.util.UUID
  * final by default, which MockBukkit's plugin loader cannot proxy.
  */
 open class DespawnedItems : JavaPlugin() {
-
     /**
      * Loaded configuration (effect + storage settings).
      *
@@ -72,13 +71,15 @@ open class DespawnedItems : JavaPlugin() {
         locations = LocationManager(this)
         locations.load()
 
-        strategies = listOf(
-            DespawnIntoVoid(this), // delete contraband first
-            DespawnIntoCooker(this), // then furnaces/smokers
-            DespawnBlockIntoAir(this), // then place as a block
-            DespawnItemIntoEntity(this), // then onto entities
-            DespawnIntoStorage(this), // finally into containers
-        )
+        // Ordered relocation strategies: contraband → cookers → air → entities → containers.
+        strategies =
+            listOf(
+                DespawnIntoVoid(this),
+                DespawnIntoCooker(this),
+                DespawnBlockIntoAir(this),
+                DespawnItemIntoEntity(this),
+                DespawnIntoStorage(this),
+            )
 
         despawnScheduler = DespawnScheduler(this)
         despawnScheduler.start()
@@ -99,6 +100,9 @@ open class DespawnedItems : JavaPlugin() {
 }
 
 /** Sends a single-colour message using the Adventure component API. */
-fun CommandSender.sendColored(text: String, color: NamedTextColor) {
+fun CommandSender.sendColored(
+    text: String,
+    color: NamedTextColor,
+) {
     sendMessage(Component.text(text, color))
 }

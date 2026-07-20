@@ -11,7 +11,6 @@ import org.bukkit.event.entity.ItemDespawnEvent
  * bound how much relocation work runs per tick under heavy load.
  */
 class OnItemDespawnEvent(private val plugin: DespawnedItems) : Listener {
-
     @EventHandler(ignoreCancelled = true)
     fun onEvent(event: ItemDespawnEvent) {
         // Clone so we don't operate on the soon-to-be-removed item entity.

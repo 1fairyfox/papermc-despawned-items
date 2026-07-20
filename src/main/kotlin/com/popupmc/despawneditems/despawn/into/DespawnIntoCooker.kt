@@ -17,13 +17,16 @@ import org.bukkit.inventory.SmokingRecipe
  * cookable item into the input slot when the recipe matches the cooker type.
  */
 class DespawnIntoCooker(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
+    override fun doesApply(targetBlock: Block): Boolean =
+        when (targetBlock.type) {
+            Material.BLAST_FURNACE, Material.FURNACE, Material.SMOKER -> true
+            else -> false
+        }
 
-    override fun doesApply(targetBlock: Block): Boolean = when (targetBlock.type) {
-        Material.BLAST_FURNACE, Material.FURNACE, Material.SMOKER -> true
-        else -> false
-    }
-
-    override fun despawnInto(process: DespawnProcess, targetBlock: Block): DespawnIntoResult {
+    override fun despawnInto(
+        process: DespawnProcess,
+        targetBlock: Block,
+    ): DespawnIntoResult {
         val inventory = getInventory(targetBlock) ?: return DespawnIntoResult.NONE
         val current = process.item ?: return DespawnIntoResult.NONE
 
@@ -65,13 +68,19 @@ class DespawnIntoCooker(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
         }
     }
 
-    override fun removeFrom(material: Material, targetBlock: Block) {
+    override fun removeFrom(
+        material: Material,
+        targetBlock: Block,
+    ) {
         val inventory = getInventory(targetBlock) ?: return
         inventory.remove(material)
         targetBlock.state.update()
     }
 
-    override fun removeFrom(material: ItemStack, targetBlock: Block) {
+    override fun removeFrom(
+        material: ItemStack,
+        targetBlock: Block,
+    ) {
         val inventory = getInventory(targetBlock) ?: return
         inventory.remove(material)
         targetBlock.state.update()
@@ -105,19 +114,25 @@ class DespawnIntoCooker(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
         }
     }
 
-    private fun isInBlastingRecipe(item: ItemStack): Boolean = matchesRecipe(item) { recipe ->
-        recipe is BlastingRecipe && recipe.input.type == item.type
-    }
+    private fun isInBlastingRecipe(item: ItemStack): Boolean =
+        matchesRecipe(item) { recipe ->
+            recipe is BlastingRecipe && recipe.input.type == item.type
+        }
 
-    private fun isInFurnaceRecipe(item: ItemStack): Boolean = matchesRecipe(item) { recipe ->
-        recipe is FurnaceRecipe && recipe.input.type == item.type
-    }
+    private fun isInFurnaceRecipe(item: ItemStack): Boolean =
+        matchesRecipe(item) { recipe ->
+            recipe is FurnaceRecipe && recipe.input.type == item.type
+        }
 
-    private fun isInSmokerRecipe(item: ItemStack): Boolean = matchesRecipe(item) { recipe ->
-        recipe is SmokingRecipe && recipe.input.type == item.type
-    }
+    private fun isInSmokerRecipe(item: ItemStack): Boolean =
+        matchesRecipe(item) { recipe ->
+            recipe is SmokingRecipe && recipe.input.type == item.type
+        }
 
-    private inline fun matchesRecipe(item: ItemStack, predicate: (org.bukkit.inventory.Recipe) -> Boolean): Boolean {
+    private inline fun matchesRecipe(
+        item: ItemStack,
+        predicate: (org.bukkit.inventory.Recipe) -> Boolean,
+    ): Boolean {
         val recipes = Bukkit.getServer().recipeIterator()
         while (recipes.hasNext()) {
             if (predicate(recipes.next())) return true

@@ -6,8 +6,8 @@ import org.bukkit.Material
 import org.bukkit.block.Banner
 import org.bukkit.block.Beacon
 import org.bukkit.block.Beehive
-import org.bukkit.block.BrewingStand
 import org.bukkit.block.Block
+import org.bukkit.block.BrewingStand
 import org.bukkit.block.Chest
 import org.bukkit.block.CommandBlock
 import org.bukkit.block.CreatureSpawner
@@ -31,13 +31,15 @@ import org.bukkit.inventory.meta.SkullMeta
  * hazardous to place (explosives, gravity blocks, redstone, liquids, etc.).
  */
 class DespawnBlockIntoAir(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
-
     override fun doesApply(targetBlock: Block): Boolean {
         val entities = targetBlock.location.toCenterLocation().getNearbyEntities(0.5, 0.5, 0.5)
         return targetBlock.type.isAir && entities.isEmpty()
     }
 
-    override fun despawnInto(process: DespawnProcess, targetBlock: Block): DespawnIntoResult {
+    override fun despawnInto(
+        process: DespawnProcess,
+        targetBlock: Block,
+    ): DespawnIntoResult {
         val item = process.item ?: return DespawnIntoResult.NONE
         val itemType = item.type
 
@@ -55,9 +57,15 @@ class DespawnBlockIntoAir(plugin: DespawnedItems) : AbstractDespawnInto(plugin) 
     }
 
     // Placed blocks can't be cleanly retrieved, so bulk-remove is a no-op here.
-    override fun removeFrom(material: Material, targetBlock: Block) {}
+    override fun removeFrom(
+        material: Material,
+        targetBlock: Block,
+    ) {}
 
-    override fun removeFrom(material: ItemStack, targetBlock: Block) {}
+    override fun removeFrom(
+        material: ItemStack,
+        targetBlock: Block,
+    ) {}
 
     private fun isHazardous(itemType: Material): Boolean {
         val name = itemType.name.lowercase()
@@ -112,7 +120,10 @@ class DespawnBlockIntoAir(plugin: DespawnedItems) : AbstractDespawnInto(plugin) 
     }
 
     companion object {
-        fun copyBlockToLocation(sourceBlock: ItemStack, targetBlock: Block) {
+        fun copyBlockToLocation(
+            sourceBlock: ItemStack,
+            targetBlock: Block,
+        ) {
             targetBlock.type = sourceBlock.type
 
             if (!sourceBlock.hasItemMeta()) return

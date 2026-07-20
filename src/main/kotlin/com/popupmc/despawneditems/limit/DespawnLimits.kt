@@ -14,25 +14,31 @@ import org.bukkit.entity.Player
  * Kept as a small, permission-reading utility so command code stays declarative.
  */
 object DespawnLimits {
-
     const val BYPASS_PERMISSION = "despi.limit.bypass"
     private const val LIMIT_PREFIX = "despi.limit."
 
     /** The maximum number of locations [player] may own. [Int.MAX_VALUE] means unlimited. */
-    fun resolve(player: Player, settings: LimitSettings): Int {
+    fun resolve(
+        player: Player,
+        settings: LimitSettings,
+    ): Int {
         if (settings.unlimited || player.hasPermission(BYPASS_PERMISSION)) return Int.MAX_VALUE
 
-        val fromPermissions = player.effectivePermissions.asSequence()
-            .filter { it.value } // only granted permissions
-            .map { it.permission.lowercase() }
-            .filter { it.startsWith(LIMIT_PREFIX) }
-            .mapNotNull { it.removePrefix(LIMIT_PREFIX).toIntOrNull() }
-            .maxOrNull()
+        val fromPermissions =
+            player.effectivePermissions.asSequence()
+                .filter { it.value } // only granted permissions
+                .map { it.permission.lowercase() }
+                .filter { it.startsWith(LIMIT_PREFIX) }
+                .mapNotNull { it.removePrefix(LIMIT_PREFIX).toIntOrNull() }
+                .maxOrNull()
 
         return fromPermissions ?: settings.default
     }
 
     /** Whether [player] is under their cap and may register another location. */
-    fun canAddAnother(player: Player, currentCount: Int, settings: LimitSettings): Boolean =
-        currentCount < resolve(player, settings)
+    fun canAddAnother(
+        player: Player,
+        currentCount: Int,
+        settings: LimitSettings,
+    ): Boolean = currentCount < resolve(player, settings)
 }

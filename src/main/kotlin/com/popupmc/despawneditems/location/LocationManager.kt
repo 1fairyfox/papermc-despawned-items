@@ -14,7 +14,6 @@ import java.util.UUID
  * for plugin disable and `/despi save`, when async tasks can't run.
  */
 class LocationManager(private val plugin: DespawnedItems) {
-
     var store: LocationStore = LocationStore()
         private set
 
@@ -42,32 +41,44 @@ class LocationManager(private val plugin: DespawnedItems) {
         runCatching { repository.close() }
     }
 
-    private fun keyOf(location: Location): BlockKey =
-        BlockKey(location.world.name, location.blockX, location.blockY, location.blockZ)
+    private fun keyOf(location: Location): BlockKey = BlockKey(location.world.name, location.blockX, location.blockY, location.blockZ)
 
     // --- mutations (each schedules an incremental flush when it changes state) ---
 
-    fun add(location: Location, owner: UUID): Boolean = mutate { store.add(DespawnLocation.of(location, owner)) }
+    fun add(
+        location: Location,
+        owner: UUID,
+    ): Boolean = mutate { store.add(DespawnLocation.of(location, owner)) }
 
-    fun remove(location: Location, owner: UUID): Boolean = mutate { store.remove(DespawnLocation.of(location, owner)) }
+    fun remove(
+        location: Location,
+        owner: UUID,
+    ): Boolean = mutate { store.remove(DespawnLocation.of(location, owner)) }
 
     /** Removes one (arbitrary) owner's entry at [location]. */
-    fun removeOneAt(location: Location): Boolean = mutate {
-        val victim = store.at(keyOf(location)).firstOrNull() ?: return@mutate false
-        store.remove(victim)
-    }
+    fun removeOneAt(location: Location): Boolean =
+        mutate {
+            val victim = store.at(keyOf(location)).firstOrNull() ?: return@mutate false
+            store.remove(victim)
+        }
 
     /** Removes one (arbitrary) location owned by [owner]. */
-    fun removeOneOfOwner(owner: UUID): Boolean = mutate {
-        val victim = store.ofOwner(owner).firstOrNull() ?: return@mutate false
-        store.remove(victim)
-    }
+    fun removeOneOfOwner(owner: UUID): Boolean =
+        mutate {
+            val victim = store.ofOwner(owner).firstOrNull() ?: return@mutate false
+            store.remove(victim)
+        }
 
     fun removeAllAt(location: Location): Int = mutateCount { store.removeAt(keyOf(location)) }
 
     fun removeAllOfOwner(owner: UUID): Int = mutateCount { store.removeOwner(owner) }
 
-    fun clearAll(): Int = mutateCount { val n = store.size; store.clear(); n }
+    fun clearAll(): Int =
+        mutateCount {
+            val n = store.size
+            store.clear()
+            n
+        }
 
     /** Replaces the whole store (used by solo-mode testing); marks everything dirty. */
     fun replaceWith(locations: Collection<DespawnLocation>) {
@@ -90,16 +101,29 @@ class LocationManager(private val plugin: DespawnedItems) {
 
     // --- queries ---
 
-    fun has(location: Location, owner: UUID): Boolean = store.contains(DespawnLocation.of(location, owner))
+    fun has(
+        location: Location,
+        owner: UUID,
+    ): Boolean = store.contains(DespawnLocation.of(location, owner))
+
     fun anyAt(location: Location): Boolean = store.ownersAt(keyOf(location)).isNotEmpty()
+
     fun ownersAt(location: Location): Set<UUID> = store.ownersAt(keyOf(location))
+
     fun atLocation(location: Location): List<DespawnLocation> = store.at(keyOf(location))
+
     fun ofOwner(owner: UUID): Set<DespawnLocation> = store.ofOwner(owner)
+
     fun firstOfOwner(owner: UUID): DespawnLocation? = store.ofOwner(owner).firstOrNull()
+
     val count: Int get() = store.size
+
     fun countOfOwner(owner: UUID): Int = store.countOfOwner(owner)
+
     fun isEmpty(): Boolean = store.isEmpty()
+
     fun all(): List<DespawnLocation> = store.all()
+
     fun random(): DespawnLocation? = store.randomOrNull()
 
     // --- persistence ---
@@ -113,14 +137,15 @@ class LocationManager(private val plugin: DespawnedItems) {
     private fun scheduleFlush() {
         if (pendingFlushTaskId != -1) return // a flush is already queued
         if (!plugin.isEnabled) return
-        pendingFlushTaskId = plugin.server.scheduler.runTaskLater(
-            plugin,
-            Runnable {
-                pendingFlushTaskId = -1
-                flushDirtyAsync()
-            },
-            FLUSH_DELAY_TICKS,
-        ).taskId
+        pendingFlushTaskId =
+            plugin.server.scheduler.runTaskLater(
+                plugin,
+                Runnable {
+                    pendingFlushTaskId = -1
+                    flushDirtyAsync()
+                },
+                FLUSH_DELAY_TICKS,
+            ).taskId
     }
 
     private fun cancelScheduledFlush() {

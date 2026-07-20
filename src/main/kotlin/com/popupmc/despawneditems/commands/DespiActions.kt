@@ -21,7 +21,6 @@ import java.util.UUID
  * takes an already-resolved sender and arguments and reports its own feedback.
  */
 class DespiActions(private val plugin: DespawnedItems) {
-
     private val fb = CommandFeedback
     private val soloBackup: MutableList<DespawnLocation> = mutableListOf()
 
@@ -31,7 +30,10 @@ class DespiActions(private val plugin: DespawnedItems) {
     // ─── add ────────────────────────────────────────────────────────────────────
 
     /** `/despi add this [player]`. [ownerName] null = self (limit-checked). */
-    fun add(player: Player, ownerName: String?) {
+    fun add(
+        player: Player,
+        ownerName: String?,
+    ) {
         val location = fb.targetBlock(player) ?: return
         val ownerId = if (ownerName == null) player.uniqueId else offline(ownerName).uniqueId
 
@@ -43,62 +45,112 @@ class DespiActions(private val plugin: DespawnedItems) {
             }
         }
 
-        if (plugin.locations.add(location, ownerId)) fb.success(player, "Successfully added location!")
-        else fb.warning(player, "Location already exists!")
+        if (plugin.locations.add(location, ownerId)) {
+            fb.success(player, "Successfully added location!")
+        } else {
+            fb.warning(player, "Location already exists!")
+        }
     }
 
     // ─── remove ─────────────────────────────────────────────────────────────────
 
     fun removeHereOwnedByMe(player: Player) = removeHere(player, player.uniqueId)
-    fun removeHereOwnedByPlayer(player: Player, name: String) = removeHere(player, offline(name).uniqueId)
 
-    private fun removeHere(player: Player, owner: UUID) {
+    fun removeHereOwnedByPlayer(
+        player: Player,
+        name: String,
+    ) = removeHere(player, offline(name).uniqueId)
+
+    private fun removeHere(
+        player: Player,
+        owner: UUID,
+    ) {
         val location = fb.targetBlock(player) ?: return
-        if (plugin.locations.remove(location, owner)) fb.success(player, "Location removed")
-        else fb.warning(player, "Location wasn't removed (Did it ever exist?)")
+        if (plugin.locations.remove(location, owner)) {
+            fb.success(player, "Location removed")
+        } else {
+            fb.warning(player, "Location wasn't removed (Did it ever exist?)")
+        }
     }
 
     fun removeHereOwnedByAnyone(player: Player) {
         val location = fb.targetBlock(player) ?: return
-        if (plugin.locations.removeOneAt(location)) fb.success(player, "Location removed")
-        else fb.warning(player, "Location wasn't removed (Did it ever exist?)")
+        if (plugin.locations.removeOneAt(location)) {
+            fb.success(player, "Location removed")
+        } else {
+            fb.warning(player, "Location wasn't removed (Did it ever exist?)")
+        }
     }
 
     fun removeAnywhereOwnedByMe(player: Player) = removeAnyOf(player, player.uniqueId)
-    fun removeAnywhereOwnedByPlayer(sender: CommandSender, name: String) = removeAnyOf(sender, offline(name).uniqueId)
 
-    private fun removeAnyOf(sender: CommandSender, owner: UUID) {
-        if (plugin.locations.removeOneOfOwner(owner)) fb.success(sender, "A location was removed!")
-        else fb.warning(sender, "No location was removed (Did the player have locations?)")
+    fun removeAnywhereOwnedByPlayer(
+        sender: CommandSender,
+        name: String,
+    ) = removeAnyOf(sender, offline(name).uniqueId)
+
+    private fun removeAnyOf(
+        sender: CommandSender,
+        owner: UUID,
+    ) {
+        if (plugin.locations.removeOneOfOwner(owner)) {
+            fb.success(sender, "A location was removed!")
+        } else {
+            fb.warning(sender, "No location was removed (Did the player have locations?)")
+        }
     }
 
     // ─── clear ──────────────────────────────────────────────────────────────────
 
     fun clearMine(player: Player) = clearOwner(player, player.uniqueId, "you")
-    fun clearPlayer(sender: CommandSender, name: String) = clearOwner(sender, offline(name).uniqueId, name)
 
-    private fun clearOwner(sender: CommandSender, owner: UUID, label: String) {
+    fun clearPlayer(
+        sender: CommandSender,
+        name: String,
+    ) = clearOwner(sender, offline(name).uniqueId, name)
+
+    private fun clearOwner(
+        sender: CommandSender,
+        owner: UUID,
+        label: String,
+    ) {
         val removed = plugin.locations.removeAllOfOwner(owner)
-        if (removed > 0) fb.success(sender, "$removed location(s) were removed for $label")
-        else fb.warning(sender, "No locations found to remove for $label")
+        if (removed > 0) {
+            fb.success(sender, "$removed location(s) were removed for $label")
+        } else {
+            fb.warning(sender, "No locations found to remove for $label")
+        }
     }
 
     fun clearHere(player: Player) {
         val location = fb.targetBlock(player) ?: return
         val removed = plugin.locations.removeAllAt(location)
-        if (removed > 0) fb.success(player, "$removed owner(s) were removed for this location")
-        else fb.warning(player, "No owners found to remove for this location.")
+        if (removed > 0) {
+            fb.success(player, "$removed owner(s) were removed for this location")
+        } else {
+            fb.warning(player, "No owners found to remove for this location.")
+        }
     }
 
     // ─── exists ─────────────────────────────────────────────────────────────────
 
     fun existsHereOwnedByMe(player: Player) = existsHere(player, player.uniqueId)
-    fun existsHereOwnedByPlayer(player: Player, name: String) = existsHere(player, offline(name).uniqueId)
 
-    private fun existsHere(player: Player, owner: UUID) {
+    fun existsHereOwnedByPlayer(
+        player: Player,
+        name: String,
+    ) = existsHere(player, offline(name).uniqueId)
+
+    private fun existsHere(
+        player: Player,
+        owner: UUID,
+    ) {
         val location = fb.targetBlock(player) ?: return
-        if (plugin.locations.has(location, owner)) fb.success(player, "Location does exist")
-        else fb.warning(player, "Location does not exist")
+        if (plugin.locations.has(location, owner)) {
+            fb.success(player, "Location does exist")
+        } else {
+            fb.warning(player, "Location does not exist")
+        }
     }
 
     fun existsHereOwnedByAnyone(player: Player) {
@@ -107,9 +159,16 @@ class DespiActions(private val plugin: DespawnedItems) {
     }
 
     fun existsAnywhereOwnedByMe(player: Player) = existsAnyOf(player, player.uniqueId)
-    fun existsAnywhereOwnedByPlayer(sender: CommandSender, name: String) = existsAnyOf(sender, offline(name).uniqueId)
 
-    private fun existsAnyOf(sender: CommandSender, owner: UUID) {
+    fun existsAnywhereOwnedByPlayer(
+        sender: CommandSender,
+        name: String,
+    ) = existsAnyOf(sender, offline(name).uniqueId)
+
+    private fun existsAnyOf(
+        sender: CommandSender,
+        owner: UUID,
+    ) {
         val found = plugin.locations.firstOfOwner(owner)
         if (found != null) {
             fb.success(sender, "A location was found!")
@@ -122,9 +181,17 @@ class DespiActions(private val plugin: DespawnedItems) {
     // ─── locations ──────────────────────────────────────────────────────────────
 
     fun locationsMine(player: Player) = listOwner(player, player.uniqueId, "you")
-    fun locationsPlayer(sender: CommandSender, name: String) = listOwner(sender, offline(name).uniqueId, name)
 
-    private fun listOwner(sender: CommandSender, owner: UUID, label: String) {
+    fun locationsPlayer(
+        sender: CommandSender,
+        name: String,
+    ) = listOwner(sender, offline(name).uniqueId, name)
+
+    private fun listOwner(
+        sender: CommandSender,
+        owner: UUID,
+        label: String,
+    ) {
         val found = plugin.locations.ofOwner(owner).toList()
         if (found.isNotEmpty()) {
             fb.success(sender, "${found.size} location(s) were found for $label")
@@ -177,7 +244,11 @@ class DespiActions(private val plugin: DespawnedItems) {
         fb.success(player, "Created forced despawn")
     }
 
-    fun despawnMaterial(sender: CommandSender, materialNames: String, amount: Int) {
+    fun despawnMaterial(
+        sender: CommandSender,
+        materialNames: String,
+        amount: Int,
+    ) {
         val materials = parseMaterials(sender, materialNames)
         if (materials.isEmpty()) {
             fb.error(sender, "No material names usable.")
@@ -225,7 +296,11 @@ class DespiActions(private val plugin: DespawnedItems) {
 
     // ─── purge ──────────────────────────────────────────────────────────────────
 
-    fun purgeMaterials(sender: CommandSender, owner: UUID?, materialNames: String) {
+    fun purgeMaterials(
+        sender: CommandSender,
+        owner: UUID?,
+        materialNames: String,
+    ) {
         val senderId = (sender as? Player)?.uniqueId
         val materials = parseMaterials(sender, materialNames)
         if (materials.isEmpty()) {
@@ -240,8 +315,15 @@ class DespiActions(private val plugin: DespawnedItems) {
         fb.success(sender, "Begun removal of materials... This may take a while...")
     }
 
-    fun purgeInHand(sender: CommandSender, owner: UUID?) {
-        val player = sender as? Player ?: run { fb.error(sender, "You must be a player to purge an item in your hand"); return }
+    fun purgeInHand(
+        sender: CommandSender,
+        owner: UUID?,
+    ) {
+        val player =
+            sender as? Player ?: run {
+                fb.error(sender, "You must be a player to purge an item in your hand")
+                return
+            }
         val item = player.inventory.itemInMainHand
         if (item.type.isAir || item.amount <= 0) {
             fb.error(sender, "Invalid Item")
@@ -257,7 +339,10 @@ class DespiActions(private val plugin: DespawnedItems) {
 
     fun playerId(name: String): UUID = offline(name).uniqueId
 
-    private fun parseMaterials(sender: CommandSender, csv: String): List<Material> =
+    private fun parseMaterials(
+        sender: CommandSender,
+        csv: String,
+    ): List<Material> =
         csv.split(",").mapNotNull { name ->
             runCatching { Material.valueOf(name.trim().uppercase()) }.getOrElse {
                 fb.warning(sender, "Invalid material name $name skipping...")

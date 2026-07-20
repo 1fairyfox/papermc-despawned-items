@@ -14,7 +14,6 @@ import org.bukkit.inventory.ItemStack
  * chunk-loading process with no upper bound.
  */
 class DespawnScheduler(private val plugin: DespawnedItems) {
-
     private val queue: ArrayDeque<ItemStack> = ArrayDeque()
     private var taskId: Int = -1
 

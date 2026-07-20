@@ -12,11 +12,25 @@ import org.bukkit.entity.Player
  * testable [DespiActions] can use them.
  */
 object CommandFeedback {
+    fun error(
+        sender: CommandSender,
+        msg: String,
+    ) = sender.sendColored("ERROR: $msg", NamedTextColor.RED)
 
-    fun error(sender: CommandSender, msg: String) = sender.sendColored("ERROR: $msg", NamedTextColor.RED)
-    fun success(sender: CommandSender, msg: String) = sender.sendColored(msg, NamedTextColor.GREEN)
-    fun warning(sender: CommandSender, msg: String) = sender.sendColored("WARNING: $msg", NamedTextColor.GOLD)
-    fun info(sender: CommandSender, msg: String) = sender.sendColored(msg, NamedTextColor.GOLD)
+    fun success(
+        sender: CommandSender,
+        msg: String,
+    ) = sender.sendColored(msg, NamedTextColor.GREEN)
+
+    fun warning(
+        sender: CommandSender,
+        msg: String,
+    ) = sender.sendColored("WARNING: $msg", NamedTextColor.GOLD)
+
+    fun info(
+        sender: CommandSender,
+        msg: String,
+    ) = sender.sendColored(msg, NamedTextColor.GOLD)
 
     /** The block [player] is looking at within 5 blocks, or null (with an error) if none. */
     fun targetBlock(player: Player): Location? {

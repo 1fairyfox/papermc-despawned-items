@@ -11,7 +11,6 @@ import org.bukkit.configuration.file.FileConfiguration
  * re-read `config.yml` from disk and rebuild both.
  */
 class Config(val plugin: DespawnedItems) {
-
     lateinit var fileConfig: FileConfig
         private set
 
@@ -96,7 +95,6 @@ class StorageSettings(c: FileConfiguration) {
  * an item lands in a despawn container.
  */
 class FileConfig(private val plugin: DespawnedItems) {
-
     var particlesEnabled: Boolean = true
     var particleFX: Particle = Particle.HAPPY_VILLAGER
     var particleLengthSeconds: Int = 3
@@ -128,11 +126,12 @@ class FileConfig(private val plugin: DespawnedItems) {
         val c = plugin.config
 
         particlesEnabled = c.getBoolean("particles.enabled", true)
-        val resolvedParticle = ParticleData.resolve(
-            c.getString("particles.particle") ?: ParticleData.DEFAULT_PARTICLE_KEY,
-            c.getString("particles.color"),
-            c.getDouble("particles.dust-size", 1.0),
-        )
+        val resolvedParticle =
+            ParticleData.resolve(
+                c.getString("particles.particle") ?: ParticleData.DEFAULT_PARTICLE_KEY,
+                c.getString("particles.color"),
+                c.getDouble("particles.dust-size", 1.0),
+            )
         particleFX = resolvedParticle.particle
         particleData = resolvedParticle.data
         resolvedParticle.warning?.let { plugin.logger.warning(it) }
@@ -146,5 +145,4 @@ class FileConfig(private val plugin: DespawnedItems) {
         soundVolume = c.getDouble("sound.volume", 1.0).toFloat()
         soundPitch = c.getDouble("sound.pitch", 1.0).toFloat()
     }
-
 }

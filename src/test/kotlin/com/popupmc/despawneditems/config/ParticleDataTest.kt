@@ -14,7 +14,6 @@ import kotlin.test.assertNull
  * now resolves and validates the data up front.
  */
 class ParticleDataTest {
-
     @Test
     fun `a data-less particle resolves with null data and no warning`() {
         val r = ParticleData.resolve("happy_villager", null, 1.0)

@@ -18,7 +18,6 @@ import kotlin.test.assertTrue
  * add/remove/query wiring and the persist-then-reload path (default YAML backend).
  */
 class LocationManagerTest {
-
     private lateinit var server: ServerMock
     private lateinit var plugin: DespawnedItems
     private lateinit var world: WorldMock
@@ -37,7 +36,11 @@ class LocationManagerTest {
         MockBukkit.unmock()
     }
 
-    private fun at(x: Int, y: Int, z: Int) = Location(world, x.toDouble(), y.toDouble(), z.toDouble())
+    private fun at(
+        x: Int,
+        y: Int,
+        z: Int,
+    ) = Location(world, x.toDouble(), y.toDouble(), z.toDouble())
 
     @Test
     fun `add, has, count, duplicate, and remove`() {

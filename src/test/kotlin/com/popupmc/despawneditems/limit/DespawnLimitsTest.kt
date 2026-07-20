@@ -18,7 +18,6 @@ import kotlin.test.assertTrue
  * wins), `despi.limit.bypass`, and the `limits.unlimited` config override.
  */
 class DespawnLimitsTest {
-
     private lateinit var server: ServerMock
     private lateinit var plugin: DespawnedItems
     private val defaults = LimitSettings(YamlConfiguration())

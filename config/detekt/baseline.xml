@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:DespawnBlockIntoAir.kt$DespawnBlockIntoAir$private fun isHazardous(itemType: Material): Boolean</ID>
+    <ID>CyclomaticComplexMethod:DespawnBlockIntoAir.kt$DespawnBlockIntoAir.Companion$fun copyBlockToLocation( sourceBlock: ItemStack, targetBlock: Block, )</ID>
+    <ID>CyclomaticComplexMethod:DespawnIntoCooker.kt$DespawnIntoCooker$override fun despawnInto( process: DespawnProcess, targetBlock: Block, ): DespawnIntoResult</ID>
+    <ID>CyclomaticComplexMethod:DespawnItemIntoEntity.kt$DespawnItemIntoEntity$override fun despawnInto( process: DespawnProcess, targetBlock: Block, ): DespawnIntoResult</ID>
+    <ID>EmptyFunctionBlock:DespawnBlockIntoAir.kt$DespawnBlockIntoAir${}</ID>
+    <ID>EmptyFunctionBlock:DespawnIntoVoid.kt$DespawnIntoVoid${}</ID>
+    <ID>NestedBlockDepth:JdbcLocationRepository.kt$JdbcLocationRepository$override fun loadAll(): List&lt;DespawnLocation></ID>
+    <ID>NestedBlockDepth:JdbcLocationRepository.kt$JdbcLocationRepository$override fun saveOwners( owners: Collection&lt;UUID>, locationsOf: (UUID) -> Collection&lt;DespawnLocation>, )</ID>
+    <ID>TooGenericExceptionCaught:JdbcLocationRepository.kt$JdbcLocationRepository$e: Exception</ID>
+    <ID>TooManyFunctions:DespiActions.kt$DespiActions</ID>
+    <ID>TooManyFunctions:LocationManager.kt$LocationManager</ID>
+    <ID>UnusedParameter:DespawnIntoCooker.kt$DespawnIntoCooker$item: ItemStack</ID>
+  </CurrentIssues>
+</SmellBaseline>

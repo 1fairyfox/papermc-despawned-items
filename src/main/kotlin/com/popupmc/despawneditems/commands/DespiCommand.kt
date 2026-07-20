@@ -22,7 +22,6 @@ import org.bukkit.entity.Player
  * tab-completion, and client-side validation. All behaviour lives in [DespiActions].
  */
 object DespiCommand {
-
     private const val USE = "despi.use"
     private const val ELEVATED = "despi.elevated"
 
@@ -74,12 +73,34 @@ object DespiCommand {
                 literal("here")
                     .then(literal("owned-by-me").executes(player { p, _ -> a.removeHereOwnedByMe(p) }))
                     .then(literal("owned-by-anyone").requires(elevated).executes(player { p, _ -> a.removeHereOwnedByAnyone(p) }))
-                    .then(literal("owned-by").requires(elevated).then(playerArg().executes(player { p, c -> a.removeHereOwnedByPlayer(p, str(c, "player")) }))),
+                    .then(
+                        literal("owned-by").requires(elevated).then(
+                            playerArg().executes(
+                                player {
+                                        p,
+                                        c,
+                                    ->
+                                    a.removeHereOwnedByPlayer(p, str(c, "player"))
+                                },
+                            ),
+                        ),
+                    ),
             )
             .then(
                 literal("anywhere")
                     .then(literal("owned-by-me").executes(player { p, _ -> a.removeAnywhereOwnedByMe(p) }))
-                    .then(literal("owned-by").requires(elevated).then(playerArg().executes(sender { s, c -> a.removeAnywhereOwnedByPlayer(s, str(c, "player")) }))),
+                    .then(
+                        literal("owned-by").requires(elevated).then(
+                            playerArg().executes(
+                                sender {
+                                        s,
+                                        c,
+                                    ->
+                                    a.removeAnywhereOwnedByPlayer(s, str(c, "player"))
+                                },
+                            ),
+                        ),
+                    ),
             )
 
     private fun clearBranch(a: DespiActions) =
@@ -94,12 +115,34 @@ object DespiCommand {
                 literal("here")
                     .then(literal("owned-by-me").executes(player { p, _ -> a.existsHereOwnedByMe(p) }))
                     .then(literal("owned-by-anyone").requires(elevated).executes(player { p, _ -> a.existsHereOwnedByAnyone(p) }))
-                    .then(literal("owned-by").requires(elevated).then(playerArg().executes(player { p, c -> a.existsHereOwnedByPlayer(p, str(c, "player")) }))),
+                    .then(
+                        literal("owned-by").requires(elevated).then(
+                            playerArg().executes(
+                                player {
+                                        p,
+                                        c,
+                                    ->
+                                    a.existsHereOwnedByPlayer(p, str(c, "player"))
+                                },
+                            ),
+                        ),
+                    ),
             )
             .then(
                 literal("anywhere")
                     .then(literal("owned-by-me").executes(player { p, _ -> a.existsAnywhereOwnedByMe(p) }))
-                    .then(literal("owned-by").requires(elevated).then(playerArg().executes(sender { s, c -> a.existsAnywhereOwnedByPlayer(s, str(c, "player")) }))),
+                    .then(
+                        literal("owned-by").requires(elevated).then(
+                            playerArg().executes(
+                                sender {
+                                        s,
+                                        c,
+                                    ->
+                                    a.existsAnywhereOwnedByPlayer(s, str(c, "player"))
+                                },
+                            ),
+                        ),
+                    ),
             )
 
     private fun locationsBranch(a: DespiActions) =
@@ -109,7 +152,18 @@ object DespiCommand {
             .then(literal("here").requires(elevated).executes(player { p, _ -> a.locationsHere(p) }))
             .then(literal("solo-mode").requires(elevated).executes(player { p, _ -> a.soloMode(p) }))
             .then(literal("normal-mode").requires(elevated).executes(sender { s, _ -> a.normalMode(s) }))
-            .then(literal("player").requires(elevated).then(playerArg().executes(sender { s, c -> a.locationsPlayer(s, str(c, "player")) })))
+            .then(
+                literal("player").requires(elevated).then(
+                    playerArg().executes(
+                        sender {
+                                s,
+                                c,
+                            ->
+                            a.locationsPlayer(s, str(c, "player"))
+                        },
+                    ),
+                ),
+            )
 
     private fun purgeBranch(a: DespiActions) =
         literal("purge")
@@ -120,16 +174,20 @@ object DespiCommand {
                     .then(attachPurge(playerArg(), a) { _, c -> a.playerId(str(c, "player")) }),
             )
 
-    private fun purgeTargets(a: DespiActions, name: String, owner: (CommandSender, CommandContext<CommandSourceStack>) -> java.util.UUID?) =
-        attachPurge(literal(name), a, owner)
+    private fun purgeTargets(
+        a: DespiActions,
+        name: String,
+        owner: (CommandSender, CommandContext<CommandSourceStack>) -> java.util.UUID?,
+    ) = attachPurge(literal(name), a, owner)
 
     private fun <T : ArgumentBuilder<CommandSourceStack, T>> attachPurge(
         node: T,
         a: DespiActions,
         owner: (CommandSender, CommandContext<CommandSourceStack>) -> java.util.UUID?,
-    ): T = node
-        .then(literal("in-hand").executes(sender { s, c -> a.purgeInHand(s, owner(s, c)) }))
-        .then(literal("materials").then(greedy("names").executes(sender { s, c -> a.purgeMaterials(s, owner(s, c), str(c, "names")) })))
+    ): T =
+        node
+            .then(literal("in-hand").executes(sender { s, c -> a.purgeInHand(s, owner(s, c)) }))
+            .then(literal("materials").then(greedy("names").executes(sender { s, c -> a.purgeMaterials(s, owner(s, c), str(c, "names")) })))
 
     private fun despawnBranch(a: DespiActions) =
         literal("despawn").requires(elevated)
@@ -148,7 +206,14 @@ object DespiCommand {
                     .then(
                         Commands.argument("names", StringArgumentType.word()).then(
                             Commands.argument("amount", IntegerArgumentType.integer(1))
-                                .executes(sender { s, c -> a.despawnMaterial(s, str(c, "names"), IntegerArgumentType.getInteger(c, "amount")) }),
+                                .executes(
+                                    sender {
+                                            s,
+                                            c,
+                                        ->
+                                        a.despawnMaterial(s, str(c, "names"), IntegerArgumentType.getInteger(c, "amount"))
+                                    },
+                                ),
                         ),
                     ),
             )
@@ -177,30 +242,36 @@ object DespiCommand {
     private fun literal(name: String) = Commands.literal(name)
 
     /** A `player` string argument suggesting online player names. */
-    private fun playerArg() = Commands.argument("player", StringArgumentType.word())
-        .suggests { _, builder ->
-            Bukkit.getOnlinePlayers().forEach { builder.suggest(it.name) }
-            builder.buildFuture()
-        }
+    private fun playerArg() =
+        Commands.argument("player", StringArgumentType.word())
+            .suggests { _, builder ->
+                Bukkit.getOnlinePlayers().forEach { builder.suggest(it.name) }
+                builder.buildFuture()
+            }
 
     private fun greedy(name: String) = Commands.argument(name, StringArgumentType.greedyString())
 
-    private fun str(ctx: CommandContext<CommandSourceStack>, name: String): String = StringArgumentType.getString(ctx, name)
+    private fun str(
+        ctx: CommandContext<CommandSourceStack>,
+        name: String,
+    ): String = StringArgumentType.getString(ctx, name)
 
     /** Executor that requires a player sender; sends an error otherwise. */
-    private fun player(block: (Player, CommandContext<CommandSourceStack>) -> Unit) = Command<CommandSourceStack> { ctx ->
-        val sender = ctx.source.sender
-        if (sender !is Player) {
-            CommandFeedback.error(sender, "Only players can use this command")
-            return@Command 0
+    private fun player(block: (Player, CommandContext<CommandSourceStack>) -> Unit) =
+        Command<CommandSourceStack> { ctx ->
+            val sender = ctx.source.sender
+            if (sender !is Player) {
+                CommandFeedback.error(sender, "Only players can use this command")
+                return@Command 0
+            }
+            block(sender, ctx)
+            Command.SINGLE_SUCCESS
         }
-        block(sender, ctx)
-        Command.SINGLE_SUCCESS
-    }
 
     /** Executor for any sender. */
-    private fun sender(block: (CommandSender, CommandContext<CommandSourceStack>) -> Unit) = Command<CommandSourceStack> { ctx ->
-        block(ctx.source.sender, ctx)
-        Command.SINGLE_SUCCESS
-    }
+    private fun sender(block: (CommandSender, CommandContext<CommandSourceStack>) -> Unit) =
+        Command<CommandSourceStack> { ctx ->
+            block(ctx.source.sender, ctx)
+            Command.SINGLE_SUCCESS
+        }
 }
