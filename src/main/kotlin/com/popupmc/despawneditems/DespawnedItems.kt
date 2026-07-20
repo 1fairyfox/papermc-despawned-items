@@ -1,7 +1,6 @@
 package com.popupmc.despawneditems
 
-import com.popupmc.despawneditems.commands.OnDespiCommand
-import com.popupmc.despawneditems.commands.OnRecycleCommand
+import com.popupmc.despawneditems.commands.DespiCommand
 import com.popupmc.despawneditems.config.Config
 import com.popupmc.despawneditems.despawn.DespawnEffect
 import com.popupmc.despawneditems.despawn.DespawnProcess
@@ -86,23 +85,8 @@ open class DespawnedItems : JavaPlugin() {
 
         Bukkit.getPluginManager().registerEvents(OnItemDespawnEvent(this), this)
 
-        val despi = getCommand("despi")
-        if (despi == null) {
-            logger.warning("Command /despi is null — disabling plugin")
-            isEnabled = false
-            return
-        }
-        val despiExecutor = OnDespiCommand(this)
-        despi.setExecutor(despiExecutor)
-        despi.tabCompleter = despiExecutor
-
-        val recycle = getCommand("recycle")
-        if (recycle == null) {
-            logger.warning("Command /recycle is null — disabling plugin")
-            isEnabled = false
-            return
-        }
-        recycle.setExecutor(OnRecycleCommand(this))
+        // Register /despi and /recycle via Paper's Brigadier command API.
+        DespiCommand.register(this)
 
         logger.info("DespawnedItems is enabled")
     }
