@@ -22,6 +22,9 @@ class Config(val plugin: DespawnedItems) {
     lateinit var performance: PerformanceSettings
         private set
 
+    lateinit var limits: LimitSettings
+        private set
+
     init {
         load()
     }
@@ -34,7 +37,21 @@ class Config(val plugin: DespawnedItems) {
         fileConfig = FileConfig(plugin)
         storage = StorageSettings(plugin.config)
         performance = PerformanceSettings(plugin.config)
+        limits = LimitSettings(plugin.config)
     }
+}
+
+/**
+ * Per-user despawn-location limits, read from the `limits:` section. The default cap
+ * applies unless a player has a `despi.limit.<n>` permission (highest wins) or
+ * `despi.limit.bypass`. See [com.popupmc.despawneditems.limit.DespawnLimits].
+ */
+class LimitSettings(c: FileConfiguration) {
+    /** Cap for a player with no limit permission. */
+    val default: Int = c.getInt("limits.default", 10).coerceAtLeast(0)
+
+    /** When true, no player is capped. */
+    val unlimited: Boolean = c.getBoolean("limits.unlimited", false)
 }
 
 /**

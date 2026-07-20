@@ -2,6 +2,7 @@ package com.popupmc.despawneditems.commands
 
 import com.popupmc.despawneditems.DespawnedItems
 import com.popupmc.despawneditems.despawn.DespawnEffect
+import com.popupmc.despawneditems.limit.DespawnLimits
 import com.popupmc.despawneditems.sendColored
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -49,6 +50,17 @@ class OnDespiCommandAdd(plugin: DespawnedItems) :
     private fun addLocation(sender: Player, owner: OfflinePlayer?): Boolean {
         val actualOwner = owner ?: sender
         val location = getTargetLocation(sender) ?: return false
+
+        // Enforce the per-user cap for self-service adds; admins adding for someone else
+        // (already gated behind despi.elevated) are not capped.
+        if (owner == null) {
+            val limits = plugin.settings.limits
+            val current = plugin.locations.countOfOwner(sender.uniqueId)
+            if (!DespawnLimits.canAddAnother(sender, current, limits)) {
+                error("You've reached your limit of ${DespawnLimits.resolve(sender, limits)} despawn location(s).", sender)
+                return false
+            }
+        }
 
         return if (plugin.locations.add(location, actualOwner.uniqueId)) {
             success("Successfully added location!", sender)

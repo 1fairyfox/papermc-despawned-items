@@ -1,3 +1,16 @@
+# How many despawn locations a player may own (self-service limits).
+limits:
+  # Default cap when a player has no limit permission.
+  default: 10
+
+  # Set true to remove the cap entirely for everyone.
+  unlimited: false
+
+  # Per-group / per-rank caps are granted via permissions instead of listing them here:
+  #   despi.limit.<number>   grants that number as the player's cap (highest wins)
+  #   despi.limit.bypass     ignores the cap (default: op)
+  # e.g. give a LuckPerms group the node  despi.limit.50  for a 50-location cap.
+
 # Large-server safety limits for the automatic despawn-relocation pipeline. These bound
 # how much work happens per tick so a flood of despawning items never storms the server.
 performance:

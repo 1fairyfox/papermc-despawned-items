@@ -32,6 +32,9 @@ permissions:
   despi.elevated:
     description: Allows managing despawn locations owned by others and admin/test subcommands
     default: op
+  despi.limit.bypass:
+    description: Ignore the per-user despawn-location limit (also grant despi.limit.<number> for a specific cap)
+    default: op
   recycle.use:
     description: Allows use of the /recycle command
     default: true
