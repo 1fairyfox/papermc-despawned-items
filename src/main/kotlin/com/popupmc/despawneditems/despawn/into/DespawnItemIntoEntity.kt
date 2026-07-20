@@ -18,17 +18,20 @@ import org.bukkit.inventory.ItemStack
  * inventory, or a furnace minecart's fuel.
  */
 class DespawnItemIntoEntity(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
-
     override fun doesApply(targetBlock: Block): Boolean {
         val isAir = targetBlock.type.isAir
         val entities = targetBlock.location.toCenterLocation().getNearbyEntities(0.5, 0.5, 0.5)
-        val hasProperEntity = entities.any {
-            it is ItemFrame || it is LivingEntity || it is StorageMinecart
-        }
+        val hasProperEntity =
+            entities.any {
+                it is ItemFrame || it is LivingEntity || it is StorageMinecart
+            }
         return isAir && hasProperEntity && entities.size == 1
     }
 
-    override fun despawnInto(process: DespawnProcess, targetBlock: Block): DespawnIntoResult {
+    override fun despawnInto(
+        process: DespawnProcess,
+        targetBlock: Block,
+    ): DespawnIntoResult {
         val item = process.item ?: return DespawnIntoResult.NONE
         val entities = targetBlock.location.toCenterLocation().getNearbyEntities(0.5, 0.5, 0.5)
         if (entities.size != 1) return DespawnIntoResult.NONE
@@ -80,8 +83,11 @@ class DespawnItemIntoEntity(plugin: DespawnedItems) : AbstractDespawnInto(plugin
                 process.item = null
                 for (leftoverStack in leftover.values) {
                     val running = process.item
-                    if (running == null) process.item = leftoverStack
-                    else running.add(leftoverStack.amount)
+                    if (running == null) {
+                        process.item = leftoverStack
+                    } else {
+                        running.add(leftoverStack.amount)
+                    }
                 }
                 return DespawnIntoResult.PARTIALLY
             }
@@ -108,11 +114,17 @@ class DespawnItemIntoEntity(plugin: DespawnedItems) : AbstractDespawnInto(plugin
         }
     }
 
-    override fun removeFrom(material: Material, targetBlock: Block) {
+    override fun removeFrom(
+        material: Material,
+        targetBlock: Block,
+    ) {
         removeFrom(ItemStack(material), targetBlock)
     }
 
-    override fun removeFrom(material: ItemStack, targetBlock: Block) {
+    override fun removeFrom(
+        material: ItemStack,
+        targetBlock: Block,
+    ) {
         val entities = targetBlock.location.toCenterLocation().getNearbyEntities(0.5, 0.5, 0.5)
         if (entities.size != 1) return
 
@@ -127,12 +139,30 @@ class DespawnItemIntoEntity(plugin: DespawnedItems) : AbstractDespawnInto(plugin
             is LivingEntity -> {
                 val equipment = entity.equipment ?: return
                 when {
-                    equipment.helmet?.isSimilar(material) == true -> { equipment.setHelmet(null); return }
-                    equipment.chestplate?.isSimilar(material) == true -> { equipment.setChestplate(null); return }
-                    equipment.leggings?.isSimilar(material) == true -> { equipment.setLeggings(null); return }
-                    equipment.boots?.isSimilar(material) == true -> { equipment.setBoots(null); return }
-                    equipment.itemInMainHand.isSimilar(material) -> { equipment.setItemInMainHand(null); return }
-                    equipment.itemInOffHand.isSimilar(material) -> { equipment.setItemInOffHand(null); return }
+                    equipment.helmet?.isSimilar(material) == true -> {
+                        equipment.setHelmet(null)
+                        return
+                    }
+                    equipment.chestplate?.isSimilar(material) == true -> {
+                        equipment.setChestplate(null)
+                        return
+                    }
+                    equipment.leggings?.isSimilar(material) == true -> {
+                        equipment.setLeggings(null)
+                        return
+                    }
+                    equipment.boots?.isSimilar(material) == true -> {
+                        equipment.setBoots(null)
+                        return
+                    }
+                    equipment.itemInMainHand.isSimilar(material) -> {
+                        equipment.setItemInMainHand(null)
+                        return
+                    }
+                    equipment.itemInOffHand.isSimilar(material) -> {
+                        equipment.setItemInOffHand(null)
+                        return
+                    }
                 }
             }
 

@@ -11,19 +11,20 @@ import org.bukkit.Material
  * reward-eligible materials.)
  */
 object RewardPool {
-
     /** Substrings that disqualify a material from the reward pool. */
-    private val EXCLUDED_SUBSTRINGS = listOf(
-        "command", "spawn", "legacy", "structure",
-        "gold", "golden", "iron", "diamond", "emerald", "netherite",
-    )
+    private val EXCLUDED_SUBSTRINGS =
+        listOf(
+            "command", "spawn", "legacy", "structure",
+            "gold", "golden", "iron", "diamond", "emerald", "netherite",
+        )
 
     /** Individual materials disqualified regardless of name. */
-    private val EXCLUDED_MATERIALS = setOf(
-        Material.JIGSAW,
-        Material.SPAWNER,
-        Material.DEBUG_STICK,
-    )
+    private val EXCLUDED_MATERIALS =
+        setOf(
+            Material.JIGSAW,
+            Material.SPAWNER,
+            Material.DEBUG_STICK,
+        )
 
     /** Materials eligible to be given out as a recycle reward. */
     val items: List<Material>
@@ -39,13 +40,14 @@ object RewardPool {
      * block-type registry) so this stays fast and testable off the main thread.
      */
     fun setup() {
-        pool = Material.entries.filter { type ->
-            val name = type.name
-            !isAir(name) &&
-                !name.startsWith("LEGACY_") &&
-                type !in EXCLUDED_MATERIALS &&
-                EXCLUDED_SUBSTRINGS.none { it in name.lowercase() }
-        }
+        pool =
+            Material.entries.filter { type ->
+                val name = type.name
+                !isAir(name) &&
+                    !name.startsWith("LEGACY_") &&
+                    type !in EXCLUDED_MATERIALS &&
+                    EXCLUDED_SUBSTRINGS.none { it in name.lowercase() }
+            }
     }
 
     /** Name-based air test (AIR, CAVE_AIR, VOID_AIR) that needs no server. */

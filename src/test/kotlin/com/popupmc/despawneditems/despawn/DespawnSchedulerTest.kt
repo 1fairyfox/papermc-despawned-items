@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
  * verify enqueue and the "no locations → drain the backlog" tick path.
  */
 class DespawnSchedulerTest {
-
     private lateinit var server: ServerMock
     private lateinit var plugin: DespawnedItems
 

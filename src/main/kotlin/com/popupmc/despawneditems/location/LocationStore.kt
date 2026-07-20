@@ -18,7 +18,6 @@ import java.util.concurrent.ThreadLocalRandom
  * commands). Async persistence takes a snapshot on the main thread first.
  */
 class LocationStore {
-
     private val byBlock: MutableMap<BlockKey, MutableMap<UUID, DespawnLocation>> = HashMap()
     private val byOwner: MutableMap<UUID, MutableSet<DespawnLocation>> = HashMap()
 
@@ -33,8 +32,7 @@ class LocationStore {
 
     fun isEmpty(): Boolean = flat.isEmpty()
 
-    fun contains(loc: DespawnLocation): Boolean =
-        byBlock[loc.blockKey]?.containsKey(loc.owner) == true
+    fun contains(loc: DespawnLocation): Boolean = byBlock[loc.blockKey]?.containsKey(loc.owner) == true
 
     /** Adds [loc]. Returns false (no-op) if that owner already has that block. */
     fun add(loc: DespawnLocation): Boolean {
@@ -92,8 +90,7 @@ class LocationStore {
     fun all(): List<DespawnLocation> = flat.toList()
 
     /** A uniformly random location (with replacement), or null if empty. */
-    fun randomOrNull(): DespawnLocation? =
-        if (flat.isEmpty()) null else flat[ThreadLocalRandom.current().nextInt(flat.size)]
+    fun randomOrNull(): DespawnLocation? = if (flat.isEmpty()) null else flat[ThreadLocalRandom.current().nextInt(flat.size)]
 
     // --- bulk removals ---
 
@@ -122,7 +119,11 @@ class LocationStore {
 
     /** Replaces all contents with [locations] without marking anything dirty (used on load). */
     fun replaceAll(locations: Collection<DespawnLocation>) {
-        byBlock.clear(); byOwner.clear(); flat.clear(); flatIndex.clear(); dirtyOwners.clear()
+        byBlock.clear()
+        byOwner.clear()
+        flat.clear()
+        flatIndex.clear()
+        dirtyOwners.clear()
         locations.forEach { loc ->
             byBlock.getOrPut(loc.blockKey) { HashMap() }[loc.owner] = loc
             byOwner.getOrPut(loc.owner) { HashSet() }.add(loc)

@@ -5,7 +5,6 @@ import org.mockbukkit.mockbukkit.ServerMock
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
@@ -14,7 +13,6 @@ import kotlin.test.assertTrue
  * that the whole plugin comes up under MockBukkit.
  */
 class PluginEnableTest {
-
     private lateinit var server: ServerMock
     private lateinit var plugin: DespawnedItems
 
@@ -35,9 +33,12 @@ class PluginEnableTest {
     }
 
     @Test
-    fun `commands are registered`() {
-        assertNotNull(server.getPluginCommand("despi"), "/despi should be registered")
-        assertNotNull(server.getPluginCommand("recycle"), "/recycle should be registered")
+    fun `despi command dispatches through the Brigadier registration`() {
+        // Console has elevated permission; `locations count` is a simple sender command.
+        assertTrue(
+            server.dispatchCommand(server.consoleSender, "despi locations count"),
+            "/despi should dispatch via the Brigadier registration",
+        )
     }
 
     @Test

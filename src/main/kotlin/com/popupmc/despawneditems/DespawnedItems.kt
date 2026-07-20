@@ -1,7 +1,6 @@
 package com.popupmc.despawneditems
 
-import com.popupmc.despawneditems.commands.OnDespiCommand
-import com.popupmc.despawneditems.commands.OnRecycleCommand
+import com.popupmc.despawneditems.commands.DespiCommand
 import com.popupmc.despawneditems.config.Config
 import com.popupmc.despawneditems.despawn.DespawnEffect
 import com.popupmc.despawneditems.despawn.DespawnProcess
@@ -31,7 +30,6 @@ import java.util.UUID
  * final by default, which MockBukkit's plugin loader cannot proxy.
  */
 open class DespawnedItems : JavaPlugin() {
-
     /**
      * Loaded configuration (effect + storage settings).
      *
@@ -73,36 +71,23 @@ open class DespawnedItems : JavaPlugin() {
         locations = LocationManager(this)
         locations.load()
 
-        strategies = listOf(
-            DespawnIntoVoid(this), // delete contraband first
-            DespawnIntoCooker(this), // then furnaces/smokers
-            DespawnBlockIntoAir(this), // then place as a block
-            DespawnItemIntoEntity(this), // then onto entities
-            DespawnIntoStorage(this), // finally into containers
-        )
+        // Ordered relocation strategies: contraband → cookers → air → entities → containers.
+        strategies =
+            listOf(
+                DespawnIntoVoid(this),
+                DespawnIntoCooker(this),
+                DespawnBlockIntoAir(this),
+                DespawnItemIntoEntity(this),
+                DespawnIntoStorage(this),
+            )
 
         despawnScheduler = DespawnScheduler(this)
         despawnScheduler.start()
 
         Bukkit.getPluginManager().registerEvents(OnItemDespawnEvent(this), this)
 
-        val despi = getCommand("despi")
-        if (despi == null) {
-            logger.warning("Command /despi is null — disabling plugin")
-            isEnabled = false
-            return
-        }
-        val despiExecutor = OnDespiCommand(this)
-        despi.setExecutor(despiExecutor)
-        despi.tabCompleter = despiExecutor
-
-        val recycle = getCommand("recycle")
-        if (recycle == null) {
-            logger.warning("Command /recycle is null — disabling plugin")
-            isEnabled = false
-            return
-        }
-        recycle.setExecutor(OnRecycleCommand(this))
+        // Register /despi and /recycle via Paper's Brigadier command API.
+        DespiCommand.register(this)
 
         logger.info("DespawnedItems is enabled")
     }
@@ -115,6 +100,9 @@ open class DespawnedItems : JavaPlugin() {
 }
 
 /** Sends a single-colour message using the Adventure component API. */
-fun CommandSender.sendColored(text: String, color: NamedTextColor) {
+fun CommandSender.sendColored(
+    text: String,
+    color: NamedTextColor,
+) {
     sendMessage(Component.text(text, color))
 }

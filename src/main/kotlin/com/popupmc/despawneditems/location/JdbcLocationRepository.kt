@@ -21,7 +21,6 @@ class JdbcLocationRepository(
     /** Optional resource (e.g. the HikariCP pool) closed by [close]. */
     private val poolCloseable: AutoCloseable? = null,
 ) : LocationRepository {
-
     init {
         createSchema()
     }
@@ -66,7 +65,10 @@ class JdbcLocationRepository(
         return result
     }
 
-    override fun saveOwners(owners: Collection<UUID>, locationsOf: (UUID) -> Collection<DespawnLocation>) {
+    override fun saveOwners(
+        owners: Collection<UUID>,
+        locationsOf: (UUID) -> Collection<DespawnLocation>,
+    ) {
         if (owners.isEmpty()) return
         dataSource.connection.use { c ->
             val previousAutoCommit = c.autoCommit

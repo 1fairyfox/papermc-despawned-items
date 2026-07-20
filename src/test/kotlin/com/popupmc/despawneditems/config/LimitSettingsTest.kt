@@ -8,7 +8,6 @@ import kotlin.test.assertTrue
 
 /** Pure config-parsing + boundary tests for [LimitSettings]. */
 class LimitSettingsTest {
-
     @Test
     fun `defaults when nothing is configured`() {
         val l = LimitSettings(YamlConfiguration())
@@ -18,10 +17,11 @@ class LimitSettingsTest {
 
     @Test
     fun `reads configured values`() {
-        val c = YamlConfiguration().apply {
-            set("limits.default", 25)
-            set("limits.unlimited", true)
-        }
+        val c =
+            YamlConfiguration().apply {
+                set("limits.default", 25)
+                set("limits.unlimited", true)
+            }
         val l = LimitSettings(c)
         assertEquals(25, l.default)
         assertTrue(l.unlimited)

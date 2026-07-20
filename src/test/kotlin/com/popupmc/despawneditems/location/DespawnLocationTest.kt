@@ -12,7 +12,6 @@ import kotlin.test.assertNull
  * that every stored location roundtrips through. Roundtrip, edge cases, and fuzz.
  */
 class DespawnLocationTest {
-
     private val owner: UUID = UUID.fromString("00000000-0000-0000-0000-000000000001")
 
     @Test
@@ -54,13 +53,14 @@ class DespawnLocationTest {
     fun `fuzz - random valid coordinates always roundtrip`() {
         val rng = Random(1234)
         repeat(2_000) {
-            val loc = DespawnLocation(
-                world = "world_${rng.nextInt(3)}",
-                x = rng.nextInt(-30_000_000, 30_000_000),
-                y = rng.nextInt(-64, 320),
-                z = rng.nextInt(-30_000_000, 30_000_000),
-                owner = owner,
-            )
+            val loc =
+                DespawnLocation(
+                    world = "world_${rng.nextInt(3)}",
+                    x = rng.nextInt(-30_000_000, 30_000_000),
+                    y = rng.nextInt(-64, 320),
+                    z = rng.nextInt(-30_000_000, 30_000_000),
+                    owner = owner,
+                )
             assertEquals(loc, DespawnLocation.parse(loc.serialize(), owner))
         }
     }

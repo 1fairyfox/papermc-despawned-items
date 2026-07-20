@@ -12,7 +12,6 @@ import org.bukkit.scheduler.BukkitTask
  * the location was stored.
  */
 class DespawnEffect(private val blockLocation: Location, private val plugin: DespawnedItems) {
-
     private var loopsLeft: Int
     private var task: BukkitTask? = null
 
@@ -45,24 +44,25 @@ class DespawnEffect(private val blockLocation: Location, private val plugin: Des
         val self = this
         val radius = cfg.particleRandomRadius.toDouble()
 
-        task = object : BukkitRunnable() {
-            override fun run() {
-                // Two bursts spreading out along the +/- X and Z axes. The trailing
-                // data argument is null for data-less particles and e.g. DustOptions
-                // for DUST — resolved and validated once at config load.
-                world.spawnParticle(
-                    cfg.particleFX, center,
-                    cfg.particleCountEveryNthTick / 2,
-                    radius, 0.0, radius, cfg.particleData,
-                )
-                world.spawnParticle(
-                    cfg.particleFX, center,
-                    cfg.particleCountEveryNthTick / 2,
-                    -radius, 0.0, -radius, cfg.particleData,
-                )
-                self.loopEnd()
-            }
-        }.runTaskTimer(plugin, 1L, cfg.newParticlesEveryNthTick.toLong())
+        task =
+            object : BukkitRunnable() {
+                override fun run() {
+                    // Two bursts spreading out along the +/- X and Z axes. The trailing
+                    // data argument is null for data-less particles and e.g. DustOptions
+                    // for DUST — resolved and validated once at config load.
+                    world.spawnParticle(
+                        cfg.particleFX, center,
+                        cfg.particleCountEveryNthTick / 2,
+                        radius, 0.0, radius, cfg.particleData,
+                    )
+                    world.spawnParticle(
+                        cfg.particleFX, center,
+                        cfg.particleCountEveryNthTick / 2,
+                        -radius, 0.0, -radius, cfg.particleData,
+                    )
+                    self.loopEnd()
+                }
+            }.runTaskTimer(plugin, 1L, cfg.newParticlesEveryNthTick.toLong())
     }
 
     private fun checkSelfDestroy() {

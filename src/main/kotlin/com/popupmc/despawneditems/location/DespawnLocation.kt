@@ -51,7 +51,10 @@ data class DespawnLocation(
          * string is malformed — too few fields, non-integer coordinates, or an empty
          * world name. World names are allowed to contain `;` (the tail is re-joined).
          */
-        fun parse(serialized: String, owner: UUID): DespawnLocation? {
+        fun parse(
+            serialized: String,
+            owner: UUID,
+        ): DespawnLocation? {
             val parts = serialized.split(';')
             if (parts.size < 4) return null
             val x = parts[0].toIntOrNull() ?: return null
@@ -63,7 +66,10 @@ data class DespawnLocation(
         }
 
         /** Builds a [DespawnLocation] from a live Bukkit [Location] and owner (block coords). */
-        fun of(location: Location, owner: UUID): DespawnLocation =
+        fun of(
+            location: Location,
+            owner: UUID,
+        ): DespawnLocation =
             DespawnLocation(
                 location.world.name,
                 location.blockX,

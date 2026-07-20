@@ -30,9 +30,9 @@ persistence, permission, config-migration, property/fuzz, and performance layers
 | General mocking | MockK | ⏳ adding (when a collaborator needs it) |
 | DB integration | SQLite temp / Testcontainers (MySQL) | ✅ SQLite · ⏳ Testcontainers |
 | Temp files | JUnit `@TempDir` | ✅ in use |
-| Coverage | Kover | ⏳ adding |
-| Static analysis | Detekt | ⏳ (pending Kotlin 2.4 tool support) |
-| Formatting | Ktlint | ⏳ (pending Kotlin 2.4 tool support) |
+| Coverage | Kover | ⛔ blocked (0.9.1 Kotlin-2.4-incompat; 0.9.8 marker not on portal) |
+| Static analysis | Detekt 1.23.8 | ✅ gates `build` (JDK-21 daemon + tuned config + baseline) |
+| Formatting | Ktlint 12.1.2 | ✅ gates `build`; codebase formatted |
 | Microbenchmarks | JMH | ⛔ deferred (JUnit bench guards suffice for now) |
 | Mutation testing | Pitest | ⛔ deferred |
 | CI | GitHub Actions | ⏳ `tests.yml` |

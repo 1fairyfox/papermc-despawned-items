@@ -17,7 +17,6 @@ import org.bukkit.scheduler.BukkitRunnable
  * oversized leftover stacks.
  */
 class DespawnProcess(var item: ItemStack?, private val plugin: DespawnedItems) {
-
     private var loopsLeft: Int
     private val tried: MutableSet<DespawnLocation> = HashSet()
 
@@ -88,8 +87,9 @@ class DespawnProcess(var item: ItemStack?, private val plugin: DespawnedItems) {
     private fun worldIsLoaded(targetLocation: Location) {
         if (invalid) return
 
-        val targetBlock = targetLocation.world
-            .getBlockAt(targetLocation.blockX, targetLocation.blockY, targetLocation.blockZ)
+        val targetBlock =
+            targetLocation.world
+                .getBlockAt(targetLocation.blockX, targetLocation.blockY, targetLocation.blockZ)
 
         for (strategy in plugin.strategies) {
             if (invalid) return

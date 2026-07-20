@@ -11,7 +11,6 @@ import java.io.File
  * provided at runtime by Paper's `libraries:` loader (see `plugin.yml`).
  */
 object StorageFactory {
-
     fun create(plugin: DespawnedItems): LocationRepository {
         val logger = plugin.logger
         return when (plugin.settings.storage.type) {
@@ -28,12 +27,13 @@ object StorageFactory {
     private fun buildSqlite(plugin: DespawnedItems): JdbcLocationRepository {
         plugin.dataFolder.mkdirs()
         val dbFile = File(plugin.dataFolder, "locations.db")
-        val cfg = HikariConfig().apply {
-            jdbcUrl = "jdbc:sqlite:${dbFile.absolutePath}"
-            driverClassName = "org.sqlite.JDBC"
-            maximumPoolSize = 1 // SQLite is a single writer
-            poolName = "DespawnedItems-SQLite"
-        }
+        val cfg =
+            HikariConfig().apply {
+                jdbcUrl = "jdbc:sqlite:${dbFile.absolutePath}"
+                driverClassName = "org.sqlite.JDBC"
+                maximumPoolSize = 1 // SQLite is a single writer
+                poolName = "DespawnedItems-SQLite"
+            }
         val ds = HikariDataSource(cfg)
         plugin.logger.info("Using SQLite storage at ${dbFile.name}")
         return JdbcLocationRepository(ds, plugin.logger, ds)
@@ -42,22 +42,26 @@ object StorageFactory {
     private fun buildMysql(plugin: DespawnedItems): JdbcLocationRepository {
         val s = plugin.settings.storage
         val query = if (s.mysqlProperties.isBlank()) "" else "?${s.mysqlProperties}"
-        val cfg = HikariConfig().apply {
-            // The MariaDB driver speaks the MySQL protocol too.
-            jdbcUrl = "jdbc:mariadb://${s.mysqlHost}:${s.mysqlPort}/${s.mysqlDatabase}$query"
-            driverClassName = "org.mariadb.jdbc.Driver"
-            username = s.mysqlUsername
-            password = s.mysqlPassword
-            maximumPoolSize = s.poolMaximumSize
-            poolName = "DespawnedItems-MySQL"
-        }
+        val cfg =
+            HikariConfig().apply {
+                // The MariaDB driver speaks the MySQL protocol too.
+                jdbcUrl = "jdbc:mariadb://${s.mysqlHost}:${s.mysqlPort}/${s.mysqlDatabase}$query"
+                driverClassName = "org.mariadb.jdbc.Driver"
+                username = s.mysqlUsername
+                password = s.mysqlPassword
+                maximumPoolSize = s.poolMaximumSize
+                poolName = "DespawnedItems-MySQL"
+            }
         val ds = HikariDataSource(cfg)
         plugin.logger.info("Using MySQL/MariaDB storage at ${s.mysqlHost}:${s.mysqlPort}/${s.mysqlDatabase}")
         return JdbcLocationRepository(ds, plugin.logger, ds)
     }
 
     /** One-time YAML → database import when the DB is empty but flat files exist. */
-    private fun migrateIfEmpty(plugin: DespawnedItems, db: JdbcLocationRepository): LocationRepository {
+    private fun migrateIfEmpty(
+        plugin: DespawnedItems,
+        db: JdbcLocationRepository,
+    ): LocationRepository {
         if (db.loadAll().isNotEmpty()) return db
         val existing = YamlLocationRepository(plugin.dataFolder, plugin.logger).loadAll()
         if (existing.isEmpty()) return db

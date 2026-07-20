@@ -14,18 +14,26 @@ import org.bukkit.inventory.ItemStack
  * are tried in order by [DespawnProcess].
  */
 abstract class AbstractDespawnInto(protected val plugin: DespawnedItems) {
-
     /** Whether this strategy is applicable to [targetBlock]. */
     abstract fun doesApply(targetBlock: Block): Boolean
 
     /** Attempts to place [DespawnProcess.item] into [targetBlock]. */
-    abstract fun despawnInto(process: DespawnProcess, targetBlock: Block): DespawnIntoResult
+    abstract fun despawnInto(
+        process: DespawnProcess,
+        targetBlock: Block,
+    ): DespawnIntoResult
 
     /** Removes all of [material] from [targetBlock] (used by bulk purges). */
-    abstract fun removeFrom(material: Material, targetBlock: Block)
+    abstract fun removeFrom(
+        material: Material,
+        targetBlock: Block,
+    )
 
     /** Removes items matching [material] from [targetBlock] (used by bulk purges). */
-    abstract fun removeFrom(material: ItemStack, targetBlock: Block)
+    abstract fun removeFrom(
+        material: ItemStack,
+        targetBlock: Block,
+    )
 
     /** Returns the block's inventory if it has one, else null. */
     protected fun getInventory(block: Block): Inventory? = (block.state as? Container)?.inventory

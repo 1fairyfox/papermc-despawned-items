@@ -10,7 +10,6 @@ import kotlin.test.assertTrue
  * scoreboard objectives the plugin never created). Pins the "reward every 64 recycles".
  */
 class RecycleProgressTest {
-
     @Test
     fun `first recycle stores 1 and is not rewarded`() {
         val r = RecycleProgress.advance(0)

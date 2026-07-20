@@ -15,16 +15,20 @@ import org.bukkit.Particle
  * crashing at spawn time.
  */
 object ParticleData {
-
     val DEFAULT_PARTICLE: Particle = Particle.HAPPY_VILLAGER
     const val DEFAULT_PARTICLE_KEY = "happy_villager"
 
     /** The resolved particle, its spawn data (or null), and an optional warning to log. */
     data class Resolved(val particle: Particle, val data: Any?, val warning: String?)
 
-    fun resolve(key: String, colorHex: String?, dustSize: Double): Resolved {
-        val particle = parseParticle(key)
-            ?: return Resolved(DEFAULT_PARTICLE, null, "Unknown particle '$key' in config; using $DEFAULT_PARTICLE")
+    fun resolve(
+        key: String,
+        colorHex: String?,
+        dustSize: Double,
+    ): Resolved {
+        val particle =
+            parseParticle(key)
+                ?: return Resolved(DEFAULT_PARTICLE, null, "Unknown particle '$key' in config; using $DEFAULT_PARTICLE")
 
         return when (particle.dataType) {
             Void::class.java -> Resolved(particle, null, null)
@@ -32,12 +36,13 @@ object ParticleData {
                 val size = dustSize.toFloat().coerceIn(0.01f, 4.0f)
                 Resolved(particle, Particle.DustOptions(parseColor(colorHex), size), null)
             }
-            else -> Resolved(
-                DEFAULT_PARTICLE,
-                null,
-                "Particle '$particle' requires data this plugin can't supply " +
-                    "(${particle.dataType.simpleName}); using $DEFAULT_PARTICLE instead.",
-            )
+            else ->
+                Resolved(
+                    DEFAULT_PARTICLE,
+                    null,
+                    "Particle '$particle' requires data this plugin can't supply " +
+                        "(${particle.dataType.simpleName}); using $DEFAULT_PARTICLE instead.",
+                )
         }
     }
 

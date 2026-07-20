@@ -7,7 +7,6 @@ package com.popupmc.despawneditems
  * this makes the "reward every [ITEMS_PER_REWARD]" rule explicit and testable.
  */
 object RecycleProgress {
-
     /** How many recycles earn one reward. */
     const val ITEMS_PER_REWARD = 64
 

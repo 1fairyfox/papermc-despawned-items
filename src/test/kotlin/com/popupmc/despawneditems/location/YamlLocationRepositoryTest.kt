@@ -14,19 +14,21 @@ import kotlin.test.assertTrue
  * directory — `YamlConfiguration` reads/writes plain string lists without a server.
  */
 class YamlLocationRepositoryTest {
-
     private val logger: Logger = Logger.getLogger("YamlLocationRepositoryTest")
     private val alice: UUID = UUID.fromString("00000000-0000-0000-0000-0000000000a1")
     private val bob: UUID = UUID.fromString("00000000-0000-0000-0000-0000000000b2")
 
     @Test
-    fun `save then load roundtrips across owners and worlds`(@TempDir dir: File) {
+    fun `save then load roundtrips across owners and worlds`(
+        @TempDir dir: File,
+    ) {
         val repo = YamlLocationRepository(dir, logger)
-        val locs = listOf(
-            DespawnLocation("world", 1, 2, 3, alice),
-            DespawnLocation("world", 4, 5, 6, alice),
-            DespawnLocation("world_nether", 7, 8, 9, bob),
-        )
+        val locs =
+            listOf(
+                DespawnLocation("world", 1, 2, 3, alice),
+                DespawnLocation("world", 4, 5, 6, alice),
+                DespawnLocation("world_nether", 7, 8, 9, bob),
+            )
         val byOwner = locs.groupBy { it.owner }
         repo.saveOwners(listOf(alice, bob)) { byOwner[it].orEmpty() }
 
@@ -34,7 +36,9 @@ class YamlLocationRepositoryTest {
     }
 
     @Test
-    fun `saving an owner with no locations deletes their file`(@TempDir dir: File) {
+    fun `saving an owner with no locations deletes their file`(
+        @TempDir dir: File,
+    ) {
         val repo = YamlLocationRepository(dir, logger)
         repo.saveOwners(listOf(alice)) { listOf(DespawnLocation("world", 1, 1, 1, alice)) }
         val file = File(File(dir, "userdata"), "$alice.yml")
@@ -45,7 +49,9 @@ class YamlLocationRepositoryTest {
     }
 
     @Test
-    fun `loadAll skips malformed lines and non-uuid files`(@TempDir dir: File) {
+    fun `loadAll skips malformed lines and non-uuid files`(
+        @TempDir dir: File,
+    ) {
         val userdata = File(dir, "userdata").apply { mkdirs() }
         File(userdata, "$alice.yml").writeText("locations:\n- '1;2;3;world'\n- 'garbage'\n- 'x;y;z;world'\n")
         File(userdata, "not-a-uuid.yml").writeText("locations:\n- '1;2;3;world'\n")
@@ -54,12 +60,16 @@ class YamlLocationRepositoryTest {
     }
 
     @Test
-    fun `loadAll on a missing directory is empty`(@TempDir dir: File) {
+    fun `loadAll on a missing directory is empty`(
+        @TempDir dir: File,
+    ) {
         assertTrue(YamlLocationRepository(File(dir, "does-not-exist"), logger).loadAll().isEmpty())
     }
 
     @Test
-    fun `incremental save only rewrites the given owners`(@TempDir dir: File) {
+    fun `incremental save only rewrites the given owners`(
+        @TempDir dir: File,
+    ) {
         val repo = YamlLocationRepository(dir, logger)
         repo.saveOwners(listOf(alice, bob)) { listOf(DespawnLocation("world", 1, 1, 1, it)) }
         val bobFile = File(File(dir, "userdata"), "$bob.yml")

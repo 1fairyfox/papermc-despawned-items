@@ -1,0 +1,23 @@
+# Detekt configuration — layered on top of the default rules (buildUponDefaultConfig).
+# Line length is owned by ktlint/.editorconfig (140); a few rules are tuned for this
+# plugin's shape (the despawn strategies are legitimately branchy). Remaining pre-existing
+# findings are captured in config/detekt/baseline.xml so detekt gates only NEW issues.
+
+style:
+  MaxLineLength:
+    maxLineLength: 140
+  MagicNumber:
+    active: false # tick counts / stack sizes are self-documenting here
+  ReturnCount:
+    active: false # the despawn pipeline uses early returns by design
+  LoopWithTooManyJumpStatements:
+    active: false
+
+complexity:
+  CyclomaticComplexMethod:
+    threshold: 20
+  LongMethod:
+    threshold: 90
+  TooManyFunctions:
+    thresholdInClasses: 25
+    thresholdInObjects: 25

@@ -24,7 +24,6 @@ class RemoveMaterials(
     private val owner: UUID?,
     private val senderID: UUID?,
 ) {
-
     private var locationIndex = 0
     private var targets: List<DespawnLocation> = emptyList()
     private var invalid = false
@@ -47,11 +46,12 @@ class RemoveMaterials(
                     plugin.removeMaterialsInst[senderID] = this
                 }
 
-                targets = if (owner != null) {
-                    plugin.locations.ofOwner(owner).toList()
-                } else {
-                    plugin.locations.all()
-                }
+                targets =
+                    if (owner != null) {
+                        plugin.locations.ofOwner(owner).toList()
+                    } else {
+                        plugin.locations.all()
+                    }
 
                 if (targets.isEmpty()) {
                     forceSelfDestroy()
