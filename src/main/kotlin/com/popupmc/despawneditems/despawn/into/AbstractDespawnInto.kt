@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn.into
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.despawn.DespawnProcess
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack
  * block (a container, a cooker, empty air, an entity, or the void). Strategies
  * are tried in order by [DespawnProcess].
  */
-abstract class AbstractDespawnInto(protected val plugin: DespawnedItems) {
+abstract class AbstractDespawnInto(protected val plugin: PaperMcDespawnedItems) {
     /** Whether this strategy is applicable to [targetBlock]. */
     abstract fun doesApply(targetBlock: Block): Boolean
 

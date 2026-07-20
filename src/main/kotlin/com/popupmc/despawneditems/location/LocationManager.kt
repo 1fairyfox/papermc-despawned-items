@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.location
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import org.bukkit.Location
 import java.util.UUID
 
@@ -13,7 +13,7 @@ import java.util.UUID
  * main thread and writes them off-thread. A synchronous [shutdown]/[saveNow] path exists
  * for plugin disable and `/despi save`, when async tasks can't run.
  */
-class LocationManager(private val plugin: DespawnedItems) {
+class LocationManager(private val plugin: PaperMcDespawnedItems) {
     var store: LocationStore = LocationStore()
         private set
 

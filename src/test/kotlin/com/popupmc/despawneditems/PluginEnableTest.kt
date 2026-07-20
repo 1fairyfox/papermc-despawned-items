@@ -14,12 +14,12 @@ import kotlin.test.assertTrue
  */
 class PluginEnableTest {
     private lateinit var server: ServerMock
-    private lateinit var plugin: DespawnedItems
+    private lateinit var plugin: PaperMcDespawnedItems
 
     @BeforeTest
     fun setUp() {
         server = MockBukkit.mock()
-        plugin = MockBukkit.load(DespawnedItems::class.java)
+        plugin = MockBukkit.load(PaperMcDespawnedItems::class.java)
     }
 
     @AfterTest

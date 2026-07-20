@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.limit
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.config.LimitSettings
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -19,13 +19,13 @@ import kotlin.test.assertTrue
  */
 class DespawnLimitsTest {
     private lateinit var server: ServerMock
-    private lateinit var plugin: DespawnedItems
+    private lateinit var plugin: PaperMcDespawnedItems
     private val defaults = LimitSettings(YamlConfiguration())
 
     @BeforeTest
     fun setUp() {
         server = MockBukkit.mock()
-        plugin = MockBukkit.load(DespawnedItems::class.java)
+        plugin = MockBukkit.load(PaperMcDespawnedItems::class.java)
     }
 
     @AfterTest

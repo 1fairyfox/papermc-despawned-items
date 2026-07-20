@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn.into
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.despawn.DespawnProcess
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -17,10 +17,10 @@ import org.bukkit.inventory.ItemStack
  * a living entity's equipment slots (armour and hands), a storage minecart's
  * inventory, or a furnace minecart's fuel.
  */
-class DespawnItemIntoEntity(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
+class DespawnItemIntoEntity(plugin: PaperMcDespawnedItems) : AbstractDespawnInto(plugin) {
     override fun doesApply(targetBlock: Block): Boolean {
         val isAir = targetBlock.type.isAir
-        val entities = targetBlock.location.toCenterLocation().getNearbyEntities(0.5, 0.5, 0.5)
+        val entities = targetBlock.location.toCenterLocation().getNearbyEntities(NEARBY_RADIUS, NEARBY_RADIUS, NEARBY_RADIUS)
         val hasProperEntity =
             entities.any {
                 it is ItemFrame || it is LivingEntity || it is StorageMinecart
@@ -28,12 +28,16 @@ class DespawnItemIntoEntity(plugin: DespawnedItems) : AbstractDespawnInto(plugin
         return isAir && hasProperEntity && entities.size == 1
     }
 
+    // Exhaustive per-entity-type placement: each branch tries a slot/kind in order. The
+    // branches ARE the logic, so the complexity/length/return-count are suppressed here
+    // with reason rather than scattered across helpers.
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "ReturnCount")
     override fun despawnInto(
         process: DespawnProcess,
         targetBlock: Block,
     ): DespawnIntoResult {
         val item = process.item ?: return DespawnIntoResult.NONE
-        val entities = targetBlock.location.toCenterLocation().getNearbyEntities(0.5, 0.5, 0.5)
+        val entities = targetBlock.location.toCenterLocation().getNearbyEntities(NEARBY_RADIUS, NEARBY_RADIUS, NEARBY_RADIUS)
         if (entities.size != 1) return DespawnIntoResult.NONE
 
         val entity = entities.iterator().next()
@@ -94,8 +98,7 @@ class DespawnItemIntoEntity(plugin: DespawnedItems) : AbstractDespawnInto(plugin
 
             is PoweredMinecart -> {
                 if (item.type.isFuel) {
-                    // Per the wiki, every fuel item adds 3600 ticks.
-                    entity.fuel = entity.fuel + 3600
+                    entity.fuel = entity.fuel + FUEL_TICKS_PER_ITEM
                     return addedItem(process)
                 }
             }
@@ -121,11 +124,13 @@ class DespawnItemIntoEntity(plugin: DespawnedItems) : AbstractDespawnInto(plugin
         removeFrom(ItemStack(material), targetBlock)
     }
 
+    // Mirror of despawnInto: exhaustive per-entity-type removal; branches are the logic.
+    @Suppress("CyclomaticComplexMethod", "ReturnCount")
     override fun removeFrom(
         material: ItemStack,
         targetBlock: Block,
     ) {
-        val entities = targetBlock.location.toCenterLocation().getNearbyEntities(0.5, 0.5, 0.5)
+        val entities = targetBlock.location.toCenterLocation().getNearbyEntities(NEARBY_RADIUS, NEARBY_RADIUS, NEARBY_RADIUS)
         if (entities.size != 1) return
 
         when (val entity = entities.iterator().next()) {
@@ -173,4 +178,11 @@ class DespawnItemIntoEntity(plugin: DespawnedItems) : AbstractDespawnInto(plugin
     }
 
     private fun isEmpty(item: ItemStack?): Boolean = item == null || item.type.isAir
+
+    companion object {
+        private const val NEARBY_RADIUS = 0.5
+
+        /** Per the wiki, every fuel item adds 3600 ticks to a furnace minecart. */
+        private const val FUEL_TICKS_PER_ITEM = 3600
+    }
 }

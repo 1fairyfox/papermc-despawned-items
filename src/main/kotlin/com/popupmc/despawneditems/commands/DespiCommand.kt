@@ -7,7 +7,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
@@ -25,7 +25,7 @@ object DespiCommand {
     private const val USE = "despi.use"
     private const val ELEVATED = "despi.elevated"
 
-    fun register(plugin: DespawnedItems) {
+    fun register(plugin: PaperMcDespawnedItems) {
         val actions = DespiActions(plugin)
         plugin.lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
             event.registrar().register(
@@ -226,7 +226,7 @@ object DespiCommand {
 
     // ─── /recycle ───────────────────────────────────────────────────────────────
 
-    private fun buildRecycle(plugin: DespawnedItems) =
+    private fun buildRecycle(plugin: PaperMcDespawnedItems) =
         Commands.literal("recycle")
             .requires { it.sender.hasPermission("recycle.use") }
             .executes(

@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.despawn.into.DespawnIntoResult
 import com.popupmc.despawneditems.location.DespawnLocation
 import org.bukkit.Location
@@ -10,13 +10,13 @@ import org.bukkit.scheduler.BukkitRunnable
 /**
  * Drives a single item through the despawn pipeline: it repeatedly picks a random,
  * not-yet-tried despawn location, loads that chunk, and offers the item to each
- * despawn strategy ([DespawnedItems.strategies]) in priority order until the item is
+ * despawn strategy ([PaperMcDespawnedItems.strategies]) in priority order until the item is
  * fully placed or the location budget runs out.
  *
  * [item] is nullable because the storage strategies null it out while reconstructing
  * oversized leftover stacks.
  */
-class DespawnProcess(var item: ItemStack?, private val plugin: DespawnedItems) {
+class DespawnProcess(var item: ItemStack?, private val plugin: PaperMcDespawnedItems) {
     private var loopsLeft: Int
     private val tried: MutableSet<DespawnLocation> = HashSet()
 
@@ -84,6 +84,9 @@ class DespawnProcess(var item: ItemStack?, private val plugin: DespawnedItems) {
         invalid = true
     }
 
+    // The strategy loop legitimately uses continue (strategy doesn't apply / took nothing)
+    // and break (a strategy handled it) — that's the core "try each in priority order" flow.
+    @Suppress("LoopWithTooManyJumpStatements")
     private fun worldIsLoaded(targetLocation: Location) {
         if (invalid) return
 

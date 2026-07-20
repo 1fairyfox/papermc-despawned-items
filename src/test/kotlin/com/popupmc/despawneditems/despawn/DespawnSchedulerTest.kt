@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import org.mockbukkit.mockbukkit.MockBukkit
@@ -17,12 +17,12 @@ import kotlin.test.assertEquals
  */
 class DespawnSchedulerTest {
     private lateinit var server: ServerMock
-    private lateinit var plugin: DespawnedItems
+    private lateinit var plugin: PaperMcDespawnedItems
 
     @BeforeTest
     fun setUp() {
         server = MockBukkit.mock()
-        plugin = MockBukkit.load(DespawnedItems::class.java)
+        plugin = MockBukkit.load(PaperMcDespawnedItems::class.java)
     }
 
     @AfterTest
