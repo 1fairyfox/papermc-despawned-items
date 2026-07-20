@@ -44,7 +44,7 @@ Done on `dev` (all green, CI passing):
 | CI on `dev` | ✅ passing |
 | Refactor (plan: refactor-2026-07.md) | ✅ Phases 1–4 largely done |
 | Runtime load on real Paper 1.21.11 | ✅ verified — headless smoke, `libraries:` (HikariCP + JDBC) auto-loaded, "DespawnedItems is enabled", no errors |
-| Forward-compat load on Paper 26.1 | ⏳ to verify (smoke server logged "2 releases behind 26.1.2") |
+| Forward-compat load on Paper 26.1.2 | ✅ verified — headless smoke, enabled cleanly (`Done (10.3s)`), no exceptions despite 26.x registry changes |
 | In-game gameplay test | ✅ unblocked (Mineflayer supports 1.21.11) |
 | GitHub Pages docs | ⏳ enabled; deploys on release to `main` |
 | Standards adopted (project side) | ✅ |
