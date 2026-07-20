@@ -27,6 +27,11 @@ dependencies {
     // below) so the plugin is self-contained on a plain Paper server.
     implementation(kotlin("stdlib"))
 
+    // HikariCP for the JDBC connection pool. compileOnly: Paper loads it (and the JDBC
+    // drivers) at runtime via the `libraries:` block in plugin.yml, so nothing DB-related
+    // is shaded into the jar.
+    compileOnly("com.zaxxer:HikariCP:5.1.0")
+
     // --- Testing ---
     // MockBukkit mocks a live Paper 1.21 server for unit/integration tests (it
     // supports the 1.21 line but not the newer 26.x — a key reason for the target).

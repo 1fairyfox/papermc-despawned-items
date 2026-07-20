@@ -6,15 +6,17 @@ import org.bukkit.Particle
 import org.bukkit.configuration.file.FileConfiguration
 
 /**
- * Top-level configuration holder. Owns both the main settings ([fileConfig]) and
- * the per-player despawn locations ([fileLocations]). Call [load] to reload both.
+ * Top-level configuration holder. Owns the effect settings ([fileConfig]) and the
+ * storage settings ([storage]). Despawn locations themselves live in the plugin's
+ * [com.popupmc.despawneditems.location.LocationManager], not here. Call [load] to
+ * re-read `config.yml` from disk and rebuild both.
  */
 class Config(val plugin: DespawnedItems) {
 
     lateinit var fileConfig: FileConfig
         private set
 
-    lateinit var fileLocations: FileLocations
+    lateinit var storage: StorageSettings
         private set
 
     init {
@@ -22,9 +24,32 @@ class Config(val plugin: DespawnedItems) {
     }
 
     fun load() {
+        plugin.saveDefaultConfig()
+        // Re-read the file from disk so `/despi reload` actually picks up edits — the
+        // old code reused Bukkit's cached FileConfiguration and silently ignored them.
+        plugin.reloadConfig()
         fileConfig = FileConfig(plugin)
-        fileLocations = FileLocations(plugin)
+        storage = StorageSettings(plugin.config)
     }
+}
+
+/**
+ * Storage backend selection and connection details, read from the `storage:` section
+ * of `config.yml`. Consumed by
+ * [com.popupmc.despawneditems.location.StorageFactory].
+ */
+class StorageSettings(c: FileConfiguration) {
+    /** `yaml`, `sqlite`, or `mysql`. */
+    val type: String = (c.getString("storage.type") ?: "yaml").lowercase().trim()
+
+    val mysqlHost: String = c.getString("storage.mysql.host") ?: "localhost"
+    val mysqlPort: Int = c.getInt("storage.mysql.port", 3306)
+    val mysqlDatabase: String = c.getString("storage.mysql.database") ?: "despawneditems"
+    val mysqlUsername: String = c.getString("storage.mysql.username") ?: "root"
+    val mysqlPassword: String = c.getString("storage.mysql.password") ?: ""
+    val mysqlProperties: String = c.getString("storage.mysql.properties") ?: ""
+
+    val poolMaximumSize: Int = c.getInt("storage.pool.maximum-pool-size", 10).coerceIn(1, 100)
 }
 
 /**

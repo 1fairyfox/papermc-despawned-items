@@ -1,3 +1,25 @@
+# Where despawn locations are stored.
+storage:
+  # yaml  — flat files under userdata/ (default, zero setup, fine for most servers)
+  # sqlite — an embedded database file (good for large single servers)
+  # mysql  — a MySQL/MariaDB server (share storage across a network of servers)
+  # Switching backends automatically migrates existing data on first start.
+  type: yaml
+
+  # Only used when type is mysql.
+  mysql:
+    host: localhost
+    port: 3306
+    database: despawneditems
+    username: root
+    password: ""
+    # Extra JDBC url parameters, joined with '&'.
+    properties: "useSSL=false&allowPublicKeyRetrieval=true"
+
+  # Connection pool sizing (sqlite is forced to 1 writer regardless).
+  pool:
+    maximum-pool-size: 10
+
 # Sound emitted once when a new item is added to a despawn container.
 sound:
   # Whether the sound is played at all.

@@ -106,7 +106,6 @@ class OnDespiCommand(private val plugin: DespawnedItems) : CommandExecutor, TabC
             OnDespiCommandSave(plugin)
             OnDespiCommandLocations(plugin)
             OnDespiCommandClear(plugin)
-            OnDespiCommandIndexes(plugin)
             OnDespiCommandEffects(plugin)
             OnDespiCommandDespawn(plugin)
             OnDespiCommandPurge(plugin)

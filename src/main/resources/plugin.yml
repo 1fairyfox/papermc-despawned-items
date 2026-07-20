@@ -2,9 +2,16 @@ name: DespawnedItems
 version: '${version}'
 main: com.popupmc.despawneditems.DespawnedItems
 description: Relocates despawning ground items into nearby containers, cookers, entities, or empty space instead of deleting them.
-author: junebug12851
+author: Fairy Fox
 website: https://github.com/1fairyfox/papermc-despawned-items
 api-version: '1.21'
+
+# Runtime libraries downloaded by Paper's library loader (kept out of the jar).
+# HikariCP is the pool; the JDBC drivers back the sqlite/mysql storage backends.
+libraries:
+  - com.zaxxer:HikariCP:5.1.0
+  - org.xerial:sqlite-jdbc:3.49.1.0
+  - org.mariadb.jdbc:mariadb-java-client:3.5.3
 
 commands:
   despi:
