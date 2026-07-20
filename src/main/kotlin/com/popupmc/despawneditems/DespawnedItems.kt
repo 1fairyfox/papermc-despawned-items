@@ -51,7 +51,7 @@ class DespawnedItems : JavaPlugin() {
     val despawnProcesses: MutableList<DespawnProcess> = mutableListOf()
 
     override fun onEnable() {
-        BlacklistedItems.setup()
+        RewardPool.setup()
 
         settings = Config(this)
         despawnIndexes = DespawnIndexes(this)

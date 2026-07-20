@@ -1,26 +1,31 @@
 package com.popupmc.despawneditems.commands
 
-import com.popupmc.despawneditems.BlacklistedItems
 import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.RewardPool
 import com.popupmc.despawneditems.despawn.DespawnProcess
 import com.popupmc.despawneditems.sendColored
 import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.NamespacedKey
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.bukkit.scoreboard.Objective
-import java.util.Random
+import org.bukkit.persistence.PersistentDataType
 
 /**
- * `/recycle` — despawns the item in the player's main hand and tracks a
- * scoreboard-based reward: every 64 recycled items grants a random "safe"
+ * `/recycle` — despawns the item in the player's main hand and tracks progress
+ * toward a reward: every [ITEMS_PER_REWARD] recycles grants one random "safe"
  * material back to the player.
+ *
+ * Progress is stored per player in the player's [org.bukkit.persistence.PersistentDataContainer],
+ * which persists across sessions and needs no server-side scoreboard setup (the
+ * previous scoreboard-objective approach silently did nothing when those objectives
+ * were absent).
  */
 class OnRecycleCommand(private val plugin: DespawnedItems) : CommandExecutor {
 
-    private val random = Random()
+    private val progressKey = NamespacedKey(plugin, "recycle_progress")
 
     override fun onCommand(
         sender: CommandSender,
@@ -33,13 +38,12 @@ class OnRecycleCommand(private val plugin: DespawnedItems) : CommandExecutor {
             return false
         }
 
-        val item = sender.inventory.itemInMainHand
-
         if (!sender.hasPermission("recycle.use")) {
             sender.sendColored("You don't have permission to use that command", NamedTextColor.RED)
             return false
         }
 
+        val item = sender.inventory.itemInMainHand
         if (item.type.isAir || item.amount == 0) {
             sender.sendColored("There's nothing in your hand to recycle.", NamedTextColor.GOLD)
             return false
@@ -49,57 +53,38 @@ class OnRecycleCommand(private val plugin: DespawnedItems) : CommandExecutor {
         sender.inventory.setItemInMainHand(null)
         sender.sendColored("Done!", NamedTextColor.GREEN)
 
-        increaseScore(sender)
+        awardProgress(sender)
         return true
     }
 
-    @Suppress("DEPRECATION")
-    private fun increaseScore(player: Player) {
-        val scoreboard = player.scoreboard
+    /** Advances the player's recycle progress and pays out a reward at the threshold. */
+    private fun awardProgress(player: Player) {
+        val pdc = player.persistentDataContainer
+        val progress = (pdc.get(progressKey, PersistentDataType.INTEGER) ?: 0) + 1
 
-        val partObjective: Objective = scoreboard.getObjective("recycleCountPart") ?: run {
-            plugin.logger.warning("Objective recycleCountPart is null")
+        if (progress < ITEMS_PER_REWARD) {
+            pdc.set(progressKey, PersistentDataType.INTEGER, progress)
+            player.sendColored(
+                "${ITEMS_PER_REWARD - progress} left before a random item...",
+                NamedTextColor.GRAY,
+            )
             return
         }
 
-        var recycleCountPart = partObjective.getScore(player.name).score + 1
+        // Threshold reached: reset progress and drop one random reward.
+        pdc.set(progressKey, PersistentDataType.INTEGER, 0)
 
-        // Below a full stack: just record progress and stop.
-        if (recycleCountPart < 64) {
-            player.sendColored("${64 - recycleCountPart} left before given random item...", NamedTextColor.GRAY)
-            partObjective.getScore(player.name).score = recycleCountPart
+        val reward = RewardPool.random()
+        if (reward == null) {
+            plugin.logger.warning("Reward pool is empty — cannot grant a recycle reward")
             return
         }
+        player.world.dropItem(player.location, ItemStack(reward))
+        player.sendColored("You earned a random item for recycling!", NamedTextColor.GREEN)
+    }
 
-        // Reached a full stack: reset the partial counter and continue.
-        recycleCountPart = 0
-        partObjective.getScore(player.name).score = recycleCountPart
-
-        val countObjective: Objective = scoreboard.getObjective("recycleCount") ?: run {
-            plugin.logger.warning("Objective recycleCount is null")
-            return
-        }
-
-        val recycleCount = countObjective.getScore(player.name).score + 1
-        countObjective.getScore(player.name).score = recycleCount
-
-        val paidObjective: Objective = scoreboard.getObjective("recycleCountPaid") ?: run {
-            plugin.logger.warning("Objective recycleCountPaid is null")
-            return
-        }
-
-        val recycleCountPaid = paidObjective.getScore(player.name).score
-
-        // Paid should never exceed unpaid; nothing owed if it does.
-        if (recycleCountPaid > recycleCount) return
-
-        val difference = recycleCount - recycleCountPaid
-        if (difference <= 0) return
-
-        val reward = ItemStack(BlacklistedItems.itemList[random.nextInt(BlacklistedItems.itemList.size)])
-        reward.amount = difference
-        player.world.dropItem(player.location, reward)
-
-        paidObjective.getScore(player.name).score = recycleCount
+    companion object {
+        /** How many recycles earn one reward. */
+        const val ITEMS_PER_REWARD = 64
     }
 }
