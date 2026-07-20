@@ -3,7 +3,7 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.0.0` (source of truth: repo-root `VERSION`).
+**Version:** `1.0.2` (source of truth: repo-root `VERSION`; next release → MINOR `1.1.0`).
 
 ## Current state (read this first)
 
@@ -43,8 +43,8 @@ Done on `dev` (all green, CI passing):
 | Test suite (JUnit 5 + MockBukkit) | ✅ ~49 tests, gating build |
 | CI on `dev` | ✅ passing |
 | Refactor (plan: refactor-2026-07.md) | ✅ Phases 1–4 largely done |
-| Runtime load on real Paper 1.21.11 | ⏳ re-verify (headless smoke) |
-| Forward-compat load on Paper 26.1 | ⏳ to verify |
+| Runtime load on real Paper 1.21.11 | ✅ verified — headless smoke, `libraries:` (HikariCP + JDBC) auto-loaded, "DespawnedItems is enabled", no errors |
+| Forward-compat load on Paper 26.1 | ⏳ to verify (smoke server logged "2 releases behind 26.1.2") |
 | In-game gameplay test | ✅ unblocked (Mineflayer supports 1.21.11) |
 | GitHub Pages docs | ⏳ enabled; deploys on release to `main` |
 | Standards adopted (project side) | ✅ |
