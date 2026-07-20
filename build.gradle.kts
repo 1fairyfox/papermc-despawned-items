@@ -36,6 +36,10 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     // The Paper API is compileOnly for main; tests need it on their own classpath.
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    // Database backend: HikariCP for the pool, SQLite driver to exercise JdbcLocationRepository.
+    // In production these load at runtime via Paper's `libraries:` loader (see plugin.yml).
+    testImplementation("com.zaxxer:HikariCP:5.1.0")
+    testRuntimeOnly("org.xerial:sqlite-jdbc:3.49.1.0")
 }
 
 kotlin {
