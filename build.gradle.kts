@@ -9,7 +9,7 @@ plugins {
     id("org.jetbrains.kotlinx.kover") version "0.9.9"
 }
 
-group = "com.popupmc"
+group = "io.fairyfox"
 version = file("VERSION").readText().trim()
 
 repositories {

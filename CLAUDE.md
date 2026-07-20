@@ -3,7 +3,7 @@
 > Naming (keep consistent — never the bare `DespawnedItems` form): human-facing name is
 > **PaperMC Despawned Items**; the repo slug, the Bukkit plugin id (`plugin.yml` `name`),
 > the built jar, and the data folder are all **`papermc-despawned-items`**; the Kotlin
-> main class is `PaperMcDespawnedItems` (package `com.popupmc.despawneditems`).
+> main class is `PaperMcDespawnedItems` (package `io.fairyfox.papermc.despawneditems`).
 
 A Paper (Minecraft) server plugin that intercepts items about to despawn on the
 ground and relocates them into a registered network of nearby containers, cookers,
