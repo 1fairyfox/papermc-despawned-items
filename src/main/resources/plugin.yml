@@ -1,13 +1,14 @@
 name: DespawnedItems
-version: 1.0
+version: '${version}'
 main: com.popupmc.despawneditems.DespawnedItems
-description: Despawned Items
+description: Relocates despawning ground items into nearby containers, cookers, entities, or empty space instead of deleting them.
 author: junebug12851
-api-version: 1.16
+website: https://github.com/1fairyfox/papermc-despawned-items
+api-version: '26.1'
 
 commands:
   despi:
-    description: Accesses despawned items command
+    description: Manage despawn locations and despawning
     usage: /despi
     permission: despi.use
     permission-message: You do not have permission to use despawned items
@@ -15,10 +16,15 @@ commands:
     description: Recycles the item in your hand
     usage: /recycle
     permission: recycle.use
-    permission-message: You do not have permission to use despawned items
+    permission-message: You do not have permission to recycle
 
 permissions:
   despi.use:
-    description: Allows you to use despi
-  despi.elevate:
-    description: Allows you to manage despi
+    description: Allows use of the /despi command
+    default: true
+  despi.elevated:
+    description: Allows managing despawn locations owned by others and admin/test subcommands
+    default: op
+  recycle.use:
+    description: Allows use of the /recycle command
+    default: true

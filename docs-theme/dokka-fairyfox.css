@@ -1,0 +1,109 @@
+/* ============================================================================
+   fairyfox theme for Dokka — re-skins the generator's own output to match the
+   fairyfox.io palette and type (dark-first, light via the Dokka toggle).
+   Palette mirrors hub/standards/docs-site/reference/main.css.
+   ========================================================================== */
+
+:root {
+  --ff-bg: #efe4d1;
+  --ff-panel: #fffdf8;
+  --ff-panel-2: #f5ead8;
+  --ff-line: #e0cfb4;
+  --ff-text: #231a25;
+  --ff-text-soft: #50444f;
+  --ff-accent: #d1462c;
+  --ff-link: #a5361d;
+  --ff-link-hover: #89290f;
+  --ff-code-bg: #2b2030;
+  --ff-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ff-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --ff-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+html.theme-dark {
+  --ff-bg: #181017;
+  --ff-panel: #281b28;
+  --ff-panel-2: #342433;
+  --ff-line: #483446;
+  --ff-text: #fbf3ee;
+  --ff-text-soft: #e0cdd7;
+  --ff-accent: #f26a4c;
+  --ff-link: #ffc0ab;
+  --ff-link-hover: #ffdccf;
+  --ff-code-bg: #120c12;
+}
+
+/* Map fairyfox onto the Dokka design-system variables it actually consumes. */
+:root,
+html.theme-dark {
+  --background-color: var(--ff-bg);
+  --color-text: var(--ff-text);
+  --default-link-color: var(--ff-link);
+  --hover-link-color: var(--ff-link-hover);
+  --navigation-highlight-color: var(--ff-accent);
+  --active-tab-border-color: var(--ff-accent);
+  --active-section-color: var(--ff-accent);
+  --breadcrumb-font-color: var(--ff-text-soft);
+  --footer-background: var(--ff-panel-2);
+  --footer-font-color: var(--ff-text-soft);
+  --code-background: var(--ff-code-bg);
+  --sidebar-color: var(--ff-panel);
+}
+
+body,
+.main-content {
+  background: var(--ff-bg);
+  color: var(--ff-text);
+  font-family: var(--ff-sans);
+}
+
+/* Top navigation bar — the fairyfox brand strip. */
+.navigation {
+  background: var(--ff-panel-2);
+  border-bottom: 1px solid var(--ff-line);
+  color: var(--ff-text);
+}
+
+.library-name a,
+.library-name--link {
+  font-family: var(--ff-display);
+  color: var(--ff-accent);
+  font-weight: 600;
+}
+
+/* Sidebar / left navigation. */
+.sidebar,
+.navigation-wrapper {
+  background: var(--ff-panel);
+  border-right: 1px solid var(--ff-line);
+}
+
+a,
+.breadcrumbs a {
+  color: var(--ff-link);
+}
+a:hover {
+  color: var(--ff-link-hover);
+}
+
+h1, h2, h3, h4, .cover .platform-hinted {
+  font-family: var(--ff-display);
+  color: var(--ff-text);
+}
+
+code, .symbol, pre, .code {
+  font-family: var(--ff-mono);
+}
+pre, code {
+  background: var(--ff-code-bg);
+}
+
+/* Footer — the way-home line renders here via Dokka's footerMessage. */
+.footer {
+  background: var(--ff-panel-2);
+  color: var(--ff-text-soft);
+  border-top: 1px solid var(--ff-line);
+}
+.footer a {
+  color: var(--ff-accent);
+}

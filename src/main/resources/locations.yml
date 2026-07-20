@@ -1,1 +1,3 @@
+# Per-player despawn locations are stored under userdata/<uuid>.yml.
+# This file is the template copied in when a player's file is first created.
 locations: []

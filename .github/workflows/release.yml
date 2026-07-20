@@ -1,0 +1,42 @@
+# release — build the plugin and attach it to the GitHub Release on a version tag.
+#
+# This workflow does NOT create the tag; it reacts to a hand-pushed `vX.Y.Z` tag
+# (the git-flow release path in notes/reference/git-workflow.md). So the by-hand
+# `git tag` step in a release is correct — CI does not own tagging here.
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+      - name: Build
+        run: ./gradlew build --no-daemon --stacktrace
+      - name: Attach jar to the GitHub Release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          files: build/libs/DespawnedItems-*.jar
+          generate_release_notes: true
+
+      # ── Optional: publish to Hangar (PaperMC's plugin repository) ──────────────
+      # Requires a Hangar project and a HANGAR_API_TOKEN repo secret, plus the
+      # Hangar Gradle publishing plugin wired into build.gradle.kts. Uncomment
+      # once those exist. See https://docs.papermc.io/misc/hangar-publishing/
+      #
+      # - name: Publish to Hangar
+      #   env:
+      #     HANGAR_API_TOKEN: ${{ secrets.HANGAR_API_TOKEN }}
+      #   run: ./gradlew publishPluginPublicationToHangar --no-daemon

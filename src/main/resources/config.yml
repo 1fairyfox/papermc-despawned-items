@@ -1,40 +1,38 @@
-# Sound to emit once when a new item is added to the chest or barrel
+# Sound emitted once when a new item is added to a despawn container.
 sound:
-  # Sound is enabled or not
+  # Whether the sound is played at all.
   enabled: true
 
-  # Sound to play
-  # Use https://papermc.io/javadocs/paper/1.15/org/bukkit/Effect.html
-  sound: EXTINGUISH
+  # Sound to play, as a Minecraft sound key (namespaced or plain).
+  # See https://minecraft.wiki/w/Sounds.json for the full list, e.g.
+  # block.fire.extinguish, block.note_block.pling, entity.item.pickup
+  sound: block.fire.extinguish
 
-  # Data of Sound
-  # Usually this isn't ever used, some sounds require a specific data number
-  # Leave it to 0 if no data
-  data: 0
+  # Volume (>= 0). Also affects how far the sound carries.
+  volume: 1.0
 
-  # Radius of sound
-  radius: 15
+  # Pitch, 0.5 (low) to 2.0 (high).
+  pitch: 1.0
 
-# Particles to emit when a new item is added to the chest or barrel
+# Particles emitted when a new item is added to a despawn container.
 particles:
-  # Enabled or not?
+  # Whether particles are shown at all.
   enabled: true
 
-  # Particle to use
-  # Use this list https://papermc.io/javadocs/paper/1.15/org/bukkit/Particle.html
-  particle: VILLAGER_HAPPY
+  # Particle to use, as a Minecraft particle key (namespaced or plain).
+  # See https://minecraft.wiki/w/Particles for the full list, e.g.
+  # happy_villager, cloud, crit
+  particle: happy_villager
 
-  # The length of time, in seconds, the particles should emit on the chest or barrel
-  # when a new item is added
+  # How long, in seconds, particles keep emitting on the container.
   length-seconds: 3
 
-  # There are 20 ticks in a second, how often should particles be emitted. This can be no higher
-  # than 20 and no lower than 1. Numbers higher than 20 or lower than 1 will be capped to the max or min.
+  # How often particles are emitted, in ticks (20 ticks = 1 second).
+  # Clamped between 1 and 20.
   new-every-nth-tick: 2
 
-  # The number of particles that should be emitted each time
+  # How many particles are emitted each time.
   count-every-nth-tick: 15
 
-  # Radius of particles to emit
-  # Note that 0.5 is pretty good, any more might be a bit too far
+  # Random spread radius of the particles. 0.5 is a good default.
   radius: 0.5
