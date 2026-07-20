@@ -39,6 +39,7 @@ dokka {
     moduleName.set("DespawnedItems")
     pluginsConfiguration.html {
         customStyleSheets.from(layout.projectDirectory.file("docs-theme/dokka-fairyfox.css"))
+        customAssets.from(layout.projectDirectory.file("assets/icon.png"))
         footerMessage.set("Fairy Fox · fairyfox.io")
         homepageLink.set("https://fairyfox.io/")
     }

@@ -69,6 +69,17 @@ body,
   font-family: var(--ff-display);
   color: var(--ff-accent);
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Project icon (copied into the output via customAssets) before the name. */
+.library-name a::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  background: url("../images/icon.png") center / contain no-repeat;
 }
 
 /* Sidebar / left navigation. */
