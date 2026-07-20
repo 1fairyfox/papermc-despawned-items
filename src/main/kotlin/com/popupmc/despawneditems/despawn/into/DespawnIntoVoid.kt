@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn.into
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.despawn.DespawnProcess
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack
  * Always applies. Destroys illegal/technical items outright rather than letting
  * them be placed anywhere.
  */
-class DespawnIntoVoid(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
+class DespawnIntoVoid(plugin: PaperMcDespawnedItems) : AbstractDespawnInto(plugin) {
     override fun doesApply(targetBlock: Block): Boolean = true
 
     override fun despawnInto(
@@ -28,15 +28,16 @@ class DespawnIntoVoid(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
         return DespawnIntoResult.NONE
     }
 
+    // Void destroys contraband on placement; there is nothing stored to bulk-remove.
     override fun removeFrom(
         material: Material,
         targetBlock: Block,
-    ) {}
+    ) = Unit
 
     override fun removeFrom(
         material: ItemStack,
         targetBlock: Block,
-    ) {}
+    ) = Unit
 
     companion object {
         private val CONTRABAND: Set<Material> =

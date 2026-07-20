@@ -3,7 +3,9 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.0.2` (source of truth: repo-root `VERSION`; next release → MINOR `1.1.0`).
+**Version:** `1.3.0` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
+(Brigadier commands) → v1.3.0 (naming + quality gates). Artifact/plugin-id/data-folder are
+all `papermc-despawned-items`.
 
 ## Current state (read this first)
 
@@ -43,7 +45,8 @@ Done on `dev` (all green, CI passing):
 | Test suite (JUnit 5 + MockBukkit) | ✅ ~49 tests, gating build |
 | CI on `dev` | ✅ passing |
 | Refactor (plan: refactor-2026-07.md) | ✅ Phases 1–4 largely done |
-| Runtime load on real Paper 1.21.11 | ✅ verified — headless smoke, `libraries:` (HikariCP + JDBC) auto-loaded, "DespawnedItems is enabled", no errors |
+| Runtime load on real Paper 1.21.11 | ✅ verified — headless smoke, `libraries:` (HikariCP + JDBC) auto-loaded, enables cleanly, no errors |
+| Static analysis (Ktlint + Detekt) + coverage (Kover) | ✅ gate the build; all detekt rules on, no baseline |
 | Forward-compat load on Paper 26.1.2 | ✅ verified — headless smoke, enabled cleanly (`Done (10.3s)`), no exceptions despite 26.x registry changes |
 | In-game gameplay test | ✅ unblocked (Mineflayer supports 1.21.11) |
 | GitHub Pages docs | ⏳ enabled; deploys on release to `main` |

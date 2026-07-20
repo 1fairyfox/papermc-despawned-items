@@ -63,7 +63,7 @@ A short, configurable sound-and-particle effect plays wherever an item lands.
 
 ## Configuration
 
-`plugins/DespawnedItems/config.yml` sections:
+`plugins/papermc-despawned-items/config.yml` sections:
 
 - `sound` / `particles` — the landing effect (keys, not enums; colored `DUST` supported).
 - `limits` — `default` cap and `unlimited` toggle (permissions override per group).
@@ -74,11 +74,11 @@ A short, configurable sound-and-particle effect plays wherever an item lands.
 
 ## Install
 
-1. Download `DespawnedItems-<version>.jar` from the
+1. Download `papermc-despawned-items-<version>.jar` from the
    [releases](https://github.com/1fairyfox/papermc-despawned-items/releases) (or build it).
 2. Drop it into your server's `plugins/` folder.
 3. Start the server (**Paper 1.21.11+**, **Java 21+**; also loads on 26.x). Configure via
-   `plugins/DespawnedItems/config.yml`.
+   `plugins/papermc-despawned-items/config.yml`.
 
 For SQLite or MySQL storage, Paper downloads the JDBC driver and HikariCP automatically
 on first start (declared as plugin `libraries:`) — no extra jars to install.
@@ -86,7 +86,7 @@ on first start (declared as plugin `libraries:`) — no extra jars to install.
 ## Build from source
 
 ```sh
-./gradlew build          # runs the test suite → build/libs/DespawnedItems-<version>.jar
+./gradlew build          # runs the test suite → build/libs/papermc-despawned-items-<version>.jar
 ./gradlew dokkaGenerate  # → build/dokka/html (API docs)
 ```
 

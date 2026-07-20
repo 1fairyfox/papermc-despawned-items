@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.commands
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.RecycleProgress
 import com.popupmc.despawneditems.RewardPool
 import com.popupmc.despawneditems.despawn.DespawnProcess
@@ -20,7 +20,7 @@ object RecycleAction {
     private const val PROGRESS_KEY = "recycle_progress"
 
     fun recycle(
-        plugin: DespawnedItems,
+        plugin: PaperMcDespawnedItems,
         player: Player,
     ) {
         val item = player.inventory.itemInMainHand
@@ -37,7 +37,7 @@ object RecycleAction {
     }
 
     private fun awardProgress(
-        plugin: DespawnedItems,
+        plugin: PaperMcDespawnedItems,
         player: Player,
     ) {
         val key = NamespacedKey(plugin, PROGRESS_KEY)

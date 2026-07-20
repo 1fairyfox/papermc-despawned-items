@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn.into
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.despawn.DespawnProcess
 import org.bukkit.Material
 import org.bukkit.block.Banner
@@ -30,9 +30,11 @@ import org.bukkit.inventory.meta.SkullMeta
  * the Bukkit API, so this covers the common cases and refuses items that are
  * hazardous to place (explosives, gravity blocks, redstone, liquids, etc.).
  */
-class DespawnBlockIntoAir(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
+class DespawnBlockIntoAir(plugin: PaperMcDespawnedItems) : AbstractDespawnInto(plugin) {
     override fun doesApply(targetBlock: Block): Boolean {
-        val entities = targetBlock.location.toCenterLocation().getNearbyEntities(0.5, 0.5, 0.5)
+        val entities =
+            targetBlock.location.toCenterLocation()
+                .getNearbyEntities(NEARBY_RADIUS, NEARBY_RADIUS, NEARBY_RADIUS)
         return targetBlock.type.isAir && entities.isEmpty()
     }
 
@@ -56,70 +58,49 @@ class DespawnBlockIntoAir(plugin: DespawnedItems) : AbstractDespawnInto(plugin) 
         }
     }
 
-    // Placed blocks can't be cleanly retrieved, so bulk-remove is a no-op here.
+    // Placed blocks can't be cleanly retrieved, so bulk-remove is a deliberate no-op here.
     override fun removeFrom(
         material: Material,
         targetBlock: Block,
-    ) {}
+    ) = Unit
 
     override fun removeFrom(
         material: ItemStack,
         targetBlock: Block,
-    ) {}
+    ) = Unit
 
+    /** A block is hazardous to place if it's a known-dangerous type, has gravity, or its
+     *  name matches a hazardous family (redstone, buttons, pressure plates, infested). */
     private fun isHazardous(itemType: Material): Boolean {
+        if (itemType in HAZARDOUS_MATERIALS || itemType.hasGravity()) return true
         val name = itemType.name.lowercase()
-        return itemType == Material.TNT ||
-            itemType == Material.SPAWNER ||
-            itemType == Material.BEE_NEST ||
-            itemType == Material.BEEHIVE ||
-            itemType == Material.CACTUS ||
-            itemType == Material.CAMPFIRE ||
-            itemType == Material.SOUL_CAMPFIRE ||
-            itemType == Material.DAMAGED_ANVIL ||
-            itemType == Material.CHIPPED_ANVIL ||
-            itemType == Material.ANVIL ||
-            itemType.hasGravity() ||
-            name.contains("redstone") ||
-            name.contains("infested") ||
-            itemType == Material.DAYLIGHT_DETECTOR ||
-            itemType == Material.LECTERN ||
-            itemType == Material.TARGET ||
-            itemType == Material.TRIPWIRE ||
-            itemType == Material.TRIPWIRE_HOOK ||
-            itemType == Material.OBSERVER ||
-            itemType == Material.LEVER ||
-            name.contains("button") ||
-            name.contains("pressure_plate") ||
-            itemType == Material.DETECTOR_RAIL ||
-            itemType == Material.END_CRYSTAL ||
-            itemType == Material.FLETCHING_TABLE ||
-            itemType == Material.ICE ||
-            itemType == Material.SPONGE ||
-            itemType == Material.WET_SPONGE ||
-            itemType == Material.GLOWSTONE ||
-            itemType == Material.SNOW ||
-            itemType == Material.SNOW_BLOCK ||
-            itemType == Material.PACKED_ICE ||
-            itemType == Material.BLUE_ICE ||
-            itemType == Material.FROSTED_ICE ||
-            itemType == Material.JACK_O_LANTERN ||
-            itemType == Material.LANTERN ||
-            itemType == Material.TORCH ||
-            itemType == Material.MAGMA_BLOCK ||
-            itemType == Material.SEA_LANTERN ||
-            itemType == Material.SHROOMLIGHT ||
-            itemType == Material.SOUL_LANTERN ||
-            itemType == Material.TNT_MINECART ||
-            itemType == Material.TRAPPED_CHEST ||
-            itemType == Material.LAVA ||
-            itemType == Material.LAVA_BUCKET ||
-            itemType == Material.WATER ||
-            itemType == Material.WATER_BUCKET ||
-            itemType == Material.CONDUIT
+        return HAZARDOUS_NAME_PARTS.any { it in name }
     }
 
     companion object {
+        private const val NEARBY_RADIUS = 0.5
+
+        private val HAZARDOUS_NAME_PARTS = listOf("redstone", "infested", "button", "pressure_plate")
+
+        private val HAZARDOUS_MATERIALS: Set<Material> =
+            setOf(
+                Material.TNT, Material.SPAWNER, Material.BEE_NEST, Material.BEEHIVE, Material.CACTUS,
+                Material.CAMPFIRE, Material.SOUL_CAMPFIRE, Material.DAMAGED_ANVIL, Material.CHIPPED_ANVIL,
+                Material.ANVIL, Material.DAYLIGHT_DETECTOR, Material.LECTERN, Material.TARGET,
+                Material.TRIPWIRE, Material.TRIPWIRE_HOOK, Material.OBSERVER, Material.LEVER,
+                Material.DETECTOR_RAIL, Material.END_CRYSTAL, Material.FLETCHING_TABLE, Material.ICE,
+                Material.SPONGE, Material.WET_SPONGE, Material.GLOWSTONE, Material.SNOW, Material.SNOW_BLOCK,
+                Material.PACKED_ICE, Material.BLUE_ICE, Material.FROSTED_ICE, Material.JACK_O_LANTERN,
+                Material.LANTERN, Material.TORCH, Material.MAGMA_BLOCK, Material.SEA_LANTERN,
+                Material.SHROOMLIGHT, Material.SOUL_LANTERN, Material.TNT_MINECART, Material.TRAPPED_CHEST,
+                Material.LAVA, Material.LAVA_BUCKET, Material.WATER, Material.WATER_BUCKET, Material.CONDUIT,
+            )
+
+        // An exhaustive tile-entity-state copier: each branch handles one block-state type.
+        // It is inherently long and branchy, and splitting it would only scatter closely
+        // related logic — hence the scoped suppressions. `baseColor?.` is defensive against
+        // the nullable legacy Banner API across versions.
+        @Suppress("CyclomaticComplexMethod", "LongMethod", "UnnecessarySafeCall")
         fun copyBlockToLocation(
             sourceBlock: ItemStack,
             targetBlock: Block,

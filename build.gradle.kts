@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.dokka") version "2.2.0"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    id("org.jetbrains.kotlinx.kover") version "0.9.9"
 }
 
 group = "com.popupmc"

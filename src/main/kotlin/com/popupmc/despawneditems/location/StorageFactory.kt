@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.location
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.io.File
@@ -11,7 +11,7 @@ import java.io.File
  * provided at runtime by Paper's `libraries:` loader (see `plugin.yml`).
  */
 object StorageFactory {
-    fun create(plugin: DespawnedItems): LocationRepository {
+    fun create(plugin: PaperMcDespawnedItems): LocationRepository {
         val logger = plugin.logger
         return when (plugin.settings.storage.type) {
             "sqlite" -> migrateIfEmpty(plugin, buildSqlite(plugin))
@@ -24,7 +24,7 @@ object StorageFactory {
         }
     }
 
-    private fun buildSqlite(plugin: DespawnedItems): JdbcLocationRepository {
+    private fun buildSqlite(plugin: PaperMcDespawnedItems): JdbcLocationRepository {
         plugin.dataFolder.mkdirs()
         val dbFile = File(plugin.dataFolder, "locations.db")
         val cfg =
@@ -32,14 +32,14 @@ object StorageFactory {
                 jdbcUrl = "jdbc:sqlite:${dbFile.absolutePath}"
                 driverClassName = "org.sqlite.JDBC"
                 maximumPoolSize = 1 // SQLite is a single writer
-                poolName = "DespawnedItems-SQLite"
+                poolName = "PaperMcDespawnedItems-SQLite"
             }
         val ds = HikariDataSource(cfg)
         plugin.logger.info("Using SQLite storage at ${dbFile.name}")
         return JdbcLocationRepository(ds, plugin.logger, ds)
     }
 
-    private fun buildMysql(plugin: DespawnedItems): JdbcLocationRepository {
+    private fun buildMysql(plugin: PaperMcDespawnedItems): JdbcLocationRepository {
         val s = plugin.settings.storage
         val query = if (s.mysqlProperties.isBlank()) "" else "?${s.mysqlProperties}"
         val cfg =
@@ -50,7 +50,7 @@ object StorageFactory {
                 username = s.mysqlUsername
                 password = s.mysqlPassword
                 maximumPoolSize = s.poolMaximumSize
-                poolName = "DespawnedItems-MySQL"
+                poolName = "PaperMcDespawnedItems-MySQL"
             }
         val ds = HikariDataSource(cfg)
         plugin.logger.info("Using MySQL/MariaDB storage at ${s.mysqlHost}:${s.mysqlPort}/${s.mysqlDatabase}")
@@ -59,7 +59,7 @@ object StorageFactory {
 
     /** One-time YAML → database import when the DB is empty but flat files exist. */
     private fun migrateIfEmpty(
-        plugin: DespawnedItems,
+        plugin: PaperMcDespawnedItems,
         db: JdbcLocationRepository,
     ): LocationRepository {
         if (db.loadAll().isNotEmpty()) return db

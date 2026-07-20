@@ -20,6 +20,9 @@ class YamlLocationRepository(
 ) : LocationRepository {
     private val userDataDir: File get() = File(dataFolder, "userdata")
 
+    // Skips (continues past) non-UUID filenames, unreadable files, and malformed lines —
+    // resilient loading, where each `continue` is a distinct, documented skip.
+    @Suppress("LoopWithTooManyJumpStatements")
     override fun loadAll(): List<DespawnLocation> {
         val dir = userDataDir
         if (!dir.isDirectory) return emptyList()

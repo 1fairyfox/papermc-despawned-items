@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn.into
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.despawn.DespawnProcess
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -16,13 +16,16 @@ import org.bukkit.inventory.SmokingRecipe
  * matching smelt/fuel slot, dropping fuel into the fuel slot, or dropping a
  * cookable item into the input slot when the recipe matches the cooker type.
  */
-class DespawnIntoCooker(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
+class DespawnIntoCooker(plugin: PaperMcDespawnedItems) : AbstractDespawnInto(plugin) {
     override fun doesApply(targetBlock: Block): Boolean =
         when (targetBlock.type) {
             Material.BLAST_FURNACE, Material.FURNACE, Material.SMOKER -> true
             else -> false
         }
 
+    // Cooker placement is an exhaustive decision over slot state × cooker type; the
+    // branches are the clearest expression of the rules.
+    @Suppress("CyclomaticComplexMethod")
     override fun despawnInto(
         process: DespawnProcess,
         targetBlock: Block,
@@ -115,24 +118,21 @@ class DespawnIntoCooker(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
     }
 
     private fun isInBlastingRecipe(item: ItemStack): Boolean =
-        matchesRecipe(item) { recipe ->
+        matchesRecipe { recipe ->
             recipe is BlastingRecipe && recipe.input.type == item.type
         }
 
     private fun isInFurnaceRecipe(item: ItemStack): Boolean =
-        matchesRecipe(item) { recipe ->
+        matchesRecipe { recipe ->
             recipe is FurnaceRecipe && recipe.input.type == item.type
         }
 
     private fun isInSmokerRecipe(item: ItemStack): Boolean =
-        matchesRecipe(item) { recipe ->
+        matchesRecipe { recipe ->
             recipe is SmokingRecipe && recipe.input.type == item.type
         }
 
-    private inline fun matchesRecipe(
-        item: ItemStack,
-        predicate: (org.bukkit.inventory.Recipe) -> Boolean,
-    ): Boolean {
+    private inline fun matchesRecipe(predicate: (org.bukkit.inventory.Recipe) -> Boolean): Boolean {
         val recipes = Bukkit.getServer().recipeIterator()
         while (recipes.hasNext()) {
             if (predicate(recipes.next())) return true

@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
@@ -11,7 +11,7 @@ import org.bukkit.scheduler.BukkitTask
  * ticks before self-destructing. Takes a plain [Location] so it is decoupled from how
  * the location was stored.
  */
-class DespawnEffect(private val blockLocation: Location, private val plugin: DespawnedItems) {
+class DespawnEffect(private val blockLocation: Location, private val plugin: PaperMcDespawnedItems) {
     private var loopsLeft: Int
     private var task: BukkitTask? = null
 

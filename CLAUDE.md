@@ -1,8 +1,9 @@
 # PaperMC Despawned Items — AI Context
 
-> Display/listed name: **PaperMC Despawned Items**. The repo slug
-> (`papermc-despawned-items`) and the Bukkit plugin id (`DespawnedItems`, no spaces
-> allowed) are unchanged.
+> Naming (keep consistent — never the bare `DespawnedItems` form): human-facing name is
+> **PaperMC Despawned Items**; the repo slug, the Bukkit plugin id (`plugin.yml` `name`),
+> the built jar, and the data folder are all **`papermc-despawned-items`**; the Kotlin
+> main class is `PaperMcDespawnedItems` (package `com.popupmc.despawneditems`).
 
 A Paper (Minecraft) server plugin that intercepts items about to despawn on the
 ground and relocates them into a registered network of nearby containers, cookers,
@@ -65,12 +66,12 @@ follows the shared living-notes standard. Highlights:
 > mis-reports truncated files on this environment. Execute verify/commit/release
 > directly. Full rule: the shared `agent-tooling` standard.
 
-- **Build the plugin jar:** `./gradlew build` → `build/libs/DespawnedItems-<version>.jar`
+- **Build the plugin jar:** `./gradlew build` → `build/libs/papermc-despawned-items-<version>.jar`
   (a shaded jar with the Kotlin stdlib inside; drop it in a server's `plugins/`).
 - **API docs:** `./gradlew dokkaGenerate` → `build/dokka/html/`.
 - **Runtime smoke test:** download a Paper 1.21.11 server jar (fill.papermc.io), put
   the built jar in `plugins/`, run `java -jar paper.jar --nogui`, confirm
-  `DespawnedItems is enabled` with no plugin stack traces. Repeat on a 26.1 jar to
+  `papermc-despawned-items` enabling cleanly with no plugin stack traces. Repeat on a 26.1 jar to
   confirm forward-compat.
 - **Toolchain:** JDK 21 (auto-provisioned via the foojay resolver in
   `settings.gradle.kts`), Gradle wrapper 9.6.1, Kotlin 2.4.x, Paper API 1.21.11.

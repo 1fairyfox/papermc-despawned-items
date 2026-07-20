@@ -22,14 +22,14 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.util.UUID
 
 /**
- * DespawnedItems — a Paper plugin that intercepts items which would normally
+ * PaperMC Despawned Items — a Paper plugin that intercepts items which would normally
  * despawn on the ground and instead relocates them into a registered network of
  * nearby containers, cookers, entities, or empty space.
  *
  * `open` so MockBukkit (ByteBuddy) can subclass it in tests — Kotlin classes are
  * final by default, which MockBukkit's plugin loader cannot proxy.
  */
-open class DespawnedItems : JavaPlugin() {
+open class PaperMcDespawnedItems : JavaPlugin() {
     /**
      * Loaded configuration (effect + storage settings).
      *
@@ -89,13 +89,13 @@ open class DespawnedItems : JavaPlugin() {
         // Register /despi and /recycle via Paper's Brigadier command API.
         DespiCommand.register(this)
 
-        logger.info("DespawnedItems is enabled")
+        logger.info("Enabled")
     }
 
     override fun onDisable() {
         if (this::despawnScheduler.isInitialized) despawnScheduler.stop()
         if (this::locations.isInitialized) locations.shutdown()
-        logger.info("DespawnedItems is disabled")
+        logger.info("Disabled")
     }
 }
 

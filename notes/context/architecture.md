@@ -18,7 +18,7 @@ runtime data flow → `../systems/overview.md`.
 
 ```
 src/main/kotlin/com/popupmc/despawneditems/
-  DespawnedItems.kt        plugin entry point (owns settings, locations, strategies, scheduler)
+  PaperMcDespawnedItems.kt plugin entry point (owns settings, locations, strategies, scheduler)
   RewardPool.kt            allow-list of /recycle reward materials
   config/                  Config + FileConfig/StorageSettings/PerformanceSettings/LimitSettings
   location/                DespawnLocation, BlockKey, LocationStore (indexes),

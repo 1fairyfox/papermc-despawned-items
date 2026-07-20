@@ -9,8 +9,8 @@ network of nearby containers, cookers, entities, or empty space. It also provide
 reward (progress tracked in the player's `PersistentDataContainer`). Originally an
 internal plugin for the PopupMC server.
 
-Repo slug: `papermc-despawned-items`. Bukkit plugin id: `DespawnedItems` (no spaces
-allowed). Display/listed name: **PaperMC Despawned Items**.
+Repo slug, Bukkit plugin id, jar, and data folder: **`papermc-despawned-items`**.
+Display/listed name: **PaperMC Despawned Items**. Kotlin main class: `PaperMcDespawnedItems`.
 
 ## Goals
 

@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.manage
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.location.DespawnLocation
 import com.popupmc.despawneditems.sendColored
 import net.kyori.adventure.text.format.NamedTextColor
@@ -20,7 +20,7 @@ class RemoveMaterials(
     private val sender: CommandSender,
     private val materials: List<Material>?,
     private val item: ItemStack?,
-    private val plugin: DespawnedItems,
+    private val plugin: PaperMcDespawnedItems,
     private val owner: UUID?,
     private val senderID: UUID?,
 ) {
@@ -96,6 +96,9 @@ class RemoveMaterials(
         location.world.getChunkAtAsync(location).thenRun { worldIsLoaded(location) }
     }
 
+    // Same strategy-dispatch loop as DespawnProcess: continue = strategy doesn't apply,
+    // break = the applicable strategy handled this block.
+    @Suppress("LoopWithTooManyJumpStatements")
     private fun worldIsLoaded(location: Location) {
         if (invalid) return
 
@@ -112,7 +115,7 @@ class RemoveMaterials(
 
             item?.let { strategy.removeFrom(it, block) }
 
-            if (locationIndex % 20 == 0) {
+            if (locationIndex % PROGRESS_INTERVAL == 0) {
                 sender.sendColored(
                     "Still processing... $locationIndex / ${targets.size}",
                     NamedTextColor.YELLOW,
@@ -129,5 +132,10 @@ class RemoveMaterials(
         if (invalid) return
         locationIndex += 1
         checkSelfDestroy()
+    }
+
+    private companion object {
+        /** Emit a progress message every Nth location processed. */
+        const val PROGRESS_INTERVAL = 20
     }
 }

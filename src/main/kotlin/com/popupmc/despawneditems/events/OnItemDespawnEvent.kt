@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.events
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.ItemDespawnEvent
@@ -10,7 +10,7 @@ import org.bukkit.event.entity.ItemDespawnEvent
  * than starting a process immediately) lets the [com.popupmc.despawneditems.despawn.DespawnScheduler]
  * bound how much relocation work runs per tick under heavy load.
  */
-class OnItemDespawnEvent(private val plugin: DespawnedItems) : Listener {
+class OnItemDespawnEvent(private val plugin: PaperMcDespawnedItems) : Listener {
     @EventHandler(ignoreCancelled = true)
     fun onEvent(event: ItemDespawnEvent) {
         // Clone so we don't operate on the soon-to-be-removed item entity.

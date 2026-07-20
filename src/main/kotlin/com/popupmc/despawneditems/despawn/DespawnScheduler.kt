@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import org.bukkit.inventory.ItemStack
 
 /**
@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack
  * This replaces the old model where every despawning item immediately spawned its own
  * chunk-loading process with no upper bound.
  */
-class DespawnScheduler(private val plugin: DespawnedItems) {
+class DespawnScheduler(private val plugin: PaperMcDespawnedItems) {
     private val queue: ArrayDeque<ItemStack> = ArrayDeque()
     private var taskId: Int = -1
 

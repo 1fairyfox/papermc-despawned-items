@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.commands
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.despawn.DespawnEffect
 import com.popupmc.despawneditems.despawn.DespawnProcess
 import com.popupmc.despawneditems.limit.DespawnLimits
@@ -20,7 +20,7 @@ import java.util.UUID
  * ([DespiCommand]) so the logic is straightforward to follow and to exercise. Each method
  * takes an already-resolved sender and arguments and reports its own feedback.
  */
-class DespiActions(private val plugin: DespawnedItems) {
+class DespiActions(private val plugin: PaperMcDespawnedItems) {
     private val fb = CommandFeedback
     private val soloBackup: MutableList<DespawnLocation> = mutableListOf()
 

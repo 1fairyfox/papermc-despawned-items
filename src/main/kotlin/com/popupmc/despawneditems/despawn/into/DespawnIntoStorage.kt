@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.despawn.into
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import com.popupmc.despawneditems.despawn.DespawnProcess
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack
  * droppers, dispensers, shulker boxes, and trapped chests. Handles oversized
  * leftover stacks by reconstructing them for the next despawn location.
  */
-class DespawnIntoStorage(plugin: DespawnedItems) : AbstractDespawnInto(plugin) {
+class DespawnIntoStorage(plugin: PaperMcDespawnedItems) : AbstractDespawnInto(plugin) {
     override fun doesApply(targetBlock: Block): Boolean =
         when (targetBlock.type) {
             Material.BARREL,

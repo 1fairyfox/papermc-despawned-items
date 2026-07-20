@@ -1,6 +1,6 @@
 package com.popupmc.despawneditems.location
 
-import com.popupmc.despawneditems.DespawnedItems
+import com.popupmc.despawneditems.PaperMcDespawnedItems
 import org.bukkit.Location
 import org.mockbukkit.mockbukkit.MockBukkit
 import org.mockbukkit.mockbukkit.ServerMock
@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
  */
 class LocationManagerTest {
     private lateinit var server: ServerMock
-    private lateinit var plugin: DespawnedItems
+    private lateinit var plugin: PaperMcDespawnedItems
     private lateinit var world: WorldMock
     private val alice: UUID = UUID.fromString("00000000-0000-0000-0000-0000000000a1")
     private val bob: UUID = UUID.fromString("00000000-0000-0000-0000-0000000000b2")
@@ -27,7 +27,7 @@ class LocationManagerTest {
     @BeforeTest
     fun setUp() {
         server = MockBukkit.mock()
-        plugin = MockBukkit.load(DespawnedItems::class.java)
+        plugin = MockBukkit.load(PaperMcDespawnedItems::class.java)
         world = server.addSimpleWorld("world")
     }
 
