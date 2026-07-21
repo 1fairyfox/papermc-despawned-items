@@ -95,6 +95,10 @@ val vendorChromeAssets by tasks.registering(Copy::class) {
     from(layout.projectDirectory.dir("docs-theme/chrome")) {
         include("main.css", "reader.js", "nav.js", "coins.js")
     }
+    // Hand-authored chrome-wearing pages (Downloads — docs-site standard 06 §Downloads).
+    from(layout.projectDirectory.dir("docs-theme/pages")) {
+        include("*.html")
+    }
     into(layout.buildDirectory.dir("dokka/html"))
 }
 tasks.named("dokkaGenerate") { finalizedBy(vendorChromeAssets) }

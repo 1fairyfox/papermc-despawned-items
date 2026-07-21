@@ -1,8 +1,11 @@
 <#-- fairyfox docs-site chrome: header + subnav (chrome VERSION in docs-theme/chrome/VERSION).
      The shared masthead (chrome/header.html) and the section row (chrome/subnav.html) are
-     copied verbatim except the fixed slots: the primary "Docs" item is marked active, and
-     {{FF_SUBNAV_ITEMS}} is this project's three-zone section row. Dokka's own reference bar
-     is kept below as the API reference's controls (search / theme / source-set filter). -->
+     copied verbatim except the fixed slots: the primary "Projects" item is marked active
+     (docs-site standard 05 — a standalone sub-project is ALWAYS under Projects, never Docs),
+     and {{FF_SUBNAV_ITEMS}} is this project's canonical three-zone section row
+     ([name=overview] · API · Download · [Repository ↗] — only pages that really exist, every
+     centre link a chrome-wearing page). Dokka's own reference bar is kept below as the API
+     reference's controls (search / theme / source-set filter). -->
 <#import "source_set_selector.ftl" as source_set_selector>
 <#macro display>
     <header class="site-header">
@@ -18,7 +21,7 @@
 
         <nav class="nav" aria-label="Primary">
           <a href="https://fairyfox.io/">Home</a>
-          <a href="https://fairyfox.io/projects/">Projects</a>
+          <a href="https://fairyfox.io/projects/" class="active" aria-current="page">Projects</a>
           <details class="dd">
             <summary>Farms</summary>
             <div class="dd-panel">
@@ -30,7 +33,7 @@
               </div>
             </div>
           </details>
-          <a href="https://fairyfox.io/docs/" class="active" aria-current="page">Docs</a>
+          <a href="https://fairyfox.io/docs/">Docs</a>
           <a href="https://fairyfox.io/blog/">Updates</a>
           <a href="https://fairyfox.io/about/">About</a>
         </nav>
@@ -40,11 +43,14 @@
     <nav class="subnav" aria-label="Section">
       <div class="wrap">
         <@template_cmd name="pathToRoot">
-        <a href="${pathToRoot}index.html" class="subnav-home active" aria-current="page">PaperMC Despawned Items</a>
+        <a href="${pathToRoot}index.html" class="subnav-home">PaperMC Despawned Items</a>
         </@template_cmd>
-        <a href="https://github.com/1fairyfox/papermc-despawned-items#readme">Guide</a>
-        <a href="https://github.com/1fairyfox/papermc-despawned-items/blob/main/notes/version/2026-07.md">Changelog</a>
-        <a href="https://github.com/1fairyfox/papermc-despawned-items/releases">Download</a>
+        <@template_cmd name="pathToRoot">
+        <a href="${pathToRoot}index.html" class="active" aria-current="page">API</a>
+        </@template_cmd>
+        <@template_cmd name="pathToRoot">
+        <a href="${pathToRoot}downloads.html">Download</a>
+        </@template_cmd>
         <a href="https://github.com/1fairyfox/papermc-despawned-items" class="subnav-repo">Repository ↗</a>
       </div>
     </nav>

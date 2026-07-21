@@ -2,6 +2,32 @@
 
 Key structural choices and why. Newest on top.
 
+### 2026-07-20 — Full standards audit: nav-active + subnav corrected; PR-based releases now mandatory
+
+The full hub-standards audit (`notes/plans/standards-audit-2026-07-20.md`, 100+ items)
+corrected two docs-chrome mistakes from the same-day chrome adoption and hardened the
+release path:
+
+- **Primary nav marks `Projects` active — never `Docs`.** Docs-site standard 05 is
+  unambiguous: a standalone sub-project always sits under `Projects` (only `Projects`,
+  every page). The earlier "Docs active" choice is superseded.
+- **Subnav canonicalized** to the three-zone shape with only real, chrome-wearing pages:
+  `[PaperMC Despawned Items] · API (active) · Download · [Repository ↗]`. The invented
+  "Guide" item and the raw-GitHub Changelog/Download links are gone (centre links must be
+  chrome-wearing pages). Download now goes to a real themed `downloads.html` (perma-latest
+  via `releases/latest`, install notes, all-releases) vendored into the docs root.
+  A themed Changelog page is a recorded follow-up, not a raw link.
+- **`main` is now branch-protected** (canonical solo config: require PR, 0 approvals,
+  strict checks, enforce-admins, linear history off) and `dev` is deletion/force-push
+  protected, per supply-chain-hardening §5 (mandatory). **Releases therefore go through
+  the PR path** (`gh pr create --base main` → checks → `gh pr merge --merge` → back-merge);
+  a direct local `dev → main` push is retired. Tagging stays by-hand (release.yml reacts
+  to tags; CI does not own tagging). Release jars now carry build-provenance attestation.
+- Repo hygiene: branch auto-delete on; `check-links.mjs` doc-link gate in CI;
+  `check-tidy.mjs` for session-end tidiness; 17 hub standards copied into
+  `notes/reference/` (4 recorded N/A: farm-operating-model, legal-docs,
+  new-project-setup, onboarding-existing-project).
+
 ### 2026-07-20 — Docs site wears the shared fairyfox chrome (bundle v2.2.1)
 
 Adopted the hub's **shared chrome bundle** (`hub/standards/docs-site/chrome`, VERSION
