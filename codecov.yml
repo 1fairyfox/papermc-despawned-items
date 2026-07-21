@@ -1,0 +1,22 @@
+# Codecov configuration.
+#
+# partials_as_hits: Kover's JaCoCo-format XML marks branch-carrying lines as "partial";
+# by default Codecov counts those as uncovered, which reports branch-ish coverage
+# (~87%) instead of line coverage (~95%) and disagrees with the build's own Kover
+# gate. Counting partials as hits makes the Codecov number mean the same thing as
+# `koverVerify`'s: line coverage.
+parsers:
+  jacoco:
+    partials_as_hits: true
+
+coverage:
+  status:
+    # The owner's floor: project line coverage never below 90% (mirrors the Kover
+    # verify rule that already fails the build locally).
+    project:
+      default:
+        target: 90%
+    # Patch coverage is informational — the project floor is the contract.
+    patch:
+      default:
+        informational: true

@@ -25,3 +25,9 @@ Thumbs.db
 
 # ── Local scratch (build/test helper logs) ───────────────────────────────────
 *.log
+
+# Local test scratch (server smoke + mineflayer deps)
+node_modules/
+smoke-*/
+package.json
+package-lock.json
