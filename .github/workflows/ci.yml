@@ -109,5 +109,21 @@ jobs:
           cp papermc-despawned-items-*.jar smoke-ingame/plugins/
       - name: Install Mineflayer
         run: npm install --no-save --no-package-lock mineflayer
-      - name: Join with a bot and run plugin commands
+      - name: Join with a bot - permissions, gameplay, load and spark profiling
         run: node scripts/ingame-smoke.mjs smoke-ingame
+      # The server ran under Java Flight Recorder; summarize and keep the profile so
+      # every CI run carries downloadable real-server profiling data.
+      - name: JFR summary
+        if: always()
+        run: |
+          if [ -f smoke-ingame/profile.jfr ]; then
+            jfr summary smoke-ingame/profile.jfr | head -40
+          else
+            echo "no JFR profile produced"
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: server-jfr-profile
+          path: smoke-ingame/profile.jfr
+          if-no-files-found: warn

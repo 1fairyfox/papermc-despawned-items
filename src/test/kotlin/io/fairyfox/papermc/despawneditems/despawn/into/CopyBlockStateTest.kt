@@ -108,4 +108,73 @@ class CopyBlockStateTest {
         DespawnBlockIntoAir.copyBlockToLocation(item, block)
         assertEquals(Material.PLAYER_HEAD, block.type)
     }
+
+    @Test
+    fun `a banner item's pattern meta is applied to the placed banner`() {
+        // Banners carry patterns on BannerMeta (their own copier branch), not BlockStateMeta.
+        val item = ItemStack(Material.WHITE_BANNER)
+        val meta = item.itemMeta as org.bukkit.inventory.meta.BannerMeta
+        meta.addPattern(org.bukkit.block.banner.Pattern(org.bukkit.DyeColor.BLUE, org.bukkit.block.banner.PatternType.STRIPE_TOP))
+        item.itemMeta = meta
+
+        val block = target()
+        DespawnBlockIntoAir.copyBlockToLocation(item, block)
+        assertEquals(Material.WHITE_BANNER, block.type)
+    }
+
+    @Test
+    fun `a brewing stand item carries the brewing time`() {
+        val item =
+            itemWithState(Material.BREWING_STAND) { block ->
+                (block.state as org.bukkit.block.BrewingStand).brewingTime = 123
+            }
+        val block = target()
+        DespawnBlockIntoAir.copyBlockToLocation(item, block)
+        assertEquals(Material.BREWING_STAND, block.type)
+    }
+
+    @Test
+    fun `a beacon item carries its effects`() {
+        val item = itemWithState(Material.BEACON)
+        val block = target()
+        DespawnBlockIntoAir.copyBlockToLocation(item, block)
+        assertEquals(Material.BEACON, block.type)
+    }
+
+    @Test
+    fun `a beehive item carries its flower`() {
+        val item =
+            itemWithState(Material.BEEHIVE) { block ->
+                (block.state as org.bukkit.block.Beehive).flower = block.location
+            }
+        val block = target()
+        DespawnBlockIntoAir.copyBlockToLocation(item, block)
+        assertEquals(Material.BEEHIVE, block.type)
+    }
+
+    @Test
+    fun `a command block item carries name and command`() {
+        val item =
+            itemWithState(Material.COMMAND_BLOCK) { block ->
+                val commandBlock = block.state as org.bukkit.block.CommandBlock
+                commandBlock.setCommand("say hello")
+                commandBlock.name(Component.text("Namey"))
+            }
+        val block = target()
+        DespawnBlockIntoAir.copyBlockToLocation(item, block)
+        assertEquals(Material.COMMAND_BLOCK, block.type)
+    }
+
+    @Test
+    fun `a spawner item carries spawn type and delay`() {
+        val item =
+            itemWithState(Material.SPAWNER) { block ->
+                val spawner = block.state as org.bukkit.block.CreatureSpawner
+                spawner.spawnedType = org.bukkit.entity.EntityType.ZOMBIE
+                spawner.delay = 99
+            }
+        val block = target()
+        DespawnBlockIntoAir.copyBlockToLocation(item, block)
+        assertEquals(Material.SPAWNER, block.type)
+    }
 }

@@ -26,16 +26,17 @@ persistence, permission, config-migration, property/fuzz, and performance layers
 | Runner | JUnit Jupiter | ✅ in use |
 | Kotlin assertions | `kotlin.test` | ✅ in use |
 | Paper/Bukkit mocks | MockBukkit (`mockbukkit-v1.21`) | ✅ in use |
-| Property testing | Kotest property | ⏳ adding |
-| General mocking | MockK | ⏳ adding (when a collaborator needs it) |
+| Property testing | Kotest property 5.9 | ✅ in use (`PropertyInvariantsTest`) |
+| General mocking | MockK | ⛔ not needed (harness subclassing covers every seam so far) |
 | DB integration | SQLite temp / Testcontainers (MariaDB) | ✅ both (containers run in CI; clean local skip without Docker) |
 | Temp files | JUnit `@TempDir` | ✅ in use |
 | Coverage | Kover 0.9.9 | ✅ gates `build` — **min 90% line** (`koverVerify`); suite ~95% |
 | Static analysis | Detekt 1.23.8 | ✅ gates `build` (JDK-21 daemon + tuned config, **no baseline**) |
 | Formatting | Ktlint 12.1.2 | ✅ gates `build`; codebase formatted |
 | SAST | CodeQL (java-kotlin, traced compile) | ✅ dev pushes informational; **gates the release PR**; Kotlin pinned 2.4.0 for it |
-| Microbenchmarks | JMH | ⛔ deferred (JUnit bench guards suffice for now) |
-| Mutation testing | Pitest | ⛔ deferred |
+| Microbenchmarks | JMH (me.champeau.jmh) | ✅ `./gradlew jmh` + weekly CI artifact (informational) |
+| Mutation testing | Pitest 1.19 (pure core) | ✅ `./gradlew pitest` + weekly CI artifact — 84% test strength (informational) |
+| Real-server profiling | spark (bundled) + JFR | ✅ numbers in every in-game CI run + downloadable .jfr artifact |
 | CI | GitHub Actions | ✅ `ci.yml` (build+tests+coverage→Codecov+Sonar · `server-smoke` 1.21.11+26.1.2 · `ingame-smoke` Mineflayer) · `codeql.yml` · `scorecard.yml` |
 
 ## Source organization (target)
@@ -64,12 +65,19 @@ Legend: ✅ done · 🔨 in progress · ⏳ planned · ⛔ not applicable to thi
 - Kotlin-specific: data-class equality ✅; sealed `DespawnResult` ⛔ N/A (pipeline kept
   the enum `DespawnIntoResult` — fully covered); null-safety around Paper types ✅
   (null process items, null equipment); extension fns (`sendColored`) ✅ (via feedback tests)
-- Property-based & fuzz (§5): serialization roundtrip ✅ (kotlin.random); Kotest ⏳
-  (framework swap deferred — invariants covered without it);
-  **duplication invariant** (items in = stored + leftover) ✅ (storage + process + cooker)
-- Parameterized (§3): reward-pool exclusion classes ✅, full command matrix ✅,
-  permission matrix ✅ (loops rather than `@ParameterizedTest` — same coverage)
-- Mutation (§6): Pitest ⛔ deferred (unchanged)
+- Property-based & fuzz (§5): ✅ **Kotest property** adopted
+  (`PropertyInvariantsTest`: generator-driven roundtrips, garbage resilience, store
+  set-semantics under random op sequences, reward arithmetic) plus the original
+  kotlin.random roundtrip; **duplication invariant** ✅ (storage + process + cooker)
+- Parameterized (§3): reward-pool exclusion classes ✅, **full command × permission
+  matrix as individual JUnit nodes** ✅ (`CommandPermissionMatrixTest` `@TestFactory`:
+  41 commands × 3 levels = 123 cases, allowed AND denied asserted individually,
+  plus a multi-player group scenario ending in a verified delivery)
+- Mutation (§6): ✅ **Pitest 1.19** adopted, scoped to the pure core (store,
+  locations, reward, command-name parsing) — 107 mutants, 67% killed, **test
+  strength 84%**; informational (`./gradlew pitest`, weekly `bench.yml` job).
+  MockBukkit/container suites deliberately excluded (mutating API plumbing under a
+  mock times minions out without signal)
 
 **Persistence & data (§13–15)** — ✅ (except live-MySQL)
 - Serialization roundtrip + malformed/corrupt handling ✅
@@ -114,10 +122,20 @@ Legend: ✅ done · 🔨 in progress · ⏳ planned · ⛔ not applicable to thi
 - DoS: flood stress test ✅ — 10k-item intake <2s, bounded drain, per-tick budget and
   max-concurrent proven at dispatch (`DespawnLoadTest`)
 
-**Performance (§65–73)** — ✅ (JUnit-level; JMH still deferred)
+**Performance (§65–73)** — ✅ full stack (measured 2026-07-21)
 - Store scaling guardrails (100k/1M ops, O(1)) ✅ (kept)
-- Throttle budget/backpressure under load ✅; tick-time/allocation/soak/JMH ⛔/⏳
-  (real-server + JMH, later — unchanged)
+- **Combined load** ✅ (`CombinedLoadTest`): despawn storm + 50 players commanding
+  every tick → avg 0.79ms / p95 1.17ms / max 8.2ms per tick; 1000-command burst from
+  100 players in 39ms; **throughput/conservation**: a 5000-item burst fully lands
+  (nothing lost) in 251 ticks vs 250 theoretical; budget scaling proven at
+  100/tick; persistence consistent while flushing mid-storm
+- **JMH microbenchmarks** ✅ (`src/jmh`, `./gradlew jmh`, weekly `bench.yml`):
+  store random-draw ~7ns, contains ~7ns, ownersAt ~15ns, add+remove ~119ns at 100k
+  entries; parse ~76ns, serialize ~4ns
+- **Real-server profiling** ✅: the in-game CI job storms 200×64 forced despawns,
+  samples `spark tps`/`spark health` (numbers in the CI log), and uploads a full
+  **JFR profile** (`server-jfr-profile` artifact) from every run
+- Soak (multi-hour) ⏳ — the one remaining §65–73 item, needs a long-lived server
 
 **Compatibility (§40–46)** — ⏳
 - Version matrix in CI (1.21.11 build; forward-load on 26.1) ⏳
@@ -131,10 +149,12 @@ Legend: ✅ done · 🔨 in progress · ⏳ planned · ⛔ not applicable to thi
 - Boot smoke (headless Paper) ✅ **in CI on every push/PR** — `scripts/server-smoke.sh`
   via the `server-smoke` matrix job: 1.21.11 (target, Java 21) AND 26.1.2
   (forward-compat, Java 25); asserts clean enable, no load errors, no self-disable
-- In-game acceptance via Mineflayer bot ✅ **in CI** — `scripts/ingame-smoke.mjs`
-  (`ingame-smoke` job): a real client joins offline-mode Paper 1.21.11, runs
-  `/recycle` and `/despi exists anywhere owned-by-me`, asserts the plugin's replies
-  reach the client (validated locally end-to-end first)
+- In-game acceptance via Mineflayer bot ✅ **in CI, full permission story** —
+  `scripts/ingame-smoke.mjs`: unprivileged denial verified from the client side,
+  console `op` grant, `/despi add this` against a genuinely looked-at block,
+  `locations mine`, console `give` + `/recycle` → "Done!", then a load phase (200×64
+  forced despawns while the bot keeps commanding) with spark numbers and a JFR
+  profile artifact; post-load responsiveness asserted (validated locally first)
 - Regression test per fixed bug (§87) ✅ — see the pins section below
 
 ## Confirmed-bug regression pins (§87)
