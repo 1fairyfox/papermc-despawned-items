@@ -39,17 +39,22 @@ network for a small reward.</p>
           <code>/despi reload do</code> · <code>/despi save do</code></td>
       <td><code>despi.elevated</code></td>
       <td>admin / testing</td></tr>
-  <tr><td><code>/recycle</code></td>
+  <tr><td><code>/recycle</code> (also <code>/despi recycle</code>)</td>
       <td><code>recycle.use</code></td>
       <td>despawn the item in your hand for a reward</td></tr>
 </table>
 <p><code>despi.use</code> and <code>recycle.use</code> default to everyone;
 <code>despi.elevated</code> and <code>despi.limit.bypass</code> default to ops. Grant a
 group <code>despi.limit.50</code> for a 50-location cap (LuckPerms-friendly).</p>
+<p>Both command names are renameable (with optional aliases) via the
+<code>commands:</code> section of <code>config.yml</code> — useful when another plugin
+claims <code>/recycle</code>. Renames take effect on server restart.</p>
 
 <h2>Configuration</h2>
 <p><code>plugins/papermc-despawned-items/config.yml</code> sections:</p>
 <ul>
+  <li><code>commands</code> — rename <code>/despi</code> and <code>/recycle</code>
+      (plus aliases); restart required.</li>
   <li><code>sound</code> / <code>particles</code> — the landing effect (keys, not enums;
       colored <code>DUST</code> supported).</li>
   <li><code>limits</code> — <code>default</code> cap and <code>unlimited</code> toggle

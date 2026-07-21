@@ -27,6 +27,11 @@ class DespiActions(private val plugin: PaperMcDespawnedItems) {
     @Suppress("DEPRECATION")
     private fun offline(name: String) = Bukkit.getOfflinePlayer(name)
 
+    // ─── recycle ────────────────────────────────────────────────────────────────
+
+    /** `/recycle` and `/despi recycle` — recycle the held item for reward progress. */
+    fun recycle(player: Player) = RecycleAction.recycle(plugin, player)
+
     // ─── add ────────────────────────────────────────────────────────────────────
 
     /** `/despi add this [player]`. [ownerName] null = self (limit-checked). */

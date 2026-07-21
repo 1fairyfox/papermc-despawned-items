@@ -14,6 +14,13 @@ import org.bukkit.inventory.ItemStack
  * are tried in order by [DespawnProcess].
  */
 abstract class AbstractDespawnInto(protected val plugin: PaperMcDespawnedItems) {
+    /**
+     * Whether this strategy participates in bulk removal ([removeFrom]). Regression pin:
+     * [DespawnIntoVoid] applies to every block but removes nothing, so leaving it in the
+     * removal chain short-circuited `/despi purge` — no container was ever purged.
+     */
+    open val supportsRemoval: Boolean = true
+
     /** Whether this strategy is applicable to [targetBlock]. */
     abstract fun doesApply(targetBlock: Block): Boolean
 

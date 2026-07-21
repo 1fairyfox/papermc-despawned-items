@@ -24,38 +24,51 @@ import org.bukkit.entity.Player
 object DespiCommand {
     private const val USE = "despi.use"
     private const val ELEVATED = "despi.elevated"
+    private const val RECYCLE_USE = "recycle.use"
 
     fun register(plugin: PaperMcDespawnedItems) {
         val actions = DespiActions(plugin)
+        // Names/aliases are read once here — a rename needs a server restart, which the
+        // config documents (the lifecycle event fires during startup only).
+        val names = plugin.settings.commands
         plugin.lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
             event.registrar().register(
-                buildDespi(actions).build(),
+                buildDespi(actions, names.despiName).build(),
                 "Manage despawn locations and despawning",
-                emptyList(),
+                names.despiAliases,
             )
             event.registrar().register(
-                buildRecycle(plugin).build(),
+                buildRecycle(actions, names.recycleName).build(),
                 "Recycle the item in your hand for a reward",
-                emptyList(),
+                names.recycleAliases,
             )
         }
     }
 
     // ─── /despi tree ────────────────────────────────────────────────────────────
 
-    private fun buildDespi(a: DespiActions) =
-        Commands.literal("despi")
-            .requires { it.sender.hasPermission(USE) }
-            .then(addBranch(a))
-            .then(removeBranch(a))
-            .then(clearBranch(a))
-            .then(existsBranch(a))
-            .then(locationsBranch(a))
-            .then(purgeBranch(a))
-            .then(despawnBranch(a))
-            .then(effectsBranch(a))
-            .then(literal("reload").requires(elevated).then(literal("do").executes(sender { s, _ -> a.reload(s) })))
-            .then(literal("save").requires(elevated).then(literal("do").executes(sender { s, _ -> a.save(s) })))
+    private fun buildDespi(
+        a: DespiActions,
+        name: String,
+    ) = Commands.literal(name)
+        .requires { it.sender.hasPermission(USE) }
+        .then(recycleBranch(a))
+        .then(addBranch(a))
+        .then(removeBranch(a))
+        .then(clearBranch(a))
+        .then(existsBranch(a))
+        .then(locationsBranch(a))
+        .then(purgeBranch(a))
+        .then(despawnBranch(a))
+        .then(effectsBranch(a))
+        .then(literal("reload").requires(elevated).then(literal("do").executes(sender { s, _ -> a.reload(s) })))
+        .then(literal("save").requires(elevated).then(literal("do").executes(sender { s, _ -> a.save(s) })))
+
+    /** `/despi recycle` — the same behaviour as the standalone recycle command. */
+    private fun recycleBranch(a: DespiActions) =
+        literal("recycle")
+            .requires { it.sender.hasPermission(RECYCLE_USE) }
+            .executes(player { p, _ -> a.recycle(p) })
 
     private fun addBranch(a: DespiActions) =
         literal("add").then(
@@ -226,14 +239,12 @@ object DespiCommand {
 
     // ─── /recycle ───────────────────────────────────────────────────────────────
 
-    private fun buildRecycle(plugin: PaperMcDespawnedItems) =
-        Commands.literal("recycle")
-            .requires { it.sender.hasPermission("recycle.use") }
-            .executes(
-                player { p, _ ->
-                    RecycleAction.recycle(plugin, p)
-                },
-            )
+    private fun buildRecycle(
+        a: DespiActions,
+        name: String,
+    ) = Commands.literal(name)
+        .requires { it.sender.hasPermission(RECYCLE_USE) }
+        .executes(player { p, _ -> a.recycle(p) })
 
     // ─── builder helpers ─────────────────────────────────────────────────────────
 

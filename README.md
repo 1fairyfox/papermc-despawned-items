@@ -83,15 +83,21 @@ A short, configurable sound-and-particle effect plays wherever an item lands.
 | `/despi remove …` · `/despi clear …` · `/despi exists …` · `/despi locations …` | `despi.use` (self) · `despi.elevated` (others) | manage locations |
 | `/despi purge …` | `despi.use` (own) · `despi.elevated` (others/everyone) | bulk-remove materials from despawn storage |
 | `/despi despawn …` · `/despi effects …` · `/despi reload do` · `/despi save do` | `despi.elevated` | admin / testing |
-| `/recycle` | `recycle.use` | despawn the item in your hand for a reward |
+| `/recycle` (also `/despi recycle`) | `recycle.use` | despawn the item in your hand for a reward |
 
 `despi.use` and `recycle.use` default to everyone; `despi.elevated` and
 `despi.limit.bypass` default to ops. Grant a group `despi.limit.50` for a 50-location cap.
+
+Both command names are **renameable** (with optional aliases) via the `commands:`
+section of `config.yml` — handy when another plugin claims `/recycle`. Renames take
+effect on server restart (commands register once at startup).
 
 ## Configuration
 
 `plugins/papermc-despawned-items/config.yml` sections:
 
+- `commands` — rename `/despi` and `/recycle` (plus aliases) if they clash with
+  another plugin; restart required.
 - `sound` / `particles` — the landing effect (keys, not enums; colored `DUST` supported).
 - `limits` — `default` cap and `unlimited` toggle (permissions override per group).
 - `performance` — `max-per-tick`, `max-concurrent`, `max-queue`, `drop-when-full`.

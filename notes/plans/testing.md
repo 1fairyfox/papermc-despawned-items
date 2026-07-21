@@ -30,12 +30,13 @@ persistence, permission, config-migration, property/fuzz, and performance layers
 | General mocking | MockK | ⏳ adding (when a collaborator needs it) |
 | DB integration | SQLite temp / Testcontainers (MySQL) | ✅ SQLite · ⏳ Testcontainers |
 | Temp files | JUnit `@TempDir` | ✅ in use |
-| Coverage | Kover | ⛔ blocked (0.9.1 Kotlin-2.4-incompat; 0.9.8 marker not on portal) |
-| Static analysis | Detekt 1.23.8 | ✅ gates `build` (JDK-21 daemon + tuned config + baseline) |
+| Coverage | Kover 0.9.9 | ✅ gates `build` — **min 90% line** (`koverVerify`); suite ~95% |
+| Static analysis | Detekt 1.23.8 | ✅ gates `build` (JDK-21 daemon + tuned config, **no baseline**) |
 | Formatting | Ktlint 12.1.2 | ✅ gates `build`; codebase formatted |
+| SAST | CodeQL (java-kotlin, traced compile) | ✅ dev pushes informational; **gates the release PR**; Kotlin pinned 2.4.0 for it |
 | Microbenchmarks | JMH | ⛔ deferred (JUnit bench guards suffice for now) |
 | Mutation testing | Pitest | ⛔ deferred |
-| CI | GitHub Actions | ⏳ `tests.yml` |
+| CI | GitHub Actions | ✅ `ci.yml` (build+tests+coverage→Codecov) · `codeql.yml` · `scorecard.yml` |
 
 ## Source organization (target)
 
@@ -55,47 +56,64 @@ src/test/resources/
 
 Legend: ✅ done · 🔨 in progress · ⏳ planned · ⛔ not applicable to this plugin
 
-**Pure unit (§1–7)** — 🔨
+**Pure unit (§1–7)** — ✅ (2026-07-21 pass; coverage 44%→95%+, Kover-gated ≥90)
 - Value/domain logic: `DespawnLocation`, `LocationStore`, `RewardPool` ✅
-- Boundary values (0/1/-1, max stack, world border coords, capacity ±1) ⏳ expand
-- Equivalence partitions (owner/member/stranger; valid/invalid material) ⏳
-- Negative & exception tests (bad UUID/material/coords, malformed config) ✅ partial
-- Kotlin-specific: data-class equality ✅, sealed `DespawnResult` ⏳ (with pipeline refactor),
-  null-safety/interop around Paper platform types ⏳, extension-function tests ⏳
-- Property-based & fuzz (§5): serialization roundtrip ✅ (kotlin.random) → Kotest ⏳;
-  **duplication invariant** (items in = items out + consumed) 🔨 core for a storage plugin
-- Parameterized (§3): every reward `Material`, every command, permission matrix ⏳
-- Mutation (§6): Pitest ⛔ deferred
+- Boundary values (limit 0/±1, max stack 64 overflow, queue cap ±1, pool bounds) ✅
+- Equivalence partitions (self/other-owner; valid/invalid material; fuel/smelt/neither) ✅
+- Negative & exception tests (bad UUID/material/coords, malformed config, bad command names) ✅
+- Kotlin-specific: data-class equality ✅; sealed `DespawnResult` ⛔ N/A (pipeline kept
+  the enum `DespawnIntoResult` — fully covered); null-safety around Paper types ✅
+  (null process items, null equipment); extension fns (`sendColored`) ✅ (via feedback tests)
+- Property-based & fuzz (§5): serialization roundtrip ✅ (kotlin.random); Kotest ⏳
+  (framework swap deferred — invariants covered without it);
+  **duplication invariant** (items in = stored + leftover) ✅ (storage + process + cooker)
+- Parameterized (§3): reward-pool exclusion classes ✅, full command matrix ✅,
+  permission matrix ✅ (loops rather than `@ParameterizedTest` — same coverage)
+- Mutation (§6): Pitest ⛔ deferred (unchanged)
 
-**Persistence & data (§13–15)** — 🔨
+**Persistence & data (§13–15)** — ✅ (except live-MySQL)
 - Serialization roundtrip + malformed/corrupt handling ✅
-- File-system: temp dirs, missing/empty/corrupt file, incremental write ✅
-- Database CRUD/replace/persist (SQLite) ✅; transactions ✅ (per-owner txn);
-  schema create-if-not-exists ✅; MySQL/MariaDB via Testcontainers ⏳; pool exhaustion ⏳
+- File-system: temp dirs, missing/empty/corrupt file, incremental write, empty-owner
+  file deletion ✅
+- Database CRUD/replace/persist (SQLite) ✅; transactions ✅ + rollback-on-failure ✅;
+  schema create-if-not-exists ✅; malformed-row skip ✅; **pool exhaustion ✅**
+  (`SQLException` surfaces + recovers, `StorageFactoryTest`); YAML→DB migration ✅
+  (one-time, no duplication on restart); backend selection incl. aliases + unknown
+  fallback ✅; MySQL/MariaDB connect ⛔ needs a live server (Testcontainers = Docker
+  dependency, still deferred — the ~15 uncovered `buildMysql` lines)
 
-**MockBukkit (§8–10)** — 🔨
-- Lifecycle: enable/disable, command & listener registration ✅ (enable) / ⏳ (disable, dupes)
-- Player / world / inventory ⏳ (with pipeline + command wiring)
-- Command matrix (§23) ⏳ (with Brigadier rewrite)
-- Permission matrix (§8, §59) ⏳ (with limits/permissions work)
-- Event-listener (§9–10): `ItemDespawnEvent` handling, cancellation, ignoreCancelled ⏳
-- Scheduler (§8 scheduler): throttle/budget, cancel-on-disable ⏳ (with scheduler)
-- PDC (§8 PDC): `/recycle` progress key ⏳ (add explicit test)
+**MockBukkit (§8–10)** — ✅
+- Lifecycle: enable ✅, disable-flushes ✅, scheduler cancel-on-disable ✅
+- Player / world / inventory ✅ (harness: `TargetingPlayerMock`, `SyncChunkWorldMock`,
+  `stickyContainer` — see `notes/reference/testing.md` for the MockBukkit deviations)
+- Command matrix (§23) ✅ — every `/despi` branch + `/recycle` + `/despi recycle`
+  dispatched through Brigadier
+- Permission matrix (§8, §59) ✅ — none / `despi.use` / elevated / op / `recycle.use`
+  revoked, at dispatch level
+- Event-listener (§9–10): `ItemDespawnEvent` enqueue ✅, cancelled-event skip ✅
+- Scheduler: throttle/budget ✅, queue caps both drop policies ✅, cancel-on-disable ✅
+- PDC: `/recycle` progress key read/advance/reset ✅
 
-**Config (§11–12)** — ⏳ (Phase 3)
-- `plugin.yml` validity, commands/permissions match code, api-version, no `${}` leftovers ⏳
-- `config.yml` defaults, invalid enum/material/sound/particle/range warnings ⏳ (particle ✅ logic)
-- Migration fixtures (old→new), idempotent, version bump on success ⏳ (with versioned config)
-- Golden-file tests for generated/migrated config ⏳
+**Config (§11–12)** — ✅ (migration N/A)
+- `plugin.yml` validity: name, main-class loads, api-version, `${version}` expanded,
+  all four permissions declared, `libraries:` complete ✅ (`PluginYmlValidityTest`)
+- `config.yml` defaults ✅, invalid values coerced ✅, unknown particle fallback ✅,
+  live reload picks up edits ✅, command rename/alias validation ✅
+- Migration fixtures ⛔ N/A (config is not versioned; adopt when it becomes so)
+- Golden-file tests ⏳ (low value while defaults are asserted directly)
 
-**Security (§59–64)** — ⏳
-- Authorization at service layer (not just command) — ties to limits/permissions ⏳
-- Input validation & injection: SQL is **parameterized** ✅; command/config input ⏳
-- DoS: despawn-event flood is handled by the throttled scheduler 🔨 (add a stress test)
+**Security (§59–64)** — ✅
+- Authorization: dispatch-level permission matrix ✅ + limit checks at action layer ✅
+- Input validation & injection: SQL parameterized ✅ (+ malformed-row handling ✅);
+  command input (bad materials, bad names) rejected with feedback ✅; command-rename
+  names sanitized against a strict pattern ✅
+- DoS: flood stress test ✅ — 10k-item intake <2s, bounded drain, per-tick budget and
+  max-concurrent proven at dispatch (`DespawnLoadTest`)
 
-**Performance (§65–73)** — 🔨
-- JUnit scaling guardrails for the store (100k/1M ops, O(1)) ✅
-- Tick-time / allocation / soak / JMH ⛔/⏳ (real-server + JMH, later)
+**Performance (§65–73)** — ✅ (JUnit-level; JMH still deferred)
+- Store scaling guardrails (100k/1M ops, O(1)) ✅ (kept)
+- Throttle budget/backpressure under load ✅; tick-time/allocation/soak/JMH ⛔/⏳
+  (real-server + JMH, later — unchanged)
 
 **Compatibility (§40–46)** — ⏳
 - Version matrix in CI (1.21.11 build; forward-load on 26.1) ⏳
@@ -117,4 +135,13 @@ Every fixed bug gets a permanent test that fails before the fix:
 - Data-bearing particles threw at spawn → `ParticleData` + `ParticleDataTest` ✅
 - Stale static strategy list across reloads → instance-scoped `plugin.strategies` (covered by enable test) ✅
 - `RemoveMaterials` IOOBE when target owner had no locations → guarded (targets.isEmpty check) ✅
+- **`/despi purge` never purged containers** — `DespawnIntoVoid` applies to every block,
+  removes nothing, and `break`ed the removal chain → `supportsRemoval` flag
+  (`RemoveMaterialsTest`, found 2026-07-21 by the new suite) ✅
+- **Reward pool could hand out non-item materials** (`DEAD_HORN_CORAL_WALL_FAN`) and
+  crash the reward drop → `isItem` filter (`RecycleActionTest` threshold test +
+  `PluginEnableTest` pool assertions) ✅
+- **Entity purge-by-material never cleared storage-minecart stacks** (delegated to the
+  exact-amount `ItemStack` overload) → amount-agnostic `Inventory.remove(Material)`
+  path (`DespawnItemIntoEntityTest.removeFrom`) ✅
 - (Add each new bug here.)

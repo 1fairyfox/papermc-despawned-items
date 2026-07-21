@@ -35,9 +35,12 @@ object RewardPool {
     /**
      * (Re)builds the reward pool. Safe to call again on reload.
      *
-     * Filters purely on each material's stable enum name and identity — deliberately
-     * avoiding server-backed calls like `Material.isAir()` (which routes through the
-     * block-type registry) so this stays fast and testable off the main thread.
+     * Filters on each material's stable enum name plus [Material.isItem] — block-only
+     * materials (wall banners, wall coral fans, crops, …) have no item form, and
+     * handing one out would throw when the reward is dropped. Regression pin:
+     * `DEAD_HORN_CORAL_WALL_FAN` used to slip through and crash `/recycle`'s reward
+     * drop with "isn't an item". Called from `onEnable` (main thread), so the
+     * registry-backed `isItem` flag is safe here.
      */
     fun setup() {
         pool =
@@ -45,6 +48,7 @@ object RewardPool {
                 val name = type.name
                 !isAir(name) &&
                     !name.startsWith("LEGACY_") &&
+                    type.isItem &&
                     type !in EXCLUDED_MATERIALS &&
                     EXCLUDED_SUBSTRINGS.none { it in name.lowercase() }
             }

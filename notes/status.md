@@ -3,13 +3,15 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.3.7` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
+**Version:** `1.4.0` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
 (Brigadier commands) → v1.3.0 (naming + quality gates) → v1.3.1 (package →
 `io.fairyfox.papermc.despawneditems`) → v1.3.2 (docs site wears the shared fairyfox chrome,
 bundle v2.2.1) → v1.3.3 (full standards audit: nav/subnav corrected, Downloads page,
 mandatory branch protection + PR releases, provenance attestation) → v1.3.4–1.3.6
 (docs-site fixes: rendered notes/README pages, self-hosted legal pages + Legal subnav) →
-v1.3.7 (badge wall + supply-chain/quality tooling parity with `random-ai-prompt`).
+v1.3.7 (badge wall + supply-chain/quality tooling parity with `random-ai-prompt`) →
+**v1.4.0** (full-layer test suite 44%→~95% Kover-gated ≥90, 3 bug fixes found by it,
+`/despi recycle` + renameable commands, CodeQL restored on Kotlin 2.4.0).
 Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
 
 **Release path (since 2026-07-20):** `main` is branch-protected — releases go through a
@@ -61,8 +63,10 @@ Done on `dev` (all green, CI passing):
 
 | Area | Status |
 |------|--------|
-| Build (Gradle/Kotlin/Paper 1.21.11, Java 21) | ✅ green |
-| Test suite (JUnit 5 + MockBukkit) | ✅ ~49 tests, gating build |
+| Build (Gradle/Kotlin 2.4.0/Paper 1.21.11, Java 21) | ✅ green — Kotlin pinned to CodeQL's supported max (bump only together) |
+| Test suite (JUnit 5 + MockBukkit) | ✅ ~200 tests across every layer, gating build |
+| Coverage | ✅ ~95.6% line / ~78.6% branch — **`koverVerify` min 90 gates the build** |
+| SAST (CodeQL, java-kotlin traced compile) | ✅ restored — dev runs informational, release-PR run gates |
 | CI on `dev` | ✅ passing |
 | Refactor (plan: refactor-2026-07.md) | ✅ Phases 1–4 largely done |
 | Runtime load on real Paper 1.21.11 | ✅ verified — headless smoke, `libraries:` (HikariCP + JDBC) auto-loaded, enables cleanly, no errors |

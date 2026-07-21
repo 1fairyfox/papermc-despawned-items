@@ -121,6 +121,15 @@ class DespawnItemIntoEntity(plugin: PaperMcDespawnedItems) : AbstractDespawnInto
         material: Material,
         targetBlock: Block,
     ) {
+        // Regression pin: inventory-holding entities (storage minecarts) need the
+        // amount-agnostic Inventory.remove(Material) — delegating to the ItemStack
+        // overload compared with amount 1 and never cleared real stacks.
+        val entities = targetBlock.location.toCenterLocation().getNearbyEntities(NEARBY_RADIUS, NEARBY_RADIUS, NEARBY_RADIUS)
+        val entity = entities.singleOrNull()
+        if (entity is InventoryHolder && entity !is LivingEntity && entity !is ItemFrame) {
+            entity.inventory.remove(material)
+            return
+        }
         removeFrom(ItemStack(material), targetBlock)
     }
 
