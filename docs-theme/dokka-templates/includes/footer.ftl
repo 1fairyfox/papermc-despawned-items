@@ -9,7 +9,9 @@
       <div class="wrap">
         <div class="footer-brand">
           <a class="brand" href="https://fairyfox.io/">
-            <img class="brand-logo" src="https://fairyfox.io/assets/icons/fox.png" alt="" aria-hidden="true">
+            <@template_cmd name="pathToRoot">
+            <img class="brand-logo" src="${pathToRoot}fox.png" alt="" aria-hidden="true">
+            </@template_cmd>
             <span class="brand-name">Fairy Fox</span>
           </a>
           <p>The project hub and documentation library for Fairy Fox's software work.</p>

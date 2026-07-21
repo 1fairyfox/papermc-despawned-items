@@ -1,19 +1,26 @@
 <!DOCTYPE html>
-<!-- downloads.html — the project's Downloads page (docs-site standard 06 §Downloads).
-     Hand-authored, chrome-wearing, copied into the generated docs root by the
-     vendorChromeAssets task. Sourced from GitHub Releases (the source of truth): a
-     perma-"Latest" section built on the stable /releases/latest URL (needs no
-     per-release edits), then the all-releases link. Navigation page — no data-read
-     (reading controls stay locked; the designed measure holds). Chrome partials are
-     verbatim from docs-theme/chrome/ with the FF_* slots filled; primary nav marks
-     Projects active (standard 05), subnav marks Download active. -->
-<html lang="en">
+<!-- _shell.html — the one chrome shell for every hand-authored page of the docs site
+     (docs-site standard: Case A — hand-authored site with the generator boundaried
+     under /api/). Assembled at build time by the renderDocsSite task, which fills:
+       {{FF_ROOT}}        — relative prefix to the site root ("", "../", "../../", …)
+       {{FF_HTML_ATTRS}}  — ` data-read` on readable pages (tutorials, changelog, note
+                            pages), empty on navigation/designed pages (overview
+                            landing, downloads, notes index)
+       {{FF_TITLE}} / {{FF_DESC}}
+       {{ACTIVE_HOME}} {{ACTIVE_NOTES}} {{ACTIVE_TUTORIALS}} {{ACTIVE_CHANGELOG}}
+       {{ACTIVE_DOWNLOAD}} — ` class="active" aria-current="page"` on the current item
+       {{FF_CONTENT}}     — the page body
+     Subnav is the CANONICAL three-zone shape (05): [name=overview] · Notes · Tutorials ·
+     Changelog · API · Download · [Repository ↗] — every centre link a real,
+     chrome-wearing page. Primary nav marks Projects active — always, only Projects (05).
+     Brand icon is VENDORED (chrome/fox.png), not hot-linked (self-hosted-assets). -->
+<html lang="en"{{FF_HTML_ATTRS}}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Download · PaperMC Despawned Items</title>
-  <meta name="description" content="Download the PaperMC Despawned Items plugin jar — latest release and all versions.">
-  <link href="images/logo-icon.svg" rel="icon" type="image/svg">
+  <title>{{FF_TITLE}}</title>
+  <meta name="description" content="{{FF_DESC}}">
+  <link href="{{FF_ROOT}}icon.png" rel="icon" type="image/png">
 
   <!-- 1 · Browser-chrome colour, per scheme (identical everywhere) -->
   <meta name="theme-color" content="#ef6149" media="(prefers-color-scheme: light)">
@@ -41,23 +48,38 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <!-- 4 · The vendored master stylesheet (page sits at the docs root) -->
-  <link rel="stylesheet" href="main.css">
+  <!-- 4 · The vendored master stylesheet -->
+  <link rel="stylesheet" href="{{FF_ROOT}}main.css">
 
-  <!-- Page-local layout for the download cards only; palette/type come from main.css vars -->
+  <!-- Page-local layout for content cards/tables + the Notes two-column layout;
+       palette/type come from main.css vars -->
   <style>
-    .dl-main{max-width:46rem;margin:0 auto;padding:2.5rem var(--gutter,1.25rem) 4rem;flex:1 0 auto}
-    .dl-card{border:1px solid var(--border,rgba(128,128,128,.25));border-radius:12px;padding:1.5rem;margin:1.25rem 0}
-    .dl-card h2{margin-top:0}
-    .dl-btn{display:inline-block;padding:.6rem 1.1rem;border-radius:999px;border:1px solid var(--accent,#ef6149);font-weight:600;text-decoration:none}
-    .dl-meta{font-size:.9em;opacity:.8}
+    .pg-main{max-width:var(--reading-width,46rem);margin:0 auto;padding:2.5rem var(--gutter,1.25rem) 4rem;flex:1 0 auto}
+    .pg-main:has(.notes-layout){max-width:72rem}
+    .pg-card{border:1px solid var(--border,rgba(128,128,128,.25));border-radius:12px;padding:1.5rem;margin:1.25rem 0}
+    .pg-card h2,.pg-card h3{margin-top:0}
+    .pg-btn{display:inline-block;padding:.6rem 1.1rem;border-radius:999px;border:1px solid var(--accent,#ef6149);font-weight:600;text-decoration:none}
+    .pg-meta{font-size:.9em;opacity:.8}
+    .pg-main table{border-collapse:collapse;width:100%;margin:1rem 0}
+    .pg-main th,.pg-main td{border:1px solid var(--border,rgba(128,128,128,.25));padding:.5rem .7rem;text-align:left;vertical-align:top}
+    .pg-main code{font-family:"JetBrains Mono",monospace;font-size:.92em}
+    .pg-main pre{border:1px solid var(--border,rgba(128,128,128,.25));border-radius:8px;padding:1rem;overflow-x:auto}
+    .notes-layout{display:grid;grid-template-columns:16rem minmax(0,1fr);gap:2rem}
+    .notes-side{font-size:.9em;border-right:1px solid var(--border,rgba(128,128,128,.25));padding-right:1rem}
+    .notes-side h4{margin:1rem 0 .25rem;text-transform:uppercase;letter-spacing:.05em;font-size:.78em;opacity:.75}
+    .notes-side a{display:block;padding:.15rem 0;text-decoration:none}
+    .notes-side a.current{font-weight:700}
+    .notes-article{min-width:0;max-width:var(--reading-width,46rem)}
+    @media (max-width:820px){.notes-layout{grid-template-columns:1fr}.notes-side{border-right:0;border-bottom:1px solid var(--border,rgba(128,128,128,.25));padding:0 0 1rem}}
+    .pg-cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem}
+    .pg-cardgrid .pg-card{margin:0}
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
       <a class="brand" href="https://fairyfox.io/">
-        <img class="brand-logo" src="https://fairyfox.io/assets/icons/fox.png" alt="" aria-hidden="true">
+        <img class="brand-logo" src="{{FF_ROOT}}fox.png" alt="" aria-hidden="true">
         <span class="brand-name">Fairy&nbsp;Fox</span>
       </a>
       <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -86,47 +108,25 @@
 
   <nav class="subnav" aria-label="Section">
     <div class="wrap">
-      <a href="index.html" class="subnav-home">PaperMC Despawned Items</a>
-      <a href="index.html">API</a>
-      <a href="downloads.html" class="active" aria-current="page">Download</a>
+      <a href="{{FF_ROOT}}index.html" class="subnav-home{{ACTIVE_HOME}}"{{ARIA_HOME}}>PaperMC Despawned Items</a>
+      <a href="{{FF_ROOT}}notes/index.html"{{ACTIVE_NOTES}}>Notes</a>
+      <a href="{{FF_ROOT}}tutorials.html"{{ACTIVE_TUTORIALS}}>Tutorials</a>
+      <a href="{{FF_ROOT}}changelog.html"{{ACTIVE_CHANGELOG}}>Changelog</a>
+      <a href="{{FF_ROOT}}api/index.html">API</a>
+      <a href="{{FF_ROOT}}downloads.html"{{ACTIVE_DOWNLOAD}}>Download</a>
       <a href="https://github.com/1fairyfox/papermc-despawned-items" class="subnav-repo">Repository ↗</a>
     </div>
   </nav>
 
-  <main class="dl-main" id="main">
-    <h1>Download</h1>
-    <p>PaperMC Despawned Items ships as a single plugin jar for <strong>Paper 1.21.x</strong>
-       servers on <strong>Java 21</strong> (it also loads on 26.x servers via Paper's
-       forward-compatibility). All builds are published on GitHub Releases — the source of
-       truth for every version.</p>
-
-    <div class="dl-card">
-      <h2>Latest release</h2>
-      <p>Always points at the newest tagged build; this link never goes stale.</p>
-      <p><a class="dl-btn" href="https://github.com/1fairyfox/papermc-despawned-items/releases/latest">Get the latest jar ↗</a></p>
-      <p class="dl-meta">Asset: <code>papermc-despawned-items-&lt;version&gt;.jar</code> — one
-         shaded jar, Kotlin runtime included, no other dependencies.</p>
-    </div>
-
-    <div class="dl-card">
-      <h2>Install</h2>
-      <p>Drop the jar into your server's <code>plugins/</code> folder and restart. The plugin
-         registers as <code>papermc-despawned-items</code> and creates its data folder of the
-         same name on first run. Configuration lives in that folder's <code>config.yml</code>.</p>
-    </div>
-
-    <div class="dl-card">
-      <h2>All releases</h2>
-      <p>Need a specific or older version, or the release notes for each build?</p>
-      <p><a href="https://github.com/1fairyfox/papermc-despawned-items/releases">Browse every release ↗</a></p>
-    </div>
+  <main class="pg-main" id="main">
+{{FF_CONTENT}}
   </main>
 
   <footer class="site-footer">
     <div class="wrap">
       <div class="footer-brand">
         <a class="brand" href="https://fairyfox.io/">
-          <img class="brand-logo" src="https://fairyfox.io/assets/icons/fox.png" alt="" aria-hidden="true">
+          <img class="brand-logo" src="{{FF_ROOT}}fox.png" alt="" aria-hidden="true">
           <span class="brand-name">Fairy Fox</span>
         </a>
         <p>The project hub and documentation library for Fairy Fox's software work.</p>
@@ -162,8 +162,8 @@
     </div>
   </footer>
 
-  <script src="nav.js" defer></script>
-  <script src="reader.js" defer></script>
-  <script src="coins.js" defer></script>
+  <script src="{{FF_ROOT}}nav.js" defer></script>
+  <script src="{{FF_ROOT}}reader.js" defer></script>
+  <script src="{{FF_ROOT}}coins.js" defer></script>
 </body>
 </html>

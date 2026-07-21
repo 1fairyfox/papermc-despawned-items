@@ -103,6 +103,29 @@ Then, after making changes, run this loop **without being asked**:
 `reset --hard` / `rebase` / `clean -fd` / delete a long-lived branch without an
 explicit request. Inspect `git status` before and after.
 
+## Checklists Are Contracts (a standing instruction)
+
+When work touches a standard that carries a checklist or `## Verify` table:
+**enumerate every item in the plan; record each item's outcome individually**
+(pass / fixed / N-A-with-reason / gap-with-due). **Never compress a list into a single
+done-mark unless the item-by-item record exists first.** Expansion depth is mechanical —
+every touched standard expands to its full Verify table; none is summarized at
+table level. Copying a standard into `notes/reference/` is `copied-only`, **not**
+adoption — only a recorded Verify pass counts. The per-standard state lives in
+`notes/reference/adoption-manifest.md`; keep it current, and back any summary claim
+(status.md, reports) with its row. An overdue `gap` on a mandatory standard
+(git-workflow, supply-chain-hardening) holds releases like a red build.
+
+**Strict reading of latitude (S8).** When a checklist item offers latitude ("include
+the ones that exist", "recommended", "where possible"), the default reading is the
+**ambitious** one — build the thing — unless the owner explicitly descopes it.
+Descoping by silent omission is a `gap`, not a pass.
+
+**Disclose the not-done list (S9).** Every completion claim ends with an explicit
+"NOT done / read leniently / needs the owner's eyes" section. The owner should never
+have to extract it by challenge.
+Background: `notes/fairyfox-reports/2026-07-20-checklist-noncompliance-failure-analysis.md`.
+
 ## Maintaining the Notes — Your Responsibility
 
 | Trigger | Action |
