@@ -2,11 +2,38 @@
 
 # PaperMC Despawned Items
 
-[![CI](https://img.shields.io/github/actions/workflow/status/1fairyfox/papermc-despawned-items/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/1fairyfox/papermc-despawned-items/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/github/v/tag/1fairyfox/papermc-despawned-items?style=flat-square&label=version)](https://github.com/1fairyfox/papermc-despawned-items/releases)
+[![Contributors](https://img.shields.io/github/contributors/1fairyfox/papermc-despawned-items?style=flat-square&logo=github)](https://github.com/1fairyfox/papermc-despawned-items/graphs/contributors)
+[![Stars](https://img.shields.io/github/stars/1fairyfox/papermc-despawned-items?style=flat-square&logo=github)](https://github.com/1fairyfox/papermc-despawned-items/stargazers)
+[![Forks](https://img.shields.io/github/forks/1fairyfox/papermc-despawned-items?style=flat-square&logo=github)](https://github.com/1fairyfox/papermc-despawned-items/network/members)
+![Watchers](https://img.shields.io/github/watchers/1fairyfox/papermc-despawned-items?style=flat-square&logo=github)
 [![Last commit](https://img.shields.io/github/last-commit/1fairyfox/papermc-despawned-items?style=flat-square)](https://github.com/1fairyfox/papermc-despawned-items/commits)
+![Commits](https://img.shields.io/github/commit-activity/t/1fairyfox/papermc-despawned-items?style=flat-square&label=commits)
+[![Version](https://img.shields.io/github/v/tag/1fairyfox/papermc-despawned-items?style=flat-square&label=version)](https://github.com/1fairyfox/papermc-despawned-items/releases)
+![Java](https://img.shields.io/badge/java-21-f89820?style=flat-square&logo=openjdk&logoColor=white)
+![Paper](https://img.shields.io/badge/Paper-1.21.x-2a9d8f?style=flat-square)
+[![CI](https://img.shields.io/github/actions/workflow/status/1fairyfox/papermc-despawned-items/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/1fairyfox/papermc-despawned-items/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/1fairyfox/papermc-despawned-items?style=flat-square&logo=codecov&logoColor=white&label=coverage)](https://codecov.io/gh/1fairyfox/papermc-despawned-items)
+[![Code quality](https://img.shields.io/codefactor/grade/github/1fairyfox/papermc-despawned-items?style=flat-square&logo=codefactor&logoColor=white&label=code%20quality)](https://www.codefactor.io/repository/github/1fairyfox/papermc-despawned-items)
+[![Quality gate](https://img.shields.io/sonar/quality_gate/1fairyfox_papermc-despawned-items?server=https%3A%2F%2Fsonarcloud.io&style=flat-square&logo=sonarcloud&logoColor=white&label=quality%20gate)](https://sonarcloud.io/summary/new_code?id=1fairyfox_papermc-despawned-items)
+[![Tech debt](https://img.shields.io/sonar/tech_debt/1fairyfox_papermc-despawned-items?server=https%3A%2F%2Fsonarcloud.io&style=flat-square&logo=sonarcloud&logoColor=white&label=tech%20debt)](https://sonarcloud.io/summary/new_code?id=1fairyfox_papermc-despawned-items)
+[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/1fairyfox/papermc-despawned-items?style=flat-square&label=scorecard)](https://securityscorecards.dev/viewer/?uri=github.com/1fairyfox/papermc-despawned-items)
 [![Docs](https://img.shields.io/badge/docs-fairyfox.io-4c9?style=flat-square&logo=readthedocs&logoColor=white)](https://fairyfox.io/papermc-despawned-items/)
+[![Pages](https://img.shields.io/github/actions/workflow/status/1fairyfox/papermc-despawned-items/docs.yml?branch=main&style=flat-square&logo=readthedocs&logoColor=white&label=pages)](https://github.com/1fairyfox/papermc-despawned-items/actions/workflows/docs.yml)
+[![Open issues](https://img.shields.io/github/issues/1fairyfox/papermc-despawned-items?style=flat-square)](https://github.com/1fairyfox/papermc-despawned-items/issues)
+![Closed issues](https://img.shields.io/github/issues-closed/1fairyfox/papermc-despawned-items?style=flat-square)
+[![Open PRs](https://img.shields.io/github/issues-pr/1fairyfox/papermc-despawned-items?style=flat-square)](https://github.com/1fairyfox/papermc-despawned-items/pulls)
+![Closed PRs](https://img.shields.io/github/issues-pr-closed/1fairyfox/papermc-despawned-items?style=flat-square)
 [![License](https://img.shields.io/github/license/1fairyfox/papermc-despawned-items?style=flat-square)](LICENSE)
+
+<!-- Distribution / usage badges — enable each once the plugin is published on that platform
+     (see notes/status.md: "Hangar project + HANGAR_API_TOKEN secret"). Both platforms support
+     automated publishing from CI (Hangar via the hangar-publish-plugin / Modrinth via mc-publish),
+     so wire the release-publish workflow at the same time.
+[![Hangar downloads](https://img.shields.io/hangar/dt/papermc-despawned-items?style=flat-square&label=hangar)](https://hangar.papermc.io/1fairyfox/papermc-despawned-items)
+[![Modrinth downloads](https://img.shields.io/modrinth/dt/papermc-despawned-items?style=flat-square&logo=modrinth&logoColor=white&label=modrinth)](https://modrinth.com/plugin/papermc-despawned-items)
+[![Modrinth version](https://img.shields.io/modrinth/v/papermc-despawned-items?style=flat-square&logo=modrinth&logoColor=white)](https://modrinth.com/plugin/papermc-despawned-items/versions)
+-->
+
 
 A **Paper** (Minecraft) server plugin that catches items about to despawn on the
 ground and — instead of deleting them — relocates them into a registered network of

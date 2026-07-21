@@ -49,7 +49,10 @@
       <div class="wrap">
         <@template_cmd name="pathToRoot">
         <a href="${pathToRoot}../index.html" class="subnav-home">PaperMC Despawned Items</a>
-        <a href="${pathToRoot}../notes/index.html">Notes</a>
+        <a href="${pathToRoot}../index.html">Overview</a>
+        <a href="${pathToRoot}../notes/index.html">Project Notes</a>
+        <a href="${pathToRoot}../notes/systems/index.html">Systems</a>
+        <a href="${pathToRoot}../notes/reference/index.html">Reference</a>
         <a href="${pathToRoot}../tutorials.html">Tutorials</a>
         <a href="${pathToRoot}../changelog.html">Changelog</a>
         <a href="${pathToRoot}index.html" class="active" aria-current="page">API</a>
@@ -57,6 +60,7 @@
         <a href="${pathToRoot}../legal/index.html">Legal</a>
         </@template_cmd>
         <a href="https://github.com/1fairyfox/papermc-despawned-items" class="subnav-repo">Repository ↗</a>
+        <a href="https://github.com/1fairyfox/papermc-despawned-items/tree/main/notes" class="subnav-repo">Notes ↗</a>
       </div>
     </nav>
 

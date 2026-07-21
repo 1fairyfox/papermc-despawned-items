@@ -164,7 +164,7 @@ val renderDocsSite by tasks.registering {
             h =
                 h.replace("{{ACTIVE_HOME}}", if (active == "HOME") " active" else "")
                     .replace("{{ARIA_HOME}}", if (active == "HOME") " aria-current=\"page\"" else "")
-            for (t in listOf("NOTES", "TUTORIALS", "CHANGELOG", "DOWNLOAD", "LEGAL")) {
+            for (t in listOf("OVERVIEW", "NOTES", "SYSTEMS", "REFERENCE", "TUTORIALS", "CHANGELOG", "DOWNLOAD", "LEGAL")) {
                 h =
                     h.replace(
                         "{{ACTIVE_$t}}",
@@ -331,6 +331,46 @@ val renderDocsSite by tasks.registering {
                 landing,
             ),
         )
+
+        // Section landing pages — the subnav's Systems / Reference doors (parity with the
+        // sibling project's broken-out Notes sections). Each lists that section's notes; only
+        // emitted when the section actually has notes, so a subnav pill never points at a 404.
+        val sectionDoors =
+            listOf(
+                Triple("systems", "Systems", "SYSTEMS"),
+                Triple("reference", "Reference", "REFERENCE"),
+            )
+        for ((dir, sectionName, activeKey) in sectionDoors) {
+            val inSection = noteFiles.filter { it.startsWith("$dir/") }
+            if (inSection.isEmpty()) continue
+            val list =
+                buildString {
+                    append("<ul>")
+                    for (p in inSection) {
+                        val href = "../../notes/" + p.removeSuffix(".md") + ".html"
+                        val label = p.substringAfterLast("/").removeSuffix(".md")
+                        append("<li><a href=\"$href\">$label</a></li>")
+                    }
+                    append("</ul>")
+                }
+            val body =
+                "<div class=\"notes-layout\">" + sidebar("../../", null) +
+                    "<article class=\"notes-article\"><h1>$sectionName</h1>" +
+                    "<p>Notes in the $sectionName section — see the full list in the sidebar.</p>" +
+                    list + "</article></div>"
+            val secDir = File(notesOut, dir)
+            secDir.mkdirs()
+            File(secDir, "index.html").writeText(
+                page(
+                    "../../",
+                    "$sectionName · Notes · PaperMC Despawned Items",
+                    "$sectionName notes for PaperMC Despawned Items.",
+                    activeKey,
+                    false,
+                    body,
+                ),
+            )
+        }
         // Every note page, data-read, with the full sidebar.
         for (p in renderFiles) {
             val depth = p.count { it == '/' } + 1 // +1 for the notes/ dir itself

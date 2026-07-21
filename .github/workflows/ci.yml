@@ -23,6 +23,19 @@ jobs:
         run: node scripts/check-links.mjs
       - name: Build
         run: ./gradlew build --no-daemon --stacktrace
+      # Emit the Kover coverage report as XML for Codecov (Kover already gates the build
+      # locally; the test results from `build` are reused, so this is near-instant).
+      - name: Kover XML coverage report
+        run: ./gradlew koverXmlReport --no-daemon
+      # Non-blocking: publish coverage to Codecov (the badge + PR annotations). Public repos
+      # work tokenless; CODECOV_TOKEN is recommended. Kover's XML is Codecov-native.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: 1fairyfox/papermc-despawned-items
+          files: build/reports/kover/report.xml
+          fail_ci_if_error: false
       - name: Upload plugin jar
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
