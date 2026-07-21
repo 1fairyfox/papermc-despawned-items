@@ -231,12 +231,17 @@ val renderDocsSite by tasks.registering {
 
         // 3 · Notes — the living notes/ tree rendered under notes/ (docs-site 06:
         // one Notes door, a landing with intro + section cards, a sidebar listing
-        // EVERY note organised by section, README/overview excluded from the sidebar).
-        val noteFiles =
+        // EVERY note organised by section). READMEs are RENDERED (so inter-note links
+        // to them resolve — no 404s) but EXCLUDED from the sidebar (they're section
+        // overviews, which the standard keeps out of the note list); the root
+        // notes/README.md is the landing's own intro.
+        val allNoteFiles =
             notesDir.asFile.walkTopDown()
-                .filter { it.isFile && it.extension == "md" && it.name != "README.md" }
+                .filter { it.isFile && it.extension == "md" }
                 .map { it.relativeTo(notesDir.asFile).invariantSeparatorsPath }
                 .sorted().toList()
+        val renderFiles = allNoteFiles.filter { it != "README.md" }
+        val noteFiles = allNoteFiles.filter { !it.endsWith("README.md") }
         val sections =
             linkedMapOf(
                 "Status & Changelog" to { p: String -> !p.contains("/") },
@@ -294,7 +299,7 @@ val renderDocsSite by tasks.registering {
             ),
         )
         // Every note page, data-read, with the full sidebar.
-        for (p in noteFiles) {
+        for (p in renderFiles) {
             val depth = p.count { it == '/' } + 1 // +1 for the notes/ dir itself
             val root = "../".repeat(depth)
             val target = File(notesOut, p.removeSuffix(".md") + ".html")
