@@ -15,13 +15,13 @@ for a fix before any public disclosure.
 
 ## Supported versions
 
-Only the latest released version of **DespawnedItems** is supported. Fixes ship in a
-new release rather than as back-ports.
+Only the latest released version of **PaperMC Despawned Items** is supported. Fixes ship
+in a new release rather than as back-ports.
 
 ## Scope
 
-DespawnedItems is a server-side Paper plugin. It stores per-player despawn locations
-on the server's disk under the plugin's data folder (`plugins/DespawnedItems/userdata/`)
+PaperMC Despawned Items is a server-side Paper plugin. It stores per-player despawn
+locations on the server's disk under the plugin's data folder (`plugins/papermc-despawned-items/userdata/`)
 and reads its own `config.yml`. It makes no outbound network connections and relays
 nothing to any third party. Relevant security surface is limited to: the command
 permissions (`despi.use`, `despi.elevated`, `recycle.use`) gating who can register,

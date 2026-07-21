@@ -3,11 +3,13 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.3.3` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
+**Version:** `1.3.7` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
 (Brigadier commands) → v1.3.0 (naming + quality gates) → v1.3.1 (package →
 `io.fairyfox.papermc.despawneditems`) → v1.3.2 (docs site wears the shared fairyfox chrome,
 bundle v2.2.1) → v1.3.3 (full standards audit: nav/subnav corrected, Downloads page,
-mandatory branch protection + PR releases, provenance attestation).
+mandatory branch protection + PR releases, provenance attestation) → v1.3.4–1.3.6
+(docs-site fixes: rendered notes/README pages, self-hosted legal pages + Legal subnav) →
+v1.3.7 (badge wall + supply-chain/quality tooling parity with `random-ai-prompt`).
 Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
 
 **Release path (since 2026-07-20):** `main` is branch-protected — releases go through a
@@ -44,8 +46,14 @@ Done on `dev` (all green, CI passing):
 - ~~Release v1.3.3~~ ✅ shipped 2026-07-21 (UTC) — first release through the protected
   PR path (PR #9 → `--merge` → hand-tag → back-merge, `dev == main`); jar attached with
   build-provenance attestation; Pages docs deployed with the corrected chrome.
+- **Light up the account-gated badges** (v1.3.7 added the markup + workflows; these are the
+  external steps): enable the **Codecov** GitHub app + add `CODECOV_TOKEN`; import the
+  project on **SonarQube Cloud** under org `1fairyfox`, confirm its real `projectKey`, add
+  `SONAR_TOKEN` (or just enable Automatic Analysis); add the repo on **CodeFactor**; optional
+  `SCORECARD_TOKEN` PAT for the Scorecard Branch-Protection check.
 - Hub registration (hub-side; incl. registry `docs:`/`repo:` check — audit item #23) and
-  Hangar project + `HANGAR_API_TOKEN` secret.
+  Hangar project + `HANGAR_API_TOKEN` secret — then uncomment the Hangar/Modrinth usage
+  badges in README.md and wire the release-publish workflow (hangar-publish-plugin / mc-publish).
 - Follow-ups from the standards audit: themed Changelog/Tutorials pages, vendored fox
   icon (see `plans/future.md`).
 
