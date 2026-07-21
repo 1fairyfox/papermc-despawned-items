@@ -43,14 +43,14 @@ function cleanup(code) {
   clearTimeout(deadline);
   try {
     bot?.quit();
-  } catch {}
+  } catch { /* best-effort cleanup */ }
   try {
     server?.stdin.write("stop\n");
-  } catch {}
+  } catch { /* best-effort cleanup */ }
   setTimeout(() => {
     try {
       server?.kill();
-    } catch {}
+    } catch { /* best-effort cleanup */ }
     process.exit(code);
   }, 8_000);
 }
