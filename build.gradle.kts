@@ -18,6 +18,12 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
     id("org.jetbrains.kotlinx.kover") version "0.9.9"
+    // JMH microbenchmarks (src/jmh/kotlin) — informational, NOT part of `check`.
+    // Run with `./gradlew jmh`; CI publishes results weekly (bench.yml).
+    id("me.champeau.jmh") version "0.7.3"
+    // Mutation testing — informational, NOT part of `check`. Scoped to the pure core
+    // (see pitest {} below); run with `./gradlew pitest`.
+    id("info.solidsoft.pitest") version "1.19.0"
 }
 
 group = "io.fairyfox"
@@ -66,6 +72,10 @@ dependencies {
     testRuntimeOnly("org.mariadb.jdbc:mariadb-java-client:3.5.3")
     // Surface Testcontainers/Hikari logs in test output (slf4j otherwise has no binding).
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.16")
+    // Kotest property testing — generator-driven invariants (roundtrips, store ops).
+    testImplementation("io.kotest:kotest-property:5.9.1")
+    // checkAll is a suspend fun; runBlocking hosts it inside JUnit tests.
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 }
 
 kotlin {
@@ -84,6 +94,48 @@ kotlin {
 detekt {
     buildUponDefaultConfig = true
     config.setFrom(files("config/detekt/detekt.yml"))
+}
+
+// JMH: quick-but-honest defaults (results stabilize enough for trend tracking without
+// hour-long runs). JSON results land in build/results/jmh/ for the CI artifact.
+jmh {
+    warmupIterations.set(2)
+    iterations.set(3)
+    fork.set(1)
+    warmup.set("1s")
+    timeOnIteration.set("1s")
+    resultFormat.set("JSON")
+}
+
+// Pitest mutation testing, scoped to the PURE core (store/locations/config parsing/
+// reward logic) where mutations are meaningful and the runs stay fast. Deliberately
+// excludes MockBukkit-driven suites — mutating server-API plumbing under a mock
+// yields noise, not signal. Informational: not wired into `check`.
+pitest {
+    junit5PluginVersion.set("1.2.1")
+    targetClasses.set(
+        listOf(
+            "io.fairyfox.papermc.despawneditems.location.DespawnLocation*",
+            "io.fairyfox.papermc.despawneditems.location.BlockKey*",
+            "io.fairyfox.papermc.despawneditems.location.LocationStore*",
+            "io.fairyfox.papermc.despawneditems.RecycleProgress*",
+            "io.fairyfox.papermc.despawneditems.config.CommandSettings*",
+        ),
+    )
+    // Pure suites only: infrastructure-backed tests (containers, MockBukkit boots,
+    // 1M-op benches) time mutation minions out without adding signal.
+    targetTests.set(
+        listOf(
+            "io.fairyfox.papermc.despawneditems.location.DespawnLocationTest",
+            "io.fairyfox.papermc.despawneditems.location.LocationStoreTest",
+            "io.fairyfox.papermc.despawneditems.property.PropertyInvariantsTest",
+            "io.fairyfox.papermc.despawneditems.RecycleProgressTest",
+            "io.fairyfox.papermc.despawneditems.config.CommandSettingsTest",
+        ),
+    )
+    threads.set(4)
+    outputFormats.set(listOf("HTML", "XML"))
+    timestampedReports.set(false)
 }
 
 // Coverage gate: `check` (and therefore `build`) fails if line coverage regresses below

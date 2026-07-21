@@ -52,11 +52,22 @@ automated now:
 Still mock-unprovable and not otherwise automated: tile-entity content copies through
 `BlockStateMeta` (`copyBlockToLocation` deep branches) — manual real-server territory.
 
-## Local Windows + Docker Desktop 29.5 gotcha (2026-07)
+## Local Windows + Docker Desktop 29.5 — SOLVED (2026-07)
 
-Testcontainers 1.21.3's docker-java cannot negotiate with Docker Desktop 29.5 on
-Windows — every transport (both npipes, and a socat TCP proxy to the daemon socket)
-gets `Status 400` with an empty Info body during strategy probing, while the daemon
-itself answers curl fine (API 1.54, min 1.40). Treated as a TC-side incompatibility:
-the MariaDB tests skip locally (`disabledWithoutDocker = true`) and execute in CI
-(Linux, unix socket). Retest locally on each Testcontainers upgrade.
+Symptom: Testcontainers 1.21.3 reported "no Docker environment" on every transport
+while curl reached the daemon fine. Root cause (proved by
+`curl /v1.32/info` → 400 vs `/v1.40/info` → 200): docker-java's hardcoded fallback
+API version is **1.32**, and Docker 29 raised the daemon's minimum to **1.40**, so
+every strategy probe was rejected with a 400 + empty-Info body.
+
+Fix — two user-level files, no build changes (CI is unaffected; runner Docker still
+accepts old API probes):
+
+- `%USERPROFILE%\.docker-java.properties` → `api.version=1.44`
+- `%USERPROFILE%\.testcontainers.properties` →
+  `docker.host=npipe:////./pipe/dockerDesktopLinuxEngine` (Docker Desktop's active
+  pipe; the legacy `docker_engine` pipe TC probes by default also answers, so this
+  line is belt-and-braces)
+
+With those in place `MariaDbStorageTest` runs locally against real MariaDB. Remove
+the api.version pin once Testcontainers ships a docker-java with a modern fallback.
