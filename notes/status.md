@@ -3,10 +3,17 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.3.2` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
+**Version:** `1.3.3` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
 (Brigadier commands) → v1.3.0 (naming + quality gates) → v1.3.1 (package →
 `io.fairyfox.papermc.despawneditems`) → v1.3.2 (docs site wears the shared fairyfox chrome,
-bundle v2.2.1). Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
+bundle v2.2.1) → v1.3.3 (full standards audit: nav/subnav corrected, Downloads page,
+mandatory branch protection + PR releases, provenance attestation).
+Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
+
+**Release path (since 2026-07-20):** `main` is branch-protected — releases go through a
+**PR** (`gh pr create --base main` → checks green → `gh pr merge --merge` → back-merge
+`git merge --ff-only main` on dev). Direct `dev → main` pushes no longer work. Tags stay
+by-hand (CI does not own tagging). Full audit: `notes/plans/standards-audit-2026-07-20.md`.
 
 ## Current state (read this first)
 
@@ -34,9 +41,12 @@ Done on `dev` (all green, CI passing):
 
 - Consider a Brigadier command rewrite (optional polish; current commands work + tested).
 - Headless runtime smoke on a real 1.21.11 server; confirm forward-compat load on 26.1.
-- Cut a tagged **MINOR** release (`1.1.0`) `dev → main` once smoke-verified — this
-  triggers the Pages docs deploy and (when wired) Hangar publish.
-- Hub registration (hub-side) and Hangar project + `HANGAR_API_TOKEN` secret.
+- Release v1.3.3 `dev → main` **via PR** (main is now protected) — triggers the Pages
+  docs deploy.
+- Hub registration (hub-side; incl. registry `docs:`/`repo:` check — audit item #23) and
+  Hangar project + `HANGAR_API_TOKEN` secret.
+- Follow-ups from the standards audit: themed Changelog/Tutorials pages, vendored fox
+  icon (see `plans/future.md`).
 
 ## Health
 

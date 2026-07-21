@@ -92,9 +92,12 @@ Then, after making changes, run this loop **without being asked**:
    bump `VERSION` in the same commit when warranted (PATCH default).
 4. When green, **release `dev → main` the git-flow way** — `main` advances only by a
    `--no-ff`, **tagged** merge, never a fast-forward or direct commit. PATCH releases
-   directly; MINOR/MAJOR go through a `release/*` branch. **Then back-merge**
-   (`git checkout dev && git merge --ff-only main`). If `main` is branch-protected,
-   release via a PR. Full rules: `notes/reference/git-workflow.md`.
+   directly; MINOR/MAJOR go through a `release/*` branch. **`main` IS branch-protected**
+   (since 2026-07-20), so every release goes **via PR**: `gh pr create --base main` →
+   `gh pr checks --watch` → `gh pr merge --merge` (never squash/rebase), tag by hand
+   (CI does not own tagging here). **Then back-merge**
+   (`git checkout dev && git merge --ff-only main`). Full rules:
+   `notes/reference/git-workflow.md`.
 
 **Hard safety rules:** never `push --force` / rewrite pushed history; never
 `reset --hard` / `rebase` / `clean -fd` / delete a long-lived branch without an
