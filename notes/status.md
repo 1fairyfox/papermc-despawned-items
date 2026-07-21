@@ -41,8 +41,9 @@ Done on `dev` (all green, CI passing):
 
 - Consider a Brigadier command rewrite (optional polish; current commands work + tested).
 - Headless runtime smoke on a real 1.21.11 server; confirm forward-compat load on 26.1.
-- Release v1.3.3 `dev → main` **via PR** (main is now protected) — triggers the Pages
-  docs deploy.
+- ~~Release v1.3.3~~ ✅ shipped 2026-07-21 (UTC) — first release through the protected
+  PR path (PR #9 → `--merge` → hand-tag → back-merge, `dev == main`); jar attached with
+  build-provenance attestation; Pages docs deployed with the corrected chrome.
 - Hub registration (hub-side; incl. registry `docs:`/`repo:` check — audit item #23) and
   Hangar project + `HANGAR_API_TOKEN` secret.
 - Follow-ups from the standards audit: themed Changelog/Tutorials pages, vendored fox
