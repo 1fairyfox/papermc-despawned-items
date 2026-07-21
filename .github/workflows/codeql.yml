@@ -49,7 +49,10 @@ jobs:
           queries: security-and-quality
 
       - name: Build for the traced compile
-        run: ./gradlew compileKotlin --no-daemon --stacktrace
+        # --rerun-tasks + --no-build-cache: the tracer only sees code that actually
+        # compiles in THIS process; a cache-hit/up-to-date compile traces nothing and
+        # finalize dies with "could not process any code" (bitten 2026-07-21).
+        run: ./gradlew compileKotlin --rerun-tasks --no-build-cache --no-daemon --stacktrace
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
