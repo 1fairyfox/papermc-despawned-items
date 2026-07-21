@@ -59,6 +59,13 @@ dependencies {
     // In production these load at runtime via Paper's `libraries:` loader (see plugin.yml).
     testImplementation("com.zaxxer:HikariCP:5.1.0")
     testRuntimeOnly("org.xerial:sqlite-jdbc:3.49.1.0")
+    // Real MySQL/MariaDB integration via Testcontainers (needs Docker; the tests disable
+    // themselves cleanly where it's absent). Driver version matches plugin.yml `libraries:`.
+    testImplementation("org.testcontainers:junit-jupiter:1.21.3")
+    testImplementation("org.testcontainers:mariadb:1.21.3")
+    testRuntimeOnly("org.mariadb.jdbc:mariadb-java-client:3.5.3")
+    // Surface Testcontainers/Hikari logs in test output (slf4j otherwise has no binding).
+    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.16")
 }
 
 kotlin {

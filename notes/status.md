@@ -11,7 +11,9 @@ mandatory branch protection + PR releases, provenance attestation) → v1.3.4–
 (docs-site fixes: rendered notes/README pages, self-hosted legal pages + Legal subnav) →
 v1.3.7 (badge wall + supply-chain/quality tooling parity with `random-ai-prompt`) →
 **v1.4.0** (full-layer test suite 44%→~95% Kover-gated ≥90, 3 bug fixes found by it,
-`/despi recycle` + renameable commands, CodeQL restored on Kotlin 2.4.0).
+`/despi recycle` + renameable commands, CodeQL restored on Kotlin 2.4.0) →
+**v1.4.1** (server + client layers automated in CI: Testcontainers MariaDB, headless
+Paper 1.21.11 + 26.1.2 smoke, Mineflayer in-game acceptance; Sonar CI scan wired).
 Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
 
 **Release path (since 2026-07-20):** `main` is branch-protected — releases go through a
@@ -44,15 +46,12 @@ Done on `dev` (all green, CI passing):
 ## Next
 
 - Consider a Brigadier command rewrite (optional polish; current commands work + tested).
-- Headless runtime smoke on a real 1.21.11 server; confirm forward-compat load on 26.1.
-- ~~Release v1.3.3~~ ✅ shipped 2026-07-21 (UTC) — first release through the protected
-  PR path (PR #9 → `--merge` → hand-tag → back-merge, `dev == main`); jar attached with
-  build-provenance attestation; Pages docs deployed with the corrected chrome.
-- **Light up the account-gated badges** (v1.3.7 added the markup + workflows; these are the
-  external steps): enable the **Codecov** GitHub app + add `CODECOV_TOKEN`; import the
-  project on **SonarQube Cloud** under org `1fairyfox`, confirm its real `projectKey`, add
-  `SONAR_TOKEN` (or just enable Automatic Analysis); add the repo on **CodeFactor**; optional
-  `SCORECARD_TOKEN` PAT for the Scorecard Branch-Protection check.
+- ~~Headless runtime smoke + forward-compat + in-game test~~ ✅ automated in CI (v1.4.1).
+- ~~Account-gated badges~~ ✅ owner uploaded `CODECOV_TOKEN` / `SONAR_TOKEN` /
+  `SCORECARD_TOKEN` (2026-07-21); Codecov + Sonar scans wired in `ci.yml`, CodeFactor
+  active (it checks PRs). Remaining owner-side: if the Sonar CI scan reports an
+  Automatic-Analysis conflict, disable Automatic Analysis on the SonarCloud project
+  (Administration → Analysis Method) — mutually exclusive with CI scans.
 - Hub registration (hub-side; incl. registry `docs:`/`repo:` check — audit item #23) and
   Hangar project + `HANGAR_API_TOKEN` secret — then uncomment the Hangar/Modrinth usage
   badges in README.md and wire the release-publish workflow (hangar-publish-plugin / mc-publish).
@@ -69,10 +68,11 @@ Done on `dev` (all green, CI passing):
 | SAST (CodeQL, java-kotlin traced compile) | ✅ restored — dev runs informational, release-PR run gates |
 | CI on `dev` | ✅ passing |
 | Refactor (plan: refactor-2026-07.md) | ✅ Phases 1–4 largely done |
-| Runtime load on real Paper 1.21.11 | ✅ verified — headless smoke, `libraries:` (HikariCP + JDBC) auto-loaded, enables cleanly, no errors |
+| Runtime load on real Paper 1.21.11 | ✅ **automated in CI** (`server-smoke` job, every push/PR) — was a manual headless smoke |
+| MySQL/MariaDB backend | ✅ real-server integration via Testcontainers in CI (local Windows blocked by a TC↔Docker-29.5 incompat — documented) |
+| In-game client acceptance | ✅ **automated in CI** — Mineflayer bot joins Paper 1.21.11, runs `/recycle` + `/despi`, asserts replies (validated locally too) |
 | Static analysis (Ktlint + Detekt) + coverage (Kover) | ✅ gate the build; all detekt rules on, no baseline |
-| Forward-compat load on Paper 26.1.2 | ✅ verified — headless smoke, enabled cleanly (`Done (10.3s)`), no exceptions despite 26.x registry changes |
-| In-game gameplay test | ✅ unblocked (Mineflayer supports 1.21.11) |
+| Forward-compat load on Paper 26.1.2 | ✅ **automated in CI** (`server-smoke` matrix, Java 25) |
 | GitHub Pages docs | ⏳ enabled; deploys on release to `main` |
 | Standards adopted (project side) | per-standard state: [`reference/adoption-manifest.md`](reference/adoption-manifest.md) — 17 implemented · 6 copied-only (due next adopt pass) · 1 gap · 4 N/A (no bare ✅ — see the checklist-noncompliance report) |
 | Hub registration | ❌ not yet (hub-side) |

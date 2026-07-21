@@ -39,8 +39,24 @@ writing any test that touches worlds, blocks, or player targeting.
 
 ## Where the real-server line is
 
-MockBukkit proves code against the mocked API; it cannot prove: MySQL connections
-(`StorageFactory.buildMysql`), tile-entity content copies through `BlockStateMeta`
-(`copyBlockToLocation` deep branches), real chunk loading, or client-visible behaviour.
-Those stay headless-Paper / Mineflayer territory — see `notes/plans/testing.md`
-(§19–22, §83–87).
+MockBukkit proves code against the mocked API. The layers beyond it are ALSO
+automated now:
+
+- **MySQL/MariaDB** — `MariaDbStorageTest` (Testcontainers) runs against a real
+  MariaDB in CI; it disables itself where Docker is unreachable.
+- **Real-server boot** — `scripts/server-smoke.sh` boots Paper 1.21.11 + 26.1.2 with
+  the built jar in CI (`server-smoke` matrix job).
+- **Client layer** — `scripts/ingame-smoke.mjs` joins a real server with a Mineflayer
+  bot and asserts plugin replies reach the client (`ingame-smoke` job).
+
+Still mock-unprovable and not otherwise automated: tile-entity content copies through
+`BlockStateMeta` (`copyBlockToLocation` deep branches) — manual real-server territory.
+
+## Local Windows + Docker Desktop 29.5 gotcha (2026-07)
+
+Testcontainers 1.21.3's docker-java cannot negotiate with Docker Desktop 29.5 on
+Windows — every transport (both npipes, and a socat TCP proxy to the daemon socket)
+gets `Status 400` with an empty Info body during strategy probing, while the daemon
+itself answers curl fine (API 1.54, min 1.40). Treated as a TC-side incompatibility:
+the MariaDB tests skip locally (`disabledWithoutDocker = true`) and execute in CI
+(Linux, unix socket). Retest locally on each Testcontainers upgrade.

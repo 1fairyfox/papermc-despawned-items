@@ -28,7 +28,7 @@ persistence, permission, config-migration, property/fuzz, and performance layers
 | Paper/Bukkit mocks | MockBukkit (`mockbukkit-v1.21`) | ✅ in use |
 | Property testing | Kotest property | ⏳ adding |
 | General mocking | MockK | ⏳ adding (when a collaborator needs it) |
-| DB integration | SQLite temp / Testcontainers (MySQL) | ✅ SQLite · ⏳ Testcontainers |
+| DB integration | SQLite temp / Testcontainers (MariaDB) | ✅ both (containers run in CI; clean local skip without Docker) |
 | Temp files | JUnit `@TempDir` | ✅ in use |
 | Coverage | Kover 0.9.9 | ✅ gates `build` — **min 90% line** (`koverVerify`); suite ~95% |
 | Static analysis | Detekt 1.23.8 | ✅ gates `build` (JDK-21 daemon + tuned config, **no baseline**) |
@@ -36,7 +36,7 @@ persistence, permission, config-migration, property/fuzz, and performance layers
 | SAST | CodeQL (java-kotlin, traced compile) | ✅ dev pushes informational; **gates the release PR**; Kotlin pinned 2.4.0 for it |
 | Microbenchmarks | JMH | ⛔ deferred (JUnit bench guards suffice for now) |
 | Mutation testing | Pitest | ⛔ deferred |
-| CI | GitHub Actions | ✅ `ci.yml` (build+tests+coverage→Codecov) · `codeql.yml` · `scorecard.yml` |
+| CI | GitHub Actions | ✅ `ci.yml` (build+tests+coverage→Codecov+Sonar · `server-smoke` 1.21.11+26.1.2 · `ingame-smoke` Mineflayer) · `codeql.yml` · `scorecard.yml` |
 
 ## Source organization (target)
 
@@ -79,8 +79,12 @@ Legend: ✅ done · 🔨 in progress · ⏳ planned · ⛔ not applicable to thi
   schema create-if-not-exists ✅; malformed-row skip ✅; **pool exhaustion ✅**
   (`SQLException` surfaces + recovers, `StorageFactoryTest`); YAML→DB migration ✅
   (one-time, no duplication on restart); backend selection incl. aliases + unknown
-  fallback ✅; MySQL/MariaDB connect ⛔ needs a live server (Testcontainers = Docker
-  dependency, still deferred — the ~15 uncovered `buildMysql` lines)
+  fallback ✅; MySQL/MariaDB connect ✅ **real server via Testcontainers**
+  (`MariaDbStorageTest`: buildMysql, CRUD roundtrip, replace semantics, YAML→MySQL
+  one-time migration, full manager lifecycle) — runs in CI (Docker available);
+  disables itself cleanly without Docker. Local Windows note: Testcontainers 1.21.3's
+  docker-java cannot negotiate with Docker Desktop 29.5 (400 on all transports) — a
+  TC-side incompat, retest on TC upgrades (see `reference/mockbukkit-harness.md`)
 
 **MockBukkit (§8–10)** — ✅
 - Lifecycle: enable ✅, disable-flushes ✅, scheduler cancel-on-disable ✅
@@ -123,10 +127,15 @@ Legend: ✅ done · 🔨 in progress · ⏳ planned · ⛔ not applicable to thi
 - JAR-content test: `plugin.yml` present, main class, Kotlin runtime shaded, no test classes ⏳
 - Reproducible build / dependency verification ⏳
 
-**Real server (§19–22, §83–87)** — ⏳
-- Boot smoke (headless Paper 1.21.11) — in CI ⏳; forward-compat 26.1 ⏳
-- In-game acceptance via Mineflayer bot (1.21.11) ⏳
-- Regression test per fixed bug (§87): recycle & particle fixes → add pinned regressions ⏳
+**Real server (§19–22, §83–87)** — ✅ (automated in CI, 2026-07-21)
+- Boot smoke (headless Paper) ✅ **in CI on every push/PR** — `scripts/server-smoke.sh`
+  via the `server-smoke` matrix job: 1.21.11 (target, Java 21) AND 26.1.2
+  (forward-compat, Java 25); asserts clean enable, no load errors, no self-disable
+- In-game acceptance via Mineflayer bot ✅ **in CI** — `scripts/ingame-smoke.mjs`
+  (`ingame-smoke` job): a real client joins offline-mode Paper 1.21.11, runs
+  `/recycle` and `/despi exists anywhere owned-by-me`, asserts the plugin's replies
+  reach the client (validated locally end-to-end first)
+- Regression test per fixed bug (§87) ✅ — see the pins section below
 
 ## Confirmed-bug regression pins (§87)
 
