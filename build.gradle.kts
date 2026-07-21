@@ -74,12 +74,30 @@ detekt {
 dokka {
     moduleName.set("PaperMC Despawned Items")
     pluginsConfiguration.html {
+        // Reference-body harmony: reproduce the fairyfox tokens onto Dokka's own design
+        // variables (per docs-site standard 01-11 — tokens are reimplemented per stack).
         customStyleSheets.from(layout.projectDirectory.file("docs-theme/dokka-fairyfox.css"))
         customAssets.from(layout.projectDirectory.file("assets/icon.png"))
+        // Shared chrome (masthead/subnav/footer/reader) is injected verbatim via the
+        // FreeMarker template overrides in docs-theme/dokka-templates/ (chrome bundle,
+        // see docs-theme/chrome/VERSION). This is the sanctioned "wear the chrome,
+        // boundary the reference" adapter for a full-page generator.
+        templatesDir.set(layout.projectDirectory.dir("docs-theme/dokka-templates"))
         footerMessage.set("Fairy Fox · fairyfox.io")
         homepageLink.set("https://fairyfox.io/")
     }
 }
+
+// Vendor the shared-chrome master assets (main.css + the three behaviour scripts) into
+// the generated docs root so the templates can reference them via ${'$'}{pathToRoot}. The
+// deployed site ships its own copies and renders with fairyfox.io offline (never hot-linked).
+val vendorChromeAssets by tasks.registering(Copy::class) {
+    from(layout.projectDirectory.dir("docs-theme/chrome")) {
+        include("main.css", "reader.js", "nav.js", "coins.js")
+    }
+    into(layout.buildDirectory.dir("dokka/html"))
+}
+tasks.named("dokkaGenerate") { finalizedBy(vendorChromeAssets) }
 
 tasks {
     // `gradle build` produces the shaded, runnable plugin jar.

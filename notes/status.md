@@ -3,9 +3,10 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.3.0` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
-(Brigadier commands) → v1.3.0 (naming + quality gates). Artifact/plugin-id/data-folder are
-all `papermc-despawned-items`.
+**Version:** `1.3.2` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
+(Brigadier commands) → v1.3.0 (naming + quality gates) → v1.3.1 (package →
+`io.fairyfox.papermc.despawneditems`) → v1.3.2 (docs site wears the shared fairyfox chrome,
+bundle v2.2.1). Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
 
 ## Current state (read this first)
 
