@@ -23,6 +23,9 @@ class Config(val plugin: PaperMcDespawnedItems) {
     lateinit var limits: LimitSettings
         private set
 
+    lateinit var commands: CommandSettings
+        private set
+
     init {
         load()
     }
@@ -36,6 +39,61 @@ class Config(val plugin: PaperMcDespawnedItems) {
         storage = StorageSettings(plugin.config)
         performance = PerformanceSettings(plugin.config)
         limits = LimitSettings(plugin.config)
+        commands = CommandSettings(plugin.config, plugin.logger)
+    }
+}
+
+/**
+ * Command names and aliases, read from the `commands:` section so `/despi` and
+ * `/recycle` can be renamed if they clash with another plugin. Names are validated
+ * ([sanitize]); invalid entries fall back to the default with a console warning.
+ * Commands register once at startup, so changes need a **server restart** (not just
+ * `/despi reload`).
+ */
+class CommandSettings(c: FileConfiguration, logger: java.util.logging.Logger? = null) {
+    /** Name registered for the main management command (default `despi`). */
+    val despiName: String = sanitize(c.getString("commands.despi"), DEFAULT_DESPI, logger)
+
+    /** Extra aliases for the main command. */
+    val despiAliases: List<String> = sanitizeAliases(c.getStringList("commands.despi-aliases"), logger)
+
+    /** Name registered for the recycle command (default `recycle`). */
+    val recycleName: String = sanitize(c.getString("commands.recycle"), DEFAULT_RECYCLE, logger)
+
+    /** Extra aliases for the recycle command. */
+    val recycleAliases: List<String> = sanitizeAliases(c.getStringList("commands.recycle-aliases"), logger)
+
+    private fun sanitize(
+        raw: String?,
+        fallback: String,
+        logger: java.util.logging.Logger?,
+    ): String {
+        val name = raw?.trim()?.lowercase() ?: return fallback
+        if (NAME_PATTERN.matches(name)) return name
+        logger?.warning("Invalid command name '$raw' in config.yml commands: section; using '$fallback'.")
+        return fallback
+    }
+
+    private fun sanitizeAliases(
+        raw: List<String>,
+        logger: java.util.logging.Logger?,
+    ): List<String> =
+        raw.mapNotNull { alias ->
+            val name = alias.trim().lowercase()
+            if (NAME_PATTERN.matches(name)) {
+                name
+            } else {
+                logger?.warning("Invalid command alias '$alias' in config.yml commands: section; skipping.")
+                null
+            }
+        }.distinct()
+
+    private companion object {
+        const val DEFAULT_DESPI = "despi"
+        const val DEFAULT_RECYCLE = "recycle"
+
+        /** Lowercase letters, digits, `_`, `-`, `.` — safe Brigadier literal names. */
+        val NAME_PATTERN = Regex("[a-z0-9_.-]+")
     }
 }
 

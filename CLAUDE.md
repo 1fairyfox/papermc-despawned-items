@@ -35,6 +35,31 @@ follows the shared living-notes standard. Highlights:
 | `notes/decisions/` | `architecture.md` (choices) · `rejected.md` (don't repeat) |
 | `notes/plans/` | `next-steps.md` · `future.md` |
 
+## Quality Bar — Enforced, Not Aspirational (a standing instruction)
+
+Owner mandate (2026-07-21). These are release-blocking rules, not goals:
+
+- **Coverage ≥90% line, Kover-gated.** `koverVerify` (min 90) runs in `check`, so
+  `./gradlew build` FAILS below it. Current suite sits ~95%; keep it there. Every new
+  feature ships WITH tests at every testable layer (unit → MockBukkit → command
+  dispatch → permission matrix → load). No feature lands untested.
+- **No parked findings.** No detekt baseline, no skipped tests, no TODO/FIXME left in
+  `src/`. A finding is fixed or narrowly `@Suppress`ed at the site with a reason —
+  never baselined away.
+- **Scorecard is kept at the repo's maximum.** All workflow actions SHA-pinned;
+  top-level `permissions: contents: read` on every workflow (elevate at job scope
+  only); gradle wrapper validated in CI; CodeQL SAST alive.
+- **Kotlin is pinned to CodeQL's supported range** (currently 2.4.0 — CodeQL 2.26.0
+  rejects 2.4.10 as "too recent"). Do NOT bump Kotlin past what CodeQL analyzes;
+  losing SAST for a patch release is the wrong trade. Bump both together.
+- **CodeQL: dev runs are informational; the gate is the release PR into `main`.**
+- **Full gate before any release:** `./gradlew build` (ktlint + detekt + full suite +
+  koverVerify + jar) AND `node scripts/check-links.mjs` locally green, then CI + CodeQL
+  green on the PR. No red-or-pending merges.
+- Test-harness lore (MockBukkit deviations — scriptable target blocks, sync chunk
+  loads, sticky container states) lives in `src/test/.../TestSupport.kt` and
+  `notes/reference/mockbukkit-harness.md`. Read it before writing MockBukkit tests.
+
 ## Critical Things Not to Get Wrong
 
 - **Kotlin ↔ Paper overloaded setters.** Where a Paper getter has multiple

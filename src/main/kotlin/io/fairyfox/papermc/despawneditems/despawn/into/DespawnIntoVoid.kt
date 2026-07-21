@@ -11,6 +11,9 @@ import org.bukkit.inventory.ItemStack
  * them be placed anywhere.
  */
 class DespawnIntoVoid(plugin: PaperMcDespawnedItems) : AbstractDespawnInto(plugin) {
+    /** Void destroys contraband; it stores nothing, so bulk removal must skip it. */
+    override val supportsRemoval: Boolean = false
+
     override fun doesApply(targetBlock: Block): Boolean = true
 
     override fun despawnInto(

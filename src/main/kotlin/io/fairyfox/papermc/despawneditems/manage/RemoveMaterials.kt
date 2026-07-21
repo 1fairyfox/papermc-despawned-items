@@ -106,7 +106,7 @@ class RemoveMaterials(
 
         for (strategy in plugin.strategies) {
             if (invalid) return
-            if (!strategy.doesApply(block)) continue
+            if (!strategy.supportsRemoval || !strategy.doesApply(block)) continue
 
             materials?.forEach { material ->
                 if (invalid) return

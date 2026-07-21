@@ -1,3 +1,14 @@
+# Command names and aliases. Rename these if they clash with another plugin, or add
+# aliases (e.g. despi-aliases: [di]). Names may use lowercase letters, digits, '_',
+# '-', '.'; invalid names fall back to the defaults with a console warning.
+# Changes take effect on SERVER RESTART — commands register once at startup, so
+# /despi reload does NOT re-register them.
+commands:
+  despi: despi
+  despi-aliases: []
+  recycle: recycle
+  recycle-aliases: []
+
 # How many despawn locations a player may own (self-service limits).
 limits:
   # Default cap when a player has no limit permission.

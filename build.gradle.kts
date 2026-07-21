@@ -8,7 +8,11 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "2.4.10"
+    // Kotlin is held at 2.4.0 (not 2.4.10) deliberately: CodeQL 2.26.0 (2026-07-10)
+    // supports Kotlin *up to 2.4.0*, and its extractor hard-rejects anything newer
+    // ("Kotlin version 2.4.10 is too recent"). 2.4.0 keeps the full SAST scan alive;
+    // bump only after CodeQL's supported range catches up.
+    kotlin("jvm") version "2.4.0"
     id("com.gradleup.shadow") version "9.6.0"
     id("org.jetbrains.dokka") version "2.2.0"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
@@ -67,13 +71,26 @@ kotlin {
     }
 }
 
-// Static analysis. Layers on the default rules (see config/detekt/detekt.yml); pre-existing
-// findings are captured in the baseline so detekt gates only new issues. Runs on the
-// JDK-21 Gradle daemon (see gradle/gradle-daemon-jvm.properties).
+// Static analysis. Layers on the default rules (see config/detekt/detekt.yml). No
+// baseline: every rule gates every build — pre-existing findings were fixed, not parked.
+// Runs on the JDK-21 Gradle daemon (see gradle/gradle-daemon-jvm.properties).
 detekt {
     buildUponDefaultConfig = true
     config.setFrom(files("config/detekt/detekt.yml"))
-    baseline = file("config/detekt/baseline.xml")
+}
+
+// Coverage gate: `check` (and therefore `build`) fails if line coverage regresses below
+// 90%. The suite currently sits ~95%; the headroom covers the genuinely untestable
+// remainder (MySQL connect paths need a live server; a few MockBukkit-unmodelable
+// tile-entity copy branches; defensive lateinit guards).
+kover {
+    reports {
+        verify {
+            rule("Line coverage must stay at or above 90%") {
+                minBound(90)
+            }
+        }
+    }
 }
 
 // API docs (Dokka), re-skinned to wear the fairyfox palette + a way-home link so the
