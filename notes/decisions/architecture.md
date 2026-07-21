@@ -2,6 +2,29 @@
 
 Key structural choices and why. Newest on top.
 
+### 2026-07-20 — Docs site wears the shared fairyfox chrome (bundle v2.2.1)
+
+Adopted the hub's **shared chrome bundle** (`hub/standards/docs-site/chrome`, VERSION
+**2.2.1**) into the Dokka site so it reads as a page of fairyfox.io instead of a bare
+generator island. Dokka is the "full-page generator" case (like Doxygen): it owns the
+page but exposes hooks, so the bundle is injected via Dokka's FreeMarker `templatesDir`
+(`docs-theme/dokka-templates/includes/{page_metadata,header,footer}.ftl`) — the head
+bundle + vendored `main.css`, the masthead + this project's subnav (Docs active), and the
+shared footer + `nav.js`/`reader.js`/`coins.js`. The four master assets are **vendored**
+under `docs-theme/chrome/` and copied into the docs root at build time (`vendorChromeAssets`,
+`finalizedBy dokkaGenerate`) — never hot-linked, so the site renders with fairyfox.io
+offline. Referenced per-page via Dokka's `${'$'}{pathToRoot}` so they resolve at any depth.
+
+Sanctioned pattern: **"wear the chrome, boundary the reference"** — the frame is the
+verbatim bundle; Dokka's API body stays Dokka, harmonised to the fairyfox palette by
+`docs-theme/dokka-fairyfox.css` (tokens reimplemented per-stack, per docs-site standards
+01–11). Deliberate deviations: (a) the shared footer sits inside Dokka's content column
+(not full-bleed under the sidebar) to avoid a second window-scroll that would unpin the
+sticky masthead — Dokka's viewport-locked layout is left intact; (b) Dokka's own reference
+bar is kept below the masthead as the API controls (search / theme / source-set filter).
+Adopted bundle version recorded here for clean refresh diffs; refresh = re-pull + re-diff
+`docs-theme/chrome/VERSION`, not a reimplementation.
+
 ### 2026-07-20 — Pluggable storage backends (YAML default, SQLite, MySQL/MariaDB)
 
 Introduced a `LocationRepository` interface with three backends so the plugin meets
