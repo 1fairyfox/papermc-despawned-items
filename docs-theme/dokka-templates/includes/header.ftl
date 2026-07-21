@@ -54,6 +54,7 @@
         <a href="${pathToRoot}../changelog.html">Changelog</a>
         <a href="${pathToRoot}index.html" class="active" aria-current="page">API</a>
         <a href="${pathToRoot}../downloads.html">Download</a>
+        <a href="${pathToRoot}../legal/index.html">Legal</a>
         </@template_cmd>
         <a href="https://github.com/1fairyfox/papermc-despawned-items" class="subnav-repo">Repository ↗</a>
       </div>

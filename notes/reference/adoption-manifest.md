@@ -25,7 +25,7 @@ Hub baseline: 0.20.2 / commit 697bc5c (clone of 2026-07-19–20) · chrome bundl
 | engineering-quality | copied-only | — | Practices held informally; itemized Verify due next adopt pass |
 | farm-operating-model | N/A | — | Story/game farms only; this is a server plugin |
 | git-workflow | implemented | 2026-07-21 | v1.3.3 shipped via PR path; dev==main; audit J all green |
-| legal-docs | N/A | — | Docs live under fairyfox.io origin; hub serves /legal/ |
+| legal-docs | implemented | 2026-07-21 | **Previous "N/A — hub serves /legal/" was a wrong lenient read** (the standard is mandatory per-repo; the footer links had been 404ing). Three self-hosted code-accurate pages at legal/{privacy,terms,cookies}/ + index, Legal subnav item, brand minimum met (local-storage disclosure, coins no-value + shared explainer link, processors named, fonts IP flagged, project-owned contact), Last updated 2026-07-21 |
 | maintenance-sweep | copied-only | — | No sweep run yet; first sweep due within a month of active work |
 | new-project-setup | N/A | — | One-time runbook; project predates mesh |
 | notes-system | implemented | 2026-07-20 | Full tree live; inline changelog; session logs |

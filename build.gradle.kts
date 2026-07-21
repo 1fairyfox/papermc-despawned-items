@@ -164,7 +164,7 @@ val renderDocsSite by tasks.registering {
             h =
                 h.replace("{{ACTIVE_HOME}}", if (active == "HOME") " active" else "")
                     .replace("{{ARIA_HOME}}", if (active == "HOME") " aria-current=\"page\"" else "")
-            for (t in listOf("NOTES", "TUTORIALS", "CHANGELOG", "DOWNLOAD")) {
+            for (t in listOf("NOTES", "TUTORIALS", "CHANGELOG", "DOWNLOAD", "LEGAL")) {
                 h =
                     h.replace(
                         "{{ACTIVE_$t}}",
@@ -207,6 +207,39 @@ val renderDocsSite by tasks.registering {
                 body("downloads.html"),
             ),
         )
+
+        // 1b · Legal pages (legal-docs standard — mandatory, self-hosted, code-accurate).
+        // Emitted at legal/<name>/index.html so the chrome footer's pretty URLs
+        // (…/legal/privacy/) resolve on Pages; plus the legal/ index (the subnav door).
+        File(out, "legal").mkdirs()
+        File(out, "legal/index.html").writeText(
+            page(
+                "../",
+                "Legal · PaperMC Despawned Items",
+                "Privacy, Terms, and Cookies for PaperMC Despawned Items — self-hosted and accurate to the code.",
+                "LEGAL",
+                false,
+                body("legal/index.html"),
+            ),
+        )
+        for ((slug, title) in listOf(
+            "privacy" to "Privacy Policy",
+            "terms" to "Terms & Conditions",
+            "cookies" to "Cookies Policy",
+        )) {
+            val dir = File(out, "legal/$slug")
+            dir.mkdirs()
+            File(dir, "index.html").writeText(
+                page(
+                    "../../",
+                    "$title · PaperMC Despawned Items",
+                    "$title for PaperMC Despawned Items.",
+                    "LEGAL",
+                    true,
+                    body("legal/$slug.html"),
+                ),
+            )
+        }
 
         // 2 · Changelog — generated from notes/version/*.md, newest month first.
         val months =

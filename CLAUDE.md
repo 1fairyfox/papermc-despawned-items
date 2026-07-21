@@ -135,6 +135,7 @@ Background: `notes/fairyfox-reports/2026-07-20-checklist-noncompliance-failure-a
 | Health / next changed | Update `notes/status.md` |
 | Made / rejected a decision | `notes/decisions/architecture.md` / `rejected.md` |
 | A change warrants a version | Bump `VERSION`, same commit |
+| Changed data practices (storage, network, local storage, deps that phone out) | Update `docs-theme/pages/content/legal/*` + bump their "Last updated", same change (legal-docs standard) |
 
 ## Cross-project standards & checking the fairyfox system for updates
 
