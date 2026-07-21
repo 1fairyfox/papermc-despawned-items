@@ -3,13 +3,17 @@ name: CodeQL
 # GitHub's native SAST — scans the Kotlin/Java for security issues. Findings land in the repo's
 # Security → Code scanning tab. Free for public repositories.
 #
-# Kotlin is analysed by the `java-kotlin` extractor, which is COMPILED — so unlike the JS sibling
-# this needs a build. build-mode `manual`: we run the Gradle compile ourselves between init and
-# analyze (autobuild also works, but an explicit compile with the pinned JDK is deterministic).
+# BUILD MODE: `none` (source extraction, no compile), deliberately — NOT autobuild/manual.
+# CodeQL's Kotlin extractor trails the Kotlin release train: CodeQL 2.26.x rejects this project's
+# Kotlin (2.4.10) during a *traced compile* with
+#   `KotlinInterceptor$KotlinVersionTooRecentError: Kotlin version 2.4.10 is too recent`
+# so a compiled build mode can't work until CodeQL catches up. `build-mode: none` reads the sources
+# directly (no compiler interception, no Gradle step), which sidesteps that wall and still analyses
+# the code. Revisit to autobuild/manual once CodeQL supports Kotlin 2.4.x (then a compile would let
+# it resolve cross-file types more precisely).
 #
 # RELEASE-GATED, like the sibling project: the release PR into `main` and pushes to `main`, plus a
-# WEEKLY scan (a scan that only runs when you ship lets a newly-published query sit undiscovered
-# until the next release; the schedule costs nothing and closes that hole).
+# WEEKLY scan so a newly-published query doesn't sit undiscovered between releases.
 
 on:
   push:
@@ -37,27 +41,12 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
-        with:
-          distribution: temurin
-          java-version: "21"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
         with:
           languages: java-kotlin
-          build-mode: manual
+          build-mode: none
           queries: security-and-quality
-
-      # Compile under CodeQL's tracer. `clean` + `--no-build-cache` force the Kotlin/Java
-      # compilers to actually RUN in this step — a cached / up-to-date compile emits no trace,
-      # which fails the extractor with "no source code seen during build".
-      - name: Compile (Gradle)
-        run: ./gradlew clean assemble --no-daemon --no-build-cache --stacktrace
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
