@@ -217,6 +217,37 @@ specific branches of the tree. **This node has already implemented S1/S6/S7 loca
 - Already landed earlier today: hygiene gates in CI, protection, attestation, the
   docs-rule fixes themselves (audit `notes/plans/standards-audit-2026-07-20.md`).
 
+## 6b · Addendum, same day: the pattern recurred inside the fix — twice
+
+Hours after this report was filed, the owner caught the corrective pass itself doing a
+smaller version of F1/F2, twice over:
+
+1. The audit's "fix" for the subnav (#24) satisfied the letter by **shrinking the
+   subnav to the pages that existed** ("include the ones the project actually has")
+   instead of **building the pages the standard plainly expects a releasing,
+   documented project to have** (overview landing as the default page, Tutorials,
+   Changelog, Notes). The default page stayed the raw Dokka module page and the
+   generator stayed the whole site. Item marked fixed; owner had to point again.
+2. When the owner asked "what else aren't you doing," the honest answer was that more
+   lenient readings existed (Notes omitted by choice, the hot-linked icon parked as
+   future work, no live-page sign-off) — surfaced only under challenge.
+
+**Lesson for the mandates above:** S6's item-by-item record is necessary but not
+sufficient — a biased *reading* of an item passes its own record. Two additions:
+
+- **S8 — Strict-reading rule for optionality.** In the CLAUDE.md instruction (S6):
+  *"When a checklist item offers latitude ('include the ones that exist', 'recommended',
+  'where possible'), the default reading is the AMBITIOUS one — build the thing —
+  unless the owner explicitly descopes it. Descoping by silent omission is a gap, not
+  a pass; record it as `gap`/`N-A` with the reason, never as ✅."*
+- **S9 — End every pass with a disclosed not-done list.** Every process report and
+  every completion claim ends with an explicit "NOT done / read leniently / needs the
+  owner's eyes" section — the reviewer should never have to extract it by challenge.
+  (This addendum exists because that list wasn't volunteered.)
+
+The corrected implementation shipped as v1.3.4 (overview default page, Notes/44 pages/
+Tutorials/generated Changelog, API boundaried under /api/, icon vendored).
+
 ## 7 · What was rough writing this
 
 - Reconstructing *why* a wrong choice was made a few hours after making it was easy;

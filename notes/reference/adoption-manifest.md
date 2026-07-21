@@ -21,7 +21,7 @@ Hub baseline: 0.20.2 / commit 697bc5c (clone of 2026-07-19–20) · chrome bundl
 | dependencies | implemented | 2026-07-20 | Dependabot on (gradle + actions) → dev; suite gates; audit #58/#62 |
 | deployment | copied-only | — | Docs deploy = Pages on release; formal Verify vs deployment.md due next adopt pass |
 | docs-lifecycle | implemented | 2026-07-20 | Current-state docs swept this pass (status/CLAUDE); audit #107 |
-| docs-site (13 modules) | implemented | 2026-07-20 | Full 08 checklist run = audit sections A–I; deviations recorded; follow-ups in plans/future.md (#26/#31/#94) |
+| docs-site (13 modules) | implemented | 2026-07-20 (corrected same day) | 08 checklist run = audit A–I; **first pass was a lenient read caught by the owner** — corrected to Case A (overview default, Notes/Tutorials/Changelog pages, API under /api/) in v1.3.4; see audit "Correction round". Open: #26 breadcrumb (recommended), #46 live-deploy sign-off |
 | engineering-quality | copied-only | — | Practices held informally; itemized Verify due next adopt pass |
 | farm-operating-model | N/A | — | Story/game farms only; this is a server plugin |
 | git-workflow | implemented | 2026-07-21 | v1.3.3 shipped via PR path; dev==main; audit J all green |
@@ -34,7 +34,7 @@ Hub baseline: 0.20.2 / commit 697bc5c (clone of 2026-07-19–20) · chrome bundl
 | process-reports | implemented | 2026-07-20 | 4 reports filed; template followed |
 | repo-hygiene | implemented | 2026-07-21 | Gates in CI + session use; auto-delete on; dev protected; audit P |
 | research-capture | copied-only | — | Notes-first practiced; itemized Verify due next adopt pass |
-| self-hosted-assets | gap (due: next adopt pass) | 2026-07-20 | Fox icon hot-linked from fairyfox.io (audit #94); fonts via shared chrome pattern |
+| self-hosted-assets | implemented | 2026-07-20 | Fox icon vendored (v1.3.4); zero fairyfox.io asset hot-links in the built site; fonts follow the shared-chrome bundle pattern (Google-hosted, as the master chrome ships — hub-level exception) |
 | supply-chain-hardening | implemented | 2026-07-21 | main protected (solo config), PR release proven, attestation ran green on v1.3.3; audit K |
 | testing | implemented | 2026-07-20 | Audit O #98–#103; regression-per-fix ongoing practice (#100) |
 | versioning | implemented | 2026-07-21 | VERSION 1.3.3 == newest main tag v1.3.3 |

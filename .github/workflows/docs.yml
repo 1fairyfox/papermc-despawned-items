@@ -29,11 +29,11 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
-      - name: Generate API docs
-        run: ./gradlew dokkaGenerate --no-daemon --stacktrace
+      - name: Build the docs site (chrome pages + boundaried Dokka under /api/)
+        run: ./gradlew assembleDocsSite --no-daemon --stacktrace
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
-          path: build/dokka/html
+          path: build/docs-site
       - id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

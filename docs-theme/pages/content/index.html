@@ -1,0 +1,50 @@
+<h1>PaperMC Despawned Items</h1>
+<p>A <strong>Paper</strong> (Minecraft) server plugin that catches items about to despawn
+on the ground and — instead of deleting them — relocates them into a registered network
+of nearby <strong>containers, cookers, entities, or empty space</strong>. Players and
+admins manage their own despawn locations; a <code>/recycle</code> command lets players
+feed the item in their hand straight into the network for a small reward.</p>
+
+<p class="pg-meta">A Kotlin rewrite for <strong>Paper 1.21.x</strong> (built against
+1.21.11) on <strong>Java 21</strong>; loads on newer 26.x servers via Paper's forward
+compatibility. Replaces the original 2021 Java/Maven plugin.</p>
+
+<h2>What it does</h2>
+<p>When an item entity reaches its despawn timer, the plugin tries, in order, to:</p>
+<ol>
+  <li><strong>Void</strong> genuinely illegal/technical items (command blocks, netherite, …).</li>
+  <li>Slot fuel/smeltables into a nearby <strong>furnace, blast furnace, or smoker</strong>.</li>
+  <li>Place a block item back into <strong>empty air</strong>, carrying over stored block
+      data (banners, skulls, container contents, signs, spawners, …) where the API allows.</li>
+  <li>Fit the item onto a single nearby <strong>entity</strong> — an item frame, a
+      mob/armour stand's equipment slots, a storage minecart, or a furnace minecart's fuel.</li>
+  <li>Drop it into an ordinary <strong>container</strong> — chest, barrel, hopper, dropper,
+      dispenser, shulker box, or trapped chest.</li>
+</ol>
+<p>A short, configurable sound-and-particle effect plays wherever an item lands.</p>
+
+<h2>Features</h2>
+<ul>
+  <li><strong>Scales to large servers.</strong> O(1) location lookups via spatial + owner
+      indexes; the despawn pipeline is throttled and queue-bounded.</li>
+  <li><strong>Pluggable storage.</strong> Flat YAML (default), embedded SQLite, or shared
+      MySQL/MariaDB for a server network — switching migrates your data automatically.</li>
+  <li><strong>Self-service with limits.</strong> Per-group caps via
+      <code>despi.limit.&lt;n&gt;</code> permissions, with a default and an admin bypass.</li>
+  <li><strong>Safe by default.</strong> Contraband destroyed; hazardous blocks never
+      re-placed; particle data validated at load.</li>
+</ul>
+
+<h2>Explore</h2>
+<div class="pg-cardgrid">
+  <div class="pg-card"><h3><a href="tutorials.html">Tutorials</a></h3>
+    <p>Install, configure, and use the plugin — commands, permissions, storage backends.</p></div>
+  <div class="pg-card"><h3><a href="changelog.html">Changelog</a></h3>
+    <p>Every release, in plain English, newest first.</p></div>
+  <div class="pg-card"><h3><a href="api/index.html">API reference</a></h3>
+    <p>Generated Kotlin API documentation (Dokka).</p></div>
+  <div class="pg-card"><h3><a href="downloads.html">Download</a></h3>
+    <p>The latest plugin jar, plus every previous release.</p></div>
+  <div class="pg-card"><h3><a href="notes/index.html">Notes</a></h3>
+    <p>The project's living documentation — status, decisions, plans, session logs.</p></div>
+</div>

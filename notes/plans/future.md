@@ -2,16 +2,14 @@
 
 Looser ambitions — no commitment, just direction.
 
-- **Themed Changelog page on the docs site** — render `notes/version/*.md` into a
-  chrome-wearing page at docs-build time and restore `Changelog` to the subnav (raw
-  GitHub links are barred from the subnav centre; docs-site 05).
-- **Themed Tutorials/Guide page** — a getting-started page on the docs site (canonical
-  subnav slot `Tutorials`); today the README carries this.
-- **Vendor the fox brand icon** — `header.ftl`/`downloads.html` hot-link
-  `fairyfox.io/assets/icons/fox.png`; self-hosted-assets standard says vendor it via
-  `vendorChromeAssets` (audit item #94).
 - **Dokka adapter upstream** — propose `chrome/adapters/dokka.md` to the hub (rough-edge
-  note from the 2026-07-20 chrome adoption report).
-- **Notes on the site** — if `notes/` is ever published, follow docs-site 06 (single
-  Notes item, landing + full sidebar, README excluded).
+  note from the 2026-07-20 chrome adoption report; now also covers the /api/ boundary
+  restructure done in v1.3.4).
+- **Breadcrumb/locator on hand pages** (audit #26, recommended-not-required; Dokka has
+  its own on API pages).
+- **Section READMEs in the notes sidebar** — currently excluded by name along with the
+  root README; revisit if they gain real content beyond being section intros.
 - Hangar publishing (needs Hangar project + `HANGAR_API_TOKEN`).
+
+Done since first listed: themed Changelog page (generated at build, v1.3.4) ·
+Tutorials page (v1.3.4) · vendored fox icon (v1.3.4) · Notes on the site (v1.3.4).

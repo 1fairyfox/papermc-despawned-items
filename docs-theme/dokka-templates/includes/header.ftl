@@ -11,7 +11,9 @@
     <header class="site-header">
       <div class="wrap">
         <a class="brand" href="https://fairyfox.io/">
-          <img class="brand-logo" src="https://fairyfox.io/assets/icons/fox.png" alt="" aria-hidden="true">
+          <@template_cmd name="pathToRoot">
+          <img class="brand-logo" src="${pathToRoot}fox.png" alt="" aria-hidden="true">
+          </@template_cmd>
           <span class="brand-name">Fairy&nbsp;Fox</span>
         </a>
 
@@ -40,16 +42,18 @@
       </div>
     </header>
 
+    <#-- Canonical three-zone subnav (docs-site 05). The Dokka tree is boundaried under
+         /api/, so ${'$'}{pathToRoot} reaches the API root and ../ from there is the site
+         root. API is the current section on every generated page. -->
     <nav class="subnav" aria-label="Section">
       <div class="wrap">
         <@template_cmd name="pathToRoot">
-        <a href="${pathToRoot}index.html" class="subnav-home">PaperMC Despawned Items</a>
-        </@template_cmd>
-        <@template_cmd name="pathToRoot">
+        <a href="${pathToRoot}../index.html" class="subnav-home">PaperMC Despawned Items</a>
+        <a href="${pathToRoot}../notes/index.html">Notes</a>
+        <a href="${pathToRoot}../tutorials.html">Tutorials</a>
+        <a href="${pathToRoot}../changelog.html">Changelog</a>
         <a href="${pathToRoot}index.html" class="active" aria-current="page">API</a>
-        </@template_cmd>
-        <@template_cmd name="pathToRoot">
-        <a href="${pathToRoot}downloads.html">Download</a>
+        <a href="${pathToRoot}../downloads.html">Download</a>
         </@template_cmd>
         <a href="https://github.com/1fairyfox/papermc-despawned-items" class="subnav-repo">Repository ↗</a>
       </div>

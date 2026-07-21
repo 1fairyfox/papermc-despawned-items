@@ -1,0 +1,69 @@
+<h1>Tutorials</h1>
+<p>Everything to get PaperMC Despawned Items running on your server and into your
+players' hands.</p>
+
+<h2>Install</h2>
+<ol>
+  <li>Grab <code>papermc-despawned-items-&lt;version&gt;.jar</code> from the
+      <a href="downloads.html">Download page</a>.</li>
+  <li>Drop it into your server's <code>plugins/</code> folder.</li>
+  <li>Start the server (<strong>Paper 1.21.11+</strong>, <strong>Java 21+</strong>; also
+      loads on 26.x). The plugin creates
+      <code>plugins/papermc-despawned-items/config.yml</code> on first run.</li>
+</ol>
+<p>For SQLite or MySQL storage, Paper downloads the JDBC driver and HikariCP
+automatically on first start (declared as plugin <code>libraries:</code>) — no extra
+jars to install.</p>
+
+<h2>First steps in game</h2>
+<p>Look at a chest (or furnace, barrel, item frame, …) and run
+<code>/despi add this</code> — that block is now part of your despawn network. Items
+that would despawn near it get relocated into it instead. Players do this themselves,
+up to their limit; <code>/recycle</code> feeds the item in your hand straight into the
+network for a small reward.</p>
+
+<h2>Commands &amp; permissions</h2>
+<table>
+  <tr><th>Command</th><th>Permission</th><th>Purpose</th></tr>
+  <tr><td><code>/despi add this [player]</code></td>
+      <td><code>despi.use</code> (self) · <code>despi.elevated</code> (for others)</td>
+      <td>register the block you're looking at, subject to your limit</td></tr>
+  <tr><td><code>/despi remove …</code> · <code>/despi clear …</code> ·
+          <code>/despi exists …</code> · <code>/despi locations …</code></td>
+      <td><code>despi.use</code> (self) · <code>despi.elevated</code> (others)</td>
+      <td>manage locations</td></tr>
+  <tr><td><code>/despi purge …</code></td>
+      <td><code>despi.use</code> (own) · <code>despi.elevated</code> (others/everyone)</td>
+      <td>bulk-remove materials from despawn storage</td></tr>
+  <tr><td><code>/despi despawn …</code> · <code>/despi effects …</code> ·
+          <code>/despi reload do</code> · <code>/despi save do</code></td>
+      <td><code>despi.elevated</code></td>
+      <td>admin / testing</td></tr>
+  <tr><td><code>/recycle</code></td>
+      <td><code>recycle.use</code></td>
+      <td>despawn the item in your hand for a reward</td></tr>
+</table>
+<p><code>despi.use</code> and <code>recycle.use</code> default to everyone;
+<code>despi.elevated</code> and <code>despi.limit.bypass</code> default to ops. Grant a
+group <code>despi.limit.50</code> for a 50-location cap (LuckPerms-friendly).</p>
+
+<h2>Configuration</h2>
+<p><code>plugins/papermc-despawned-items/config.yml</code> sections:</p>
+<ul>
+  <li><code>sound</code> / <code>particles</code> — the landing effect (keys, not enums;
+      colored <code>DUST</code> supported).</li>
+  <li><code>limits</code> — <code>default</code> cap and <code>unlimited</code> toggle
+      (permissions override per group).</li>
+  <li><code>performance</code> — <code>max-per-tick</code>, <code>max-concurrent</code>,
+      <code>max-queue</code>, <code>drop-when-full</code>.</li>
+  <li><code>storage</code> — <code>type: yaml | sqlite | mysql</code>, plus MySQL
+      connection + pool settings. Switching backends migrates existing data.</li>
+</ul>
+<p><code>/despi reload do</code> re-reads the file live.</p>
+
+<h2>Build from source</h2>
+<pre><code>./gradlew build            # runs the test suite → build/libs/papermc-despawned-items-&lt;version&gt;.jar
+./gradlew assembleDocsSite  # builds this docs site → build/docs-site</code></pre>
+<p>JDK 21 is provisioned automatically (foojay resolver); the Gradle wrapper is
+committed. The build runs a JUnit 5 + MockBukkit suite (unit, property/fuzz, database,
+performance, mocked-server integration).</p>

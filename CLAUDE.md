@@ -115,6 +115,15 @@ adoption — only a recorded Verify pass counts. The per-standard state lives in
 `notes/reference/adoption-manifest.md`; keep it current, and back any summary claim
 (status.md, reports) with its row. An overdue `gap` on a mandatory standard
 (git-workflow, supply-chain-hardening) holds releases like a red build.
+
+**Strict reading of latitude (S8).** When a checklist item offers latitude ("include
+the ones that exist", "recommended", "where possible"), the default reading is the
+**ambitious** one — build the thing — unless the owner explicitly descopes it.
+Descoping by silent omission is a `gap`, not a pass.
+
+**Disclose the not-done list (S9).** Every completion claim ends with an explicit
+"NOT done / read leniently / needs the owner's eyes" section. The owner should never
+have to extract it by challenge.
 Background: `notes/fairyfox-reports/2026-07-20-checklist-noncompliance-failure-analysis.md`.
 
 ## Maintaining the Notes — Your Responsibility

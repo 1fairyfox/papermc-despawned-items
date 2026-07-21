@@ -1,5 +1,12 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+// Markdown → HTML for the generated docs-site pages (changelog + rendered notes).
+// Buildscript-classpath only — nothing ships in the plugin jar.
+buildscript {
+    repositories { mavenCentral() }
+    dependencies { classpath("com.vladsch.flexmark:flexmark-all:0.64.8") }
+}
+
 plugins {
     kotlin("jvm") version "2.4.10"
     id("com.gradleup.shadow") version "9.6.0"
@@ -84,24 +91,244 @@ dokka {
         // boundary the reference" adapter for a full-page generator.
         templatesDir.set(layout.projectDirectory.dir("docs-theme/dokka-templates"))
         footerMessage.set("Fairy Fox · fairyfox.io")
-        homepageLink.set("https://fairyfox.io/")
+        // Way back out of the boundaried API zone → the project's own overview
+        // (docs-site 06: "always give a way back to the themed docs").
+        homepageLink.set("https://fairyfox.io/papermc-despawned-items/")
     }
 }
 
-// Vendor the shared-chrome master assets (main.css + the three behaviour scripts) into
-// the generated docs root so the templates can reference them via ${'$'}{pathToRoot}. The
-// deployed site ships its own copies and renders with fairyfox.io offline (never hot-linked).
+// ── Docs site (fairyfox docs-site standard, Case A) ─────────────────────────────
+// build/docs-site = hand-authored chrome pages at the root (overview landing =
+// DEFAULT page, notes/, tutorials, changelog, downloads) with the Dokka API
+// reference boundaried under /api/, reached via the subnav "API" item. Changelog
+// and the Notes section are GENERATED from the living notes/ tree (docs-site 06:
+// don't hand-maintain what a generator can produce). Assets vendored, incl. the
+// fox brand icon (self-hosted-assets — no hot-links).
+
+// Chrome assets into the Dokka tree, so API pages resolve them via ${'$'}{pathToRoot}.
 val vendorChromeAssets by tasks.registering(Copy::class) {
     from(layout.projectDirectory.dir("docs-theme/chrome")) {
-        include("main.css", "reader.js", "nav.js", "coins.js")
-    }
-    // Hand-authored chrome-wearing pages (Downloads — docs-site standard 06 §Downloads).
-    from(layout.projectDirectory.dir("docs-theme/pages")) {
-        include("*.html")
+        include("main.css", "reader.js", "nav.js", "coins.js", "fox.png")
     }
     into(layout.buildDirectory.dir("dokka/html"))
 }
 tasks.named("dokkaGenerate") { finalizedBy(vendorChromeAssets) }
+
+// Assemble the hand-authored pages + generated changelog + rendered notes tree.
+val renderDocsSite by tasks.registering {
+    group = "documentation"
+    description = "Render the chrome shell pages, changelog and notes into build/docs-pages"
+    val pagesDir = layout.projectDirectory.dir("docs-theme/pages")
+    val notesDir = layout.projectDirectory.dir("notes")
+    val outDirProv = layout.buildDirectory.dir("docs-pages")
+    inputs.dir(pagesDir)
+    inputs.dir(notesDir)
+    outputs.dir(outDirProv)
+    doLast {
+        val shell = pagesDir.file("_shell.html").asFile.readText()
+        val out = outDirProv.get().asFile
+        out.deleteRecursively()
+        out.mkdirs()
+        val exts = listOf(com.vladsch.flexmark.ext.tables.TablesExtension.create())
+        val parser =
+            com.vladsch.flexmark.parser.Parser.builder().apply {
+                extensions(exts)
+            }.build()
+        val renderer =
+            com.vladsch.flexmark.html.HtmlRenderer.builder().apply {
+                extensions(exts)
+            }.build()
+
+        // Render md → html, rewriting relative .md links to .html so inter-note links work.
+        fun md(text: String): String =
+            renderer.render(parser.parse(text))
+                .replace(Regex("href=\"(?!https?:)([^\"]+?)\\.md(#[^\"]*)?\"")) { m ->
+                    "href=\"${m.groupValues[1]}.html${m.groupValues[2]}\""
+                }
+
+        fun page(
+            root: String,
+            title: String,
+            desc: String,
+            active: String?,
+            read: Boolean,
+            content: String,
+        ): String {
+            var h =
+                shell
+                    .replace("{{FF_ROOT}}", root)
+                    .replace("{{FF_TITLE}}", title)
+                    .replace("{{FF_DESC}}", desc)
+                    .replace("{{FF_HTML_ATTRS}}", if (read) " data-read" else "")
+                    .replace("{{FF_CONTENT}}", content)
+            h =
+                h.replace("{{ACTIVE_HOME}}", if (active == "HOME") " active" else "")
+                    .replace("{{ARIA_HOME}}", if (active == "HOME") " aria-current=\"page\"" else "")
+            for (t in listOf("NOTES", "TUTORIALS", "CHANGELOG", "DOWNLOAD")) {
+                h =
+                    h.replace(
+                        "{{ACTIVE_$t}}",
+                        if (t == active) " class=\"active\" aria-current=\"page\"" else "",
+                    )
+            }
+            return h
+        }
+
+        // 1 · The three static pages (bodies in docs-theme/pages/content/).
+        fun body(name: String) = pagesDir.file("content/$name").asFile.readText()
+        File(out, "index.html").writeText(
+            page(
+                "",
+                "PaperMC Despawned Items",
+                "A Paper plugin that relocates despawning items into nearby containers, " +
+                    "cookers, entities, or empty space instead of deleting them.",
+                "HOME",
+                false,
+                body("index.html"),
+            ),
+        )
+        File(out, "tutorials.html").writeText(
+            page(
+                "",
+                "Tutorials · PaperMC Despawned Items",
+                "Install, configure, and use the PaperMC Despawned Items plugin.",
+                "TUTORIALS",
+                true,
+                body("tutorials.html"),
+            ),
+        )
+        File(out, "downloads.html").writeText(
+            page(
+                "",
+                "Download · PaperMC Despawned Items",
+                "Download the PaperMC Despawned Items plugin jar — latest release and all versions.",
+                "DOWNLOAD",
+                false,
+                body("downloads.html"),
+            ),
+        )
+
+        // 2 · Changelog — generated from notes/version/*.md, newest month first.
+        val months =
+            notesDir.dir("version").asFile.listFiles { f -> f.extension == "md" }
+                ?.sortedByDescending { it.name } ?: emptyList()
+        val changelog =
+            buildString {
+                append("<h1>Changelog</h1>\n<p>Every release in plain English, newest first — ")
+                append("generated from the project's living notes (<code>notes/version/</code>).</p>\n")
+                months.forEach { append(md(it.readText())) }
+            }
+        File(out, "changelog.html").writeText(
+            page(
+                "",
+                "Changelog · PaperMC Despawned Items",
+                "Release-by-release changelog for PaperMC Despawned Items.",
+                "CHANGELOG",
+                true,
+                changelog,
+            ),
+        )
+
+        // 3 · Notes — the living notes/ tree rendered under notes/ (docs-site 06:
+        // one Notes door, a landing with intro + section cards, a sidebar listing
+        // EVERY note organised by section, README/overview excluded from the sidebar).
+        val noteFiles =
+            notesDir.asFile.walkTopDown()
+                .filter { it.isFile && it.extension == "md" && it.name != "README.md" }
+                .map { it.relativeTo(notesDir.asFile).invariantSeparatorsPath }
+                .sorted().toList()
+        val sections =
+            linkedMapOf(
+                "Status & Changelog" to { p: String -> !p.contains("/") },
+                "Context" to { p: String -> p.startsWith("context/") },
+                "System Map" to { p: String -> p.startsWith("systems/") },
+                "Decisions" to { p: String -> p.startsWith("decisions/") },
+                "Plans" to { p: String -> p.startsWith("plans/") },
+                "Reference" to { p: String -> p.startsWith("reference/") },
+                "Session Logs" to { p: String -> p.startsWith("sessions/") },
+                "Changelog Months" to { p: String -> p.startsWith("version/") },
+                "Fairyfox Reports" to { p: String -> p.startsWith("fairyfox-reports/") },
+            )
+
+        fun sidebar(
+            root: String,
+            current: String?,
+        ): String =
+            buildString {
+                append("<aside class=\"notes-side\" aria-label=\"All notes\">")
+                append("<a href=\"${root}notes/index.html\"><strong>Notes home</strong></a>")
+                for ((name, match) in sections) {
+                    val inSection = noteFiles.filter { match(it) && !(name == "Status & Changelog" && it.contains("/")) }
+                    if (inSection.isEmpty()) continue
+                    append("<h4>$name</h4>")
+                    for (p in inSection) {
+                        val href = root + "notes/" + p.removeSuffix(".md") + ".html"
+                        val label = p.substringAfterLast("/").removeSuffix(".md")
+                        val cls = if (p == current) " class=\"current\"" else ""
+                        append("<a href=\"$href\"$cls>$label</a>")
+                    }
+                }
+                append("</aside>")
+            }
+        // Landing: root-note intro (notes/README.md) + section cards.
+        val landingIntro = md(notesDir.file("README.md").asFile.readText())
+        val landing =
+            buildString {
+                append("<div class=\"notes-layout\">")
+                append(sidebar("../", null))
+                append("<article class=\"notes-article\"><h1>Notes</h1>")
+                append("<p>The project's living documentation — start with Status, then explore by section.</p>")
+                append(landingIntro)
+                append("</article></div>")
+            }
+        val notesOut = File(out, "notes")
+        notesOut.mkdirs()
+        File(notesOut, "index.html").writeText(
+            page(
+                "../",
+                "Notes · PaperMC Despawned Items",
+                "Living documentation for PaperMC Despawned Items — status, decisions, plans, session logs.",
+                "NOTES",
+                false,
+                landing,
+            ),
+        )
+        // Every note page, data-read, with the full sidebar.
+        for (p in noteFiles) {
+            val depth = p.count { it == '/' } + 1 // +1 for the notes/ dir itself
+            val root = "../".repeat(depth)
+            val target = File(notesOut, p.removeSuffix(".md") + ".html")
+            target.parentFile.mkdirs()
+            val article =
+                "<div class=\"notes-layout\">" + sidebar(root, p) +
+                    "<article class=\"notes-article\">" + md(notesDir.file(p).asFile.readText()) + "</article></div>"
+            target.writeText(
+                page(
+                    root,
+                    "${p.substringAfterLast("/").removeSuffix(".md")} · Notes · PaperMC Despawned Items",
+                    "Project note: $p",
+                    "NOTES",
+                    true,
+                    article,
+                ),
+            )
+        }
+    }
+}
+
+// The publishable site: hand pages + assets at the root, the Dokka tree under /api/.
+val assembleDocsSite by tasks.registering(Copy::class) {
+    group = "documentation"
+    description = "Assemble the full docs site (chrome pages + boundaried Dokka under /api/) into build/docs-site"
+    dependsOn("dokkaGenerate", vendorChromeAssets, renderDocsSite)
+    into(layout.buildDirectory.dir("docs-site"))
+    from(layout.buildDirectory.dir("docs-pages"))
+    from(layout.projectDirectory.dir("docs-theme/chrome")) {
+        include("main.css", "reader.js", "nav.js", "coins.js", "fox.png")
+    }
+    from(layout.projectDirectory.file("assets/icon.png"))
+    from(layout.buildDirectory.dir("dokka/html")) { into("api") }
+}
 
 tasks {
     // `gradle build` produces the shaded, runnable plugin jar.

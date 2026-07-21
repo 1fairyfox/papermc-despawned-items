@@ -198,6 +198,39 @@ Status key: ✅ pass · ❌ gap (fix now) · 🔶 gap (recorded, follow-up) · N
 108. ✅→APPLIED Branch auto-delete ON (`delete_branch_on_merge=true`); `dev`
      deletion+force-push protected via branch protection
 
+## Correction round (2026-07-20, later — after Fairy Fox caught the lenient reading)
+
+The first "fix" of #24 satisfied the letter by *shrinking* the subnav to existing pages
+instead of building the pages the standard expects, left the Dokka module page as the
+site's **default page** (the left pill must be a real overview/landing), and kept the
+generator as the whole site rather than boundarying it. Same class of failure the
+audit itself documents (F1/F5). Corrected properly (v1.3.4):
+
+- #24 → **full canonical subnav** on every page: `[name] · Notes · Tutorials ·
+  Changelog · API · Download · [Repository ↗]`, all real chrome-wearing pages,
+  per-page active marks. RE-FIXED ✅
+- Default page → **overview landing** (`index.html`), section cards; API root no longer
+  the landing. ✅
+- #31 → Tutorials page (getting started) now exists, `data-read`. ✅
+- #36 → **Notes rendered on the site** after all (06 shape: one door, landing = root
+  note + sections, sidebar lists every note, READMEs excluded, note pages `data-read`,
+  landing not). Was N/A-by-choice; the choice is reversed. ✅ (44 pages)
+- #32/#33 → API now truly **boundaried under /api/**, subnav API item active on
+  generated pages, way-back via homepageLink → overview. ✅
+- #34/#35 → re-verified on the restructured output (sidebar API-only; one footer). ✅
+- #94 → fox icon **vendored** (root + api); zero fairyfox.io asset hot-links remain in
+  the built site. Manifest self-hosted-assets row → implemented. ✅
+- Changelog page generated from `notes/version/*.md` at build (follow-up delivered
+  early; future.md updated).
+- Verification caught a malformed home-pill attribute (`class="subnav-home" active`)
+  before commit — fixed; zero malformed actives in output.
+
+Still open after this round (honest list): #23 (hub-side registry check — hub's act),
+#26 breadcrumb (recommended, absent — Dokka breadcrumbs exist on API pages only),
+#46 in-browser three-theme + mobile sign-off on the **live** deploy (fetch/inspect
+after ship), #100 regression-per-fix (ongoing practice), notes section READMEs
+excluded from sidebar by name — revisit if they gain real content.
+
 ## Applied in this pass (2026-07-20)
 
 - #22, #24 → header.ftl fixed (Projects active; canonical subnav) ✅
