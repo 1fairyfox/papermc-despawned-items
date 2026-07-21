@@ -53,9 +53,11 @@ jobs:
           build-mode: manual
           queries: security-and-quality
 
-      # Compile only (no tests) — enough for the java-kotlin extractor to trace the code.
+      # Compile under CodeQL's tracer. `clean` + `--no-build-cache` force the Kotlin/Java
+      # compilers to actually RUN in this step — a cached / up-to-date compile emits no trace,
+      # which fails the extractor with "no source code seen during build".
       - name: Compile (Gradle)
-        run: ./gradlew assemble --no-daemon --stacktrace
+        run: ./gradlew clean assemble --no-daemon --no-build-cache --stacktrace
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
