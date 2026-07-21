@@ -91,7 +91,7 @@ class CombinedLoadTest {
         val avgMs = tickNanos.average() / 1_000_000.0
         val maxMs = tickNanos.max() / 1_000_000.0
         val sorted = tickNanos.sorted()
-        val p95Ms = sorted[(sorted.size * 95) / 100 - 1] / 1_000_000.0
+        val p95Ms = sorted[sorted.size * 95 / 100 - 1] / 1_000_000.0
         println("LOAD storm+commands: avg=%.2fms p95=%.2fms max=%.2fms per tick".format(avgMs, p95Ms, maxMs))
 
         // Budget: 20 relocations/tick × 100 ticks = 2000 items must have left the queue.

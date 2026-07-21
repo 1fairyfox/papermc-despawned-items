@@ -32,7 +32,7 @@ open class HotPathBenchmarks {
     fun populate() {
         // 100k locations across 100 owners — a very large network.
         for (i in 0 until 100_000) {
-            store.add(DespawnLocation("world", i % 1000, 64 + (i / 1000) % 64, i / 64_000, owners[i % owners.size]))
+            store.add(DespawnLocation("world", i % 1000, 64 + i / 1000 % 64, i / 64_000, owners[i % owners.size]))
         }
     }
 
