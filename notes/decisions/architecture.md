@@ -2,6 +2,18 @@
 
 Key structural choices and why. Newest on top.
 
+### 2026-07-21 — Legal pages self-hosted; "Legal" added to the subnav (owner call)
+
+The legal-docs standard is mandatory per-repo; the earlier "hub serves /legal/" N/A was
+wrong and the chrome footer's legal links were 404ing. Three code-accurate pages now
+ship at `legal/{privacy,terms,cookies}/` (+ a `legal/` index) rendered through the
+shared shell, `data-read`, Last-updated dated. **Deviation from the canonical subnav
+centre set, on the owner's direction:** a `Legal` item sits after `Download` on every
+page (hand + API). legal-docs rule 4 blesses primary-menu placement ("a clearly-labelled
+link in the app's primary menu satisfies GDPR/CCPA 'easily accessible'"); the canonical
+set in docs-site 05 doesn't list Legal, so this is recorded as a deliberate,
+owner-directed addition — not silent drift.
+
 ### 2026-07-20 — Full standards audit: nav-active + subnav corrected; PR-based releases now mandatory
 
 The full hub-standards audit (`notes/plans/standards-audit-2026-07-20.md`, 100+ items)
