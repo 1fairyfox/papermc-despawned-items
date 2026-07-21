@@ -62,5 +62,5 @@ Done on `dev` (all green, CI passing):
 | Forward-compat load on Paper 26.1.2 | ✅ verified — headless smoke, enabled cleanly (`Done (10.3s)`), no exceptions despite 26.x registry changes |
 | In-game gameplay test | ✅ unblocked (Mineflayer supports 1.21.11) |
 | GitHub Pages docs | ⏳ enabled; deploys on release to `main` |
-| Standards adopted (project side) | ✅ |
+| Standards adopted (project side) | per-standard state: [`reference/adoption-manifest.md`](reference/adoption-manifest.md) — 17 implemented · 6 copied-only (due next adopt pass) · 1 gap · 4 N/A (no bare ✅ — see the checklist-noncompliance report) |
 | Hub registration | ❌ not yet (hub-side) |
