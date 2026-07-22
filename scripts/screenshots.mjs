@@ -309,7 +309,39 @@ async function clientBackend() {
   };
 }
 
+/**
+ * Human-in-the-loop capture. Builds every scene on a real server exactly as the automated
+ * backends do, announces each one in chat, and pauses long enough for a person who has
+ * joined with their own Minecraft client to press F2.
+ *
+ * This exists because it is the honest answer when headless rendering is not working: the
+ * *scene scripting* is the valuable, repeatable part — the world setup, the camera position,
+ * the exact tick the effect fires — and none of it depends on a renderer. A human pressing
+ * F2 eight times against a scripted world is far more repeatable than a human building the
+ * world too, and it is the only path that photographs real particles with no CI toolchain.
+ *
+ * Start the server with `scripts/local-playtest.ps1`, join it, then run this with
+ * `SCREENSHOT_ENGINE=manual`.
+ */
+function manualBackend() {
+  const pause = Number(process.env.SCREENSHOT_MANUAL_PAUSE_MS ?? 12_000);
+  console.log(`Manual capture: each scene will hold for ${pause / 1000}s — join the server and press F2.`);
+  return {
+    engine: "manual",
+    async shot(file) {
+      const name = file.split(/[\\/]/).pop();
+      // Tell the player in-game what they are looking at and when to press the key.
+      cmd(`say [screenshot] ${name} — framing now, press F2`);
+      await sleep(pause);
+    },
+    async close() {
+      cmd("say [screenshot] all scenes done — thanks!");
+    },
+  };
+}
+
 async function makeCapture(bot) {
+  if (ENGINE === "manual") return manualBackend();
   if (ENGINE === "client") {
     try {
       return await clientBackend();
@@ -324,7 +356,9 @@ async function makeCapture(bot) {
 async function shot(name, caption) {
   const file = join(outDir, `${name}.png`);
   await capture.shot(file);
-  const bytes = statSync(file).size;
+  // Manual capture writes no file here — the human's F2 does, into their own screenshots
+  // folder — so the manifest records the intent rather than a byte count.
+  const bytes = capture.engine === "manual" ? -1 : statSync(file).size;
   manifest.push({ name, file: `${name}.png`, caption, engine: capture.engine, bytes });
   const pos = bot?.entity?.position;
   console.log(
@@ -550,7 +584,7 @@ async function run() {
   // length — a flat sky with nothing rendered. "Files exist" is not "screenshots work",
   // so the harness now says so itself instead of shipping empty art.
   const distinct = new Set(manifest.map((s) => s.bytes));
-  if (distinct.size === 1 && manifest.length > 1) {
+  if (capture.engine !== "manual" && distinct.size === 1 && manifest.length > 1) {
     console.error(
       `::error::all ${manifest.length} frames are byte-identical (${[...distinct][0]} bytes) — the scene is almost certainly not rendering`,
     );
