@@ -32,6 +32,29 @@ class DespiActions(private val plugin: PaperMcDespawnedItems) {
     /** `/recycle` and `/despi recycle` — recycle the held item for reward progress. */
     fun recycle(player: Player) = RecycleAction.recycle(plugin, player)
 
+    /**
+     * `/despi wand` — hands the player the despawn wand.
+     *
+     * The wand is the "mode item" convention every Minecraft admin already knows from
+     * WorldEdit: while it is in your hand, right-clicking a despawn target opens its
+     * options and sneak-right-clicking toggles it on or off. While it is *not* in your
+     * hand, this plugin never touches an interaction — which is what keeps it from
+     * fighting shops, protection plugins, storage mods or anything else that cares about
+     * right-clicking a chest.
+     */
+    fun giveWand(player: Player) {
+        if (!plugin.settings.targetUi.enabled) {
+            fb.error(player, "The despawn button is disabled in the config")
+            return
+        }
+        val leftover = player.inventory.addItem(io.fairyfox.papermc.despawneditems.ui.TargetWand.create(plugin))
+        if (leftover.isNotEmpty()) {
+            leftover.values.forEach { player.world.dropItem(player.location, it) }
+            fb.info(player, "Your inventory was full — the wand was dropped at your feet.")
+        }
+        fb.success(player, "Here is your despawn wand. Right-click a target for options, sneak + right-click to toggle it.")
+    }
+
     // ─── add ────────────────────────────────────────────────────────────────────
 
     /** `/despi add this [player]`. [ownerName] null = self (limit-checked). */

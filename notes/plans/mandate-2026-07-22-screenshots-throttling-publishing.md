@@ -44,6 +44,24 @@ Follow-up answers via AskUserQuestion are recorded in [Clarifications](#clarific
 | C23 | "A clean Kotlin multi-platform structure might be: common/ platform-paper/ platform-folia/ …" | Adopt the module layout as the design for Group C. | P11 | `done` (as design) — recorded in `platform-targets.md`, incl. the finding that extracting `core/` is the real prerequisite. |
 | C24 | "It is safer to state: This build targets Paper. Hybrid server implementations are unsupported unless explicitly listed." | Explicitly exclude Arclight/Mohist/Magma/Cardboard/Banner. | P11 | `done` — stated in `platform-targets.md` and README. |
 
+### Third message, 2026-07-22 — the in-world toggle button
+
+| # | Owner's words (verbatim) | Interpretation | Phase | Status |
+|---|--------------------------|----------------|-------|--------|
+| C25 | "for the client targets, can it include a button of some sort on despawn targets to allow easy clicking on and off targets to mark them for despawn or not" | A clickable control **on the despawn target block itself** that toggles that target's participation on/off — no command typing. | P12 | `todo` |
+| C26 | "or extra options" | The same control surfaces further per-target settings, not just a binary toggle. | P13 | `todo` |
+| C27 | "All in a way that likely wouldnt confict with other mods" | Must not swallow interactions other plugins/mods want, must not claim global right-click, must namespace all its data and entities. | P12 | `todo` |
+| C28 | "and preferably be synergistic to other mods." | Expose a documented, stable integration surface so other mods/plugins can read state and build their own UI on top. | P14 | `todo` |
+| C29 | "can you figure out how to fix these problems" (re: the blank screenshots) | Resolve the blank-frame blocker rather than leaving it documented. | P4b | `in progress` — root cause identified (prismarine-viewer prerenders textures at publish time and has no assets for 1.21.11); fix pushed. |
+
+**Design decision for C25 (recorded because it reinterprets "client targets").** The button is
+built **server-side**, using vanilla-visible `Interaction` + `TextDisplay` entities and a chest
+GUI. Reasoning: a client mod that does not exist yet cannot ship a button, whereas a server-side
+control works today for **every** player — vanilla, Fabric, NeoForge, or any modpack — with
+nothing to install and no version-lock between client and server. The client-mod path is not
+abandoned: C28 is satisfied by a documented plugin-messaging channel that a future client mod
+(or any third-party mod) can use to render a richer UI over the same state.
+
 ---
 
 ## Clarifications

@@ -32,10 +32,13 @@ class DespawnProcess(
         private set
 
     init {
-        loopsLeft = plugin.locations.count
+        // Budget the attempt count against targets that are actually switched ON — a
+        // network where most chests are toggled off should not spend its whole budget
+        // drawing them.
+        loopsLeft = plugin.locations.enabledCount
         plugin.despawnProcesses.add(this)
 
-        if (plugin.locations.isEmpty()) {
+        if (plugin.locations.isEmpty() || loopsLeft <= 0) {
             selfDestroy()
         } else {
             newLoop()
@@ -56,14 +59,18 @@ class DespawnProcess(
         }.runTaskLater(plugin, 1L)
     }
 
-    /** A random location not yet tried by this process, or null when exhausted. */
+    /**
+     * A random **enabled** location not yet tried by this process, or null when exhausted.
+     * Targets toggled off through the button are skipped entirely, and higher-priority
+     * targets are drawn proportionally more often.
+     */
     private fun nextLocation(): DespawnLocation? {
         repeat(RANDOM_ATTEMPTS) {
-            val candidate = plugin.locations.random() ?: return null
+            val candidate = plugin.locations.randomEnabled() ?: return null
             if (tried.add(candidate)) return candidate
         }
-        // Near-exhaustion fallback: pick any untried location deterministically.
-        return plugin.locations.all().firstOrNull { it !in tried }?.also { tried.add(it) }
+        // Near-exhaustion fallback: pick any untried enabled location deterministically.
+        return plugin.locations.all().firstOrNull { it.enabled && it !in tried }?.also { tried.add(it) }
     }
 
     private fun loadWorld(despawnLocation: DespawnLocation) {

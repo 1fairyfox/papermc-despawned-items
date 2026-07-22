@@ -25,6 +25,7 @@ object DespiCommand {
     private const val USE = "despi.use"
     private const val ELEVATED = "despi.elevated"
     private const val RECYCLE_USE = "recycle.use"
+    private const val BUTTON = "despi.button"
 
     fun register(plugin: PaperMcDespawnedItems) {
         val actions = DespiActions(plugin)
@@ -53,6 +54,7 @@ object DespiCommand {
     ) = Commands.literal(name)
         .requires { it.sender.hasPermission(USE) }
         .then(recycleBranch(a))
+        .then(wandBranch(a))
         .then(addBranch(a))
         .then(removeBranch(a))
         .then(clearBranch(a))
@@ -63,6 +65,12 @@ object DespiCommand {
         .then(effectsBranch(a))
         .then(literal("reload").requires(elevated).then(literal("do").executes(sender { s, _ -> a.reload(s) })))
         .then(literal("save").requires(elevated).then(literal("do").executes(sender { s, _ -> a.save(s) })))
+
+    /** `/despi wand` — hands the player the despawn wand used to click targets on and off. */
+    private fun wandBranch(a: DespiActions) =
+        literal("wand")
+            .requires { it.sender.hasPermission(BUTTON) }
+            .executes(player { p, _ -> a.giveWand(p) })
 
     /** `/despi recycle` — the same behaviour as the standalone recycle command. */
     private fun recycleBranch(a: DespiActions) =

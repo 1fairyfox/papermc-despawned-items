@@ -16,6 +16,9 @@ import io.fairyfox.papermc.despawneditems.events.OnItemDespawnEvent
 import io.fairyfox.papermc.despawneditems.location.LocationManager
 import io.fairyfox.papermc.despawneditems.manage.RemoveMaterials
 import io.fairyfox.papermc.despawneditems.throttle.ThrottleManager
+import io.fairyfox.papermc.despawneditems.ui.ModBridge
+import io.fairyfox.papermc.despawneditems.ui.TargetInteractListener
+import io.fairyfox.papermc.despawneditems.ui.TargetMenuListener
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -67,6 +70,10 @@ open class PaperMcDespawnedItems : JavaPlugin() {
     lateinit var catchAll: CatchAllDelivery
         private set
 
+    /** Publishes target state for client mods on a namespaced plugin-messaging channel. */
+    lateinit var modBridge: ModBridge
+        private set
+
     /** Effects currently playing — held so they are not garbage collected. */
     val effectsPlaying: MutableList<DespawnEffect> = mutableListOf()
 
@@ -104,7 +111,14 @@ open class PaperMcDespawnedItems : JavaPlugin() {
         despawnScheduler = DespawnScheduler(this)
         despawnScheduler.start()
 
+        modBridge = ModBridge(this)
+        modBridge.register()
+
         Bukkit.getPluginManager().registerEvents(OnItemDespawnEvent(this), this)
+        // The in-world toggle button + its options menu. Inert unless a player is holding a
+        // tagged despawn wand, so ordinary container interaction is never intercepted.
+        Bukkit.getPluginManager().registerEvents(TargetInteractListener(this), this)
+        Bukkit.getPluginManager().registerEvents(TargetMenuListener(this), this)
 
         // Register /despi and /recycle via Paper's Brigadier command API.
         DespiCommand.register(this)
@@ -115,6 +129,7 @@ open class PaperMcDespawnedItems : JavaPlugin() {
     override fun onDisable() {
         if (this::despawnScheduler.isInitialized) despawnScheduler.stop()
         if (this::throttle.isInitialized) throttle.reset()
+        if (this::modBridge.isInitialized) modBridge.unregister()
         if (this::locations.isInitialized) locations.shutdown()
         logger.info("Disabled")
     }

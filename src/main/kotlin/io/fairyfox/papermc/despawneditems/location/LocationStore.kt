@@ -92,6 +92,48 @@ class LocationStore {
     /** A uniformly random location (with replacement), or null if empty. */
     fun randomOrNull(): DespawnLocation? = if (flat.isEmpty()) null else flat[ThreadLocalRandom.current().nextInt(flat.size)]
 
+    /** How many locations are switched on (the pipeline ignores the rest). */
+    fun enabledCount(): Int = flat.count { it.enabled }
+
+    /**
+     * A random **enabled** location, weighted by [TargetOptions.priority].
+     *
+     * Implemented as weighted rejection sampling over the existing O(1) flat bag rather
+     * than a second weighted index: draw uniformly, accept with probability
+     * `priority / MAX_PRIORITY`, retry a bounded number of times. That keeps the hot path
+     * allocation-free and the data structure single-sourced; the bounded linear fallback
+     * only runs when almost everything is disabled or low-priority.
+     */
+    fun randomEnabledOrNull(): DespawnLocation? {
+        if (flat.isEmpty()) return null
+        val rng = ThreadLocalRandom.current()
+        repeat(SAMPLE_ATTEMPTS) {
+            val candidate = flat[rng.nextInt(flat.size)]
+            if (!candidate.enabled) return@repeat
+            val weight = candidate.options.priority.coerceIn(TargetOptions.MIN_PRIORITY, TargetOptions.MAX_PRIORITY)
+            if (weight >= TargetOptions.MAX_PRIORITY || rng.nextInt(TargetOptions.MAX_PRIORITY) < weight) return candidate
+        }
+        // Fallback: everything drawn was disabled or lost its weight roll. Take any enabled one.
+        return flat.firstOrNull { it.enabled }
+    }
+
+    /**
+     * Replaces the stored entry with the same block+owner as [loc] by [loc] itself (used to
+     * change a target's [TargetOptions]). Returns false when there is nothing to update or
+     * nothing would change.
+     *
+     * Goes through [remove] + [add] rather than mutating in place because the flat bag and
+     * owner index are keyed by full value equality — swapping the instance is the only way
+     * to keep every index consistent.
+     */
+    fun update(loc: DespawnLocation): Boolean {
+        val existing = byBlock[loc.blockKey]?.get(loc.owner) ?: return false
+        if (existing == loc) return false
+        remove(existing)
+        add(loc)
+        return true
+    }
+
     // --- bulk removals ---
 
     /** Removes every location owned by [owner]; returns how many were removed. */
@@ -143,4 +185,9 @@ class LocationStore {
     fun knownOwners(): Set<UUID> = byOwner.keys.toSet()
 
     fun markAllDirty() = dirtyOwners.addAll(byOwner.keys)
+
+    private companion object {
+        /** Bounded weighted-rejection draws before falling back to a linear scan. */
+        const val SAMPLE_ATTEMPTS = 12
+    }
 }
