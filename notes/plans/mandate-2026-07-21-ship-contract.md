@@ -63,8 +63,8 @@ accrue CodeQL runs.
 
 ## Remaining headroom (not needed for 7.x, logged for later)
 
-- **Pinned-Dependencies 9→10:** the Mineflayer npm install needs a committed lockfile +
-  `npm ci` (a version pin didn't count). +0.05.
+- **Pinned-Dependencies 9→10:** ✅ done in **v1.4.6** — root `package.json` +
+  `package-lock.json` + `npm ci` (a bare version pin didn't count; the lockfile does).
 - **Signed-Releases 2→higher:** climbs as more releases carry the provenance asset (looks
   at last 5); cosign signatures would add the 8-weight portion.
 - **Solo-capped / external:** Code-Review, Contributors, CII-Best-Practices, Fuzzing —
