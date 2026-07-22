@@ -42,7 +42,7 @@ function Get-Java {
     try {
       $v = & $j -version 2>&1 | Out-String
       if ($v -match 'version "(\d+)') { if ([int]$Matches[1] -ge 21) { return $j } }
-    } catch { }
+    } catch { continue }  # candidate not runnable — try the next one
   }
   throw "No Java 21+ found. Set JAVA_HOME to a JDK 21 (Temurin) or add java to PATH."
 }
