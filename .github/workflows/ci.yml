@@ -85,6 +85,33 @@ jobs:
       - name: Boot Paper ${{ matrix.mc }} with the plugin
         run: bash scripts/server-smoke.sh "${{ matrix.mc }}" "papermc-despawned-items-*.jar"
 
+  # Rolling-channel smoke: prove the plugin still loads on Paper's newest STABLE release
+  # (a real signal — a red run here is investigated before shipping, per the ship-contract)
+  # and, softly, on the newest EXPERIMENTAL dev build (continue-on-error — dev builds are
+  # expected to be flaky, so surface issues without blocking). Both resolve their version
+  # live from fill.papermc.io. Deliberately NOT added to `main`'s required status checks: a
+  # moving external target shouldn't hard-block an otherwise-good release. Full in-game
+  # (Mineflayer) functional coverage stays pinned to 1.21.11 — node-minecraft-protocol tops
+  # out there and cannot join 26.x servers, so these rolling jobs are load/enable smokes.
+  latest-paper:
+    name: Latest Paper smoke (stable + experimental)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: "25" # newest stable + experimental Paper are on the 26.x line (Java 25)
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: papermc-despawned-items-jar
+      - name: Latest STABLE Paper — load smoke (hard)
+        run: bash scripts/server-smoke.sh latest-stable "papermc-despawned-items-*.jar"
+      - name: Latest EXPERIMENTAL Paper — load smoke (soft; investigate, don't block)
+        continue-on-error: true
+        run: bash scripts/server-smoke.sh latest-experimental "papermc-despawned-items-*.jar"
+
   # In-game client acceptance (testing.md §83–87): a Mineflayer bot — a real Minecraft
   # client on the wire — joins the server and runs plugin commands; asserts the replies
   # reach the client. End-to-end: Kotlin → Paper → protocol → client.
