@@ -3,7 +3,7 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.4.0` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
+**Version:** `1.4.3` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
 (Brigadier commands) → v1.3.0 (naming + quality gates) → v1.3.1 (package →
 `io.fairyfox.papermc.despawneditems`) → v1.3.2 (docs site wears the shared fairyfox chrome,
 bundle v2.2.1) → v1.3.3 (full standards audit: nav/subnav corrected, Downloads page,
@@ -13,7 +13,10 @@ v1.3.7 (badge wall + supply-chain/quality tooling parity with `random-ai-prompt`
 **v1.4.0** (full-layer test suite 44%→~95% Kover-gated ≥90, 3 bug fixes found by it,
 `/despi recycle` + renameable commands, CodeQL restored on Kotlin 2.4.0) →
 **v1.4.1** (server + client layers automated in CI: Testcontainers MariaDB, headless
-Paper 1.21.11 + 26.1.2 smoke, Mineflayer in-game acceptance; Sonar CI scan wired).
+Paper 1.21.11 + 26.1.2 smoke, Mineflayer in-game acceptance; Sonar CI scan wired) →
+**v1.4.2** (123-node permission matrix, combined load + throughput proofs,
+Kotest/Pitest/JMH adopted, spark+JFR profiling) → **v1.4.3** (docs/process: the
+"Owner Mandates Become Ledgers" standing instruction + mandate-execution failure analysis).
 Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
 
 **Release path (since 2026-07-20):** `main` is branch-protected — releases go through a

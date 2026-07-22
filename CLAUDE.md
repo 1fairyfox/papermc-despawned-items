@@ -141,6 +141,38 @@ adoption — only a recorded Verify pass counts. The per-standard state lives in
 (status.md, reports) with its row. An overdue `gap` on a mandatory standard
 (git-workflow, supply-chain-hardening) holds releases like a red build.
 
+## Owner Mandates Become Ledgers (a standing instruction)
+
+Failure this rule exists to prevent (2026-07-21): a multi-part owner mandate
+("testing on every feature on every layer … full high-load … full performance") took
+THREE prompts to complete because its clauses were compressed into summary tasks,
+deferred with plausible-but-untested reasons, and re-disclosed instead of finished.
+Full analysis: `notes/fairyfox-reports/2026-07-21-mandate-execution-failure-analysis.md`.
+
+- **Transcribe, don't summarize.** When the owner gives a directive with more than
+  one requirement, create a mandate ledger in `notes/plans/` with the owner's words
+  QUOTED VERBATIM, one row per clause: quote → interpretation → status
+  (`done` / `blocked-with-evidence` / `awaiting-owner`). Completion claims cite the
+  ledger row-by-row. A clause that never became a row is the root failure mode.
+- **Deferral requires falsification, not plausibility.** No ⏳/⛔ without recorded
+  EVIDENCE of an attempt (the probe test, the error text, the version check) and a
+  retest trigger. "The tool probably can't" is banned — spend the bounded probe hour
+  first. (Track record: "MockBukkit can't ray-trace" → 10-line subclass; "Docker 29
+  is incompatible" → one curl + a one-line properties file; "Pitest won't run on
+  Gradle 9" → a version bump. Every untested deferral this project has recorded so
+  far was false.)
+- **"As much as you can" means exhaustion, not a milestone.** Effort-scoping
+  language from the owner does not authorize an internal time budget. The phase ends
+  when every ledger row is `done` or `blocked-with-evidence` — then keep working the
+  blocked rows' alternatives before presenting.
+- **Re-read the mandate before claiming completion.** Diff the FINAL state against
+  the owner's original message(s), clause by clause — not against the plan file,
+  which drifts toward what was convenient to do.
+- **The S9 NOT-done list is a decision request, not absolution.** Every item on it
+  must exist as an `awaiting-owner` ledger row. If the owner repeats the mandate
+  without descoping, every `awaiting-owner` row escalates to do-now — a SECOND
+  repetition of the same item is a process failure to be reported, not a task.
+
 **Strict reading of latitude (S8).** When a checklist item offers latitude ("include
 the ones that exist", "recommended", "where possible"), the default reading is the
 **ambitious** one — build the thing — unless the owner explicitly descopes it.
