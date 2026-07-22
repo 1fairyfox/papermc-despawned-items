@@ -44,29 +44,28 @@ performance:
   # When the queue is full: true = ignore new items, false = drop the oldest.
   drop-when-full: true
 
-# The in-world toggle button: click a despawn target to switch it on or off, or open its
-# options, without typing a command.
+# Optional client-side mod support.
 #
-# Designed to be a good neighbour on a modded/plugin-heavy server. Nothing here reacts to an
-# ordinary right-click: the plugin only acts when the player is deliberately holding a
-# DESPAWN WAND (get one with /despi wand). The wand is recognised by a persistent data tag in
-# this plugin's namespace, not by its material, so it can never be confused with another
-# mod's item — and the listener runs AFTER protection plugins and skips anything they have
-# already cancelled.
+# Everything this plugin does is available through /despi and /recycle, on every client, with
+# no mod and no setup. This section governs one optional extra: whether a player running the
+# companion client mod gets a REAL in-game interface (a button on the container screen)
+# instead of typing commands.
+#
+# That is a server owner's decision, so it is a switch:
+#   enabled: false  -> the plugin refuses the handshake. A conforming mod hides its interface
+#                      rather than showing controls that silently fail. /despi is unaffected
+#                      and nobody loses a capability.
+#   enabled: true   -> players who also hold the `despi.client` permission get the interface.
+#
+# Nothing is ever sent to a client that has not registered the channel, so vanilla players
+# receive no extra packets either way. The wire protocol is documented in ModBridge.kt, and
+# is deliberately plain text on a namespaced channel so ANY mod can interoperate.
+#
+# The server always re-checks permission, reach, ownership and limits on every request — a
+# client mod can never do something the player could not already do with a command.
 targets:
-  button:
+  client-mod:
     enabled: true
-
-    # Material used when a wand is created. Changing this does NOT invalidate existing
-    # wands, because the tag is what identifies them.
-    wand-material: BLAZE_ROD
-
-  # Publish target state to client mods on the plugin-messaging channel
-  #   papermc-despawned-items:targets
-  # Nothing is ever sent to a client that has not registered the channel, so a vanilla
-  # player receives no extra packets. A Fabric/NeoForge client mod can listen and draw its
-  # own HUD or block highlights on top. Format is documented in ModBridge.kt.
-  mod-bridge: true
 
 # Per-user throttling — how much of the server budget above any ONE player may take.
 #

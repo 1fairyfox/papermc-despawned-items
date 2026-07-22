@@ -140,6 +140,9 @@ provenance.
 | Command | Permission | Purpose |
 |---------|-----------|---------|
 | `/despi add this [player]` | `despi.use` (self) · `despi.elevated` (others) | register the block you're looking at, subject to your limit |
+| `/despi target info` · `enable` · `disable` · `toggle` | `despi.use` (own) · `despi.elevated` (others) | per-target settings on the block you're looking at |
+| `/despi target priority <1-10>` | as above | how often this target is chosen — a priority-3 target is picked 3× as often as a priority-1 one |
+| `/despi target contraband accept\|refuse` | as above | whether this target receives banned items instead of them being destroyed |
 | `/despi remove …` · `/despi clear …` · `/despi exists …` · `/despi locations …` | `despi.use` (self) · `despi.elevated` (others) | manage locations |
 | `/despi purge …` | `despi.use` (own) · `despi.elevated` (others/everyone) | bulk-remove materials from despawn storage |
 | `/despi despawn …` · `/despi effects …` · `/despi reload do` · `/despi save do` | `despi.elevated` | admin / testing |
@@ -156,9 +159,43 @@ provenance.
 | `despi.throttle.rate.<n>` | *n* relocations per time window |
 | `despi.throttle.concurrent.<n>` | *n* relocations in flight at once |
 | `despi.throttle.weight.<n>` | fair-share drain weight — the "some users get more" knob |
+| `despi.client` | may use the companion client mod's interface (the server must allow it too) |
 
 Both command names are **renameable** (with aliases) via `commands:` in `config.yml`, for when
 another plugin already claims `/recycle`. Renames take effect on restart.
+
+**Switching a target off is not the same as removing it.** `/despi target disable` keeps the
+registration and its settings, and the pipeline simply skips it — which is what you want when
+a chest is temporarily full, being rebuilt, or reserved for something else. `/despi remove`
+is for when you mean it.
+
+## Optional client-side mod
+
+Everything above works on **every client**, vanilla included, with nothing to install. For
+players who want a real in-game interface rather than commands, the plugin speaks a small,
+documented protocol that a companion client mod can use to put a button directly on the
+chest/furnace screen.
+
+Deliberate design choices, because this is the part that usually goes wrong:
+
+- **The server owner decides.** `targets.client-mod.enabled: false` and the plugin refuses the
+  handshake — a conforming mod hides its interface instead of showing controls that silently
+  fail. Nothing else changes and no player loses a capability.
+- **The admin decides who.** The `despi.client` permission gates it per rank on servers that
+  do allow it.
+- **The client is never trusted.** Every request re-checks permission, reach, ownership and
+  your location limit server-side. A modified client can do nothing it couldn't already do by
+  typing a command.
+- **Vanilla players are untouched.** Nothing is ever sent to a client that hasn't registered
+  the channel.
+- **Any mod can integrate.** The protocol is plain text on the namespaced channel
+  `papermc-despawned-items:targets`, with no library to link against — a storage manager, a
+  minimap or an admin HUD can implement the same verbs and interoperate. Full spec in
+  `ModBridge.kt`.
+
+There is deliberately **no in-world "wand" item and no fake chest menu**. Pretending an item
+is a tool, or a container is a settings screen, is less predictable than a command — so the
+server-side surface stays commands, and a real interface is left to a real client mod.
 
 ## Configuration
 
@@ -172,6 +209,7 @@ another plugin already claims `/recycle`. Renames take effect on restart.
 | `performance` | `max-per-tick`, `max-concurrent`, `max-queue`, `drop-when-full` |
 | **`throttle`** | per-user throttling: strategy, rate window, concurrency, fair-share weight, over-quota policy |
 | **`void`** | void chance, extra banned materials, and the catch-all containers |
+| **`targets`** | whether client-side mods may drive the plugin at all |
 | `storage` | `yaml` · `sqlite` · `mysql`, plus connection and pool settings |
 
 `throttle` and `void` ship **inert** — upgrading changes no behaviour until you switch them

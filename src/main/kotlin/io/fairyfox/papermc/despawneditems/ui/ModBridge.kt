@@ -3,6 +3,7 @@ package io.fairyfox.papermc.despawneditems.ui
 import io.fairyfox.papermc.despawneditems.PaperMcDespawnedItems
 import io.fairyfox.papermc.despawneditems.limit.DespawnLimits
 import io.fairyfox.papermc.despawneditems.location.DespawnLocation
+import io.fairyfox.papermc.despawneditems.location.TargetOptions
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player
@@ -31,8 +32,17 @@ import org.bukkit.plugin.messaging.PluginMessageListener
  * papermc-despawned-items:targets
  * ```
  *
- * **Server → client** (state; sent when a client asks, when a target changes, and when a
- * listening player opens a container):
+ * **Handshake.** A mod says hello; the server answers with what it will allow. This is what
+ * lets a mod render a *real* interface instead of guessing — and lets it hide that interface
+ * entirely on a server that does not want it.
+ *
+ * ```
+ * → HELLO <client-protocol-version>
+ * ← WELCOME <server-protocol-version> <capability> <capability> …
+ * ← UNAVAILABLE <reason>          # server has client-mod support off, or you lack permission
+ * ```
+ *
+ * **Server → client** (state):
  *
  * ```
  * TARGET  <world> <x> <y> <z> <owner-uuid> <enabled> <priority> <contraband>
@@ -43,11 +53,20 @@ import org.bukkit.plugin.messaging.PluginMessageListener
  * **Client → server** (requests; every one is re-validated server-side):
  *
  * ```
- * QUERY   <world> <x> <y> <z>          # what is the state of this block?
- * MARK    <world> <x> <y> <z>          # register it as a despawn target
- * UNMARK  <world> <x> <y> <z>          # unregister it
- * TOGGLE  <world> <x> <y> <z>          # flip enabled/disabled, keeping the registration
+ * QUERY    <world> <x> <y> <z>          # what is the state of this block?
+ * MARK     <world> <x> <y> <z>          # register it as a despawn target
+ * UNMARK   <world> <x> <y> <z>          # unregister it
+ * TOGGLE   <world> <x> <y> <z>          # flip enabled/disabled, keeping the registration
+ * PRIORITY <world> <x> <y> <z> <n>      # set draw weight 1–10
+ * CONTRABAND <world> <x> <y> <z> <bool> # opt this target in or out of receiving banned items
  * ```
+ *
+ * ### The server owner is in charge
+ *
+ * Every one of these is refused unless **both** `targets.client-mod.enabled` and the
+ * player's `despi.client` permission allow it — see [ClientAccess]. A server that wants
+ * nothing to do with client mods switches one config key and the protocol goes silent;
+ * `/despi` keeps working exactly as before, for everyone, on any client.
  *
  * ### Trust model
  *
@@ -105,7 +124,7 @@ class ModBridge(private val plugin: PaperMcDespawnedItems) : PluginMessageListen
         player: Player,
         message: String,
     ) {
-        if (!plugin.settings.targetUi.modBridge) return
+        if (!plugin.settings.targetUi.clientModEnabled) return
         if (!player.listeningPluginChannels.contains(channel)) return
         runCatching { player.sendPluginMessage(plugin, channel, message.toByteArray()) }
     }
@@ -135,7 +154,7 @@ class ModBridge(private val plugin: PaperMcDespawnedItems) : PluginMessageListen
 
     /** Announces a change to every listening player. */
     fun broadcastTargetChanged(target: DespawnLocation) {
-        if (!plugin.settings.targetUi.modBridge) return
+        if (!plugin.settings.targetUi.clientModEnabled) return
         val message = encode(target).toByteArray()
         for (player in plugin.server.onlinePlayers) {
             if (!player.listeningPluginChannels.contains(channel)) continue
@@ -151,7 +170,6 @@ class ModBridge(private val plugin: PaperMcDespawnedItems) : PluginMessageListen
         message: ByteArray,
     ) {
         if (channelName != channel) return
-        if (!plugin.settings.targetUi.enabled || !plugin.settings.targetUi.modBridge) return
         handle(player, String(message))
     }
 
@@ -164,14 +182,25 @@ class ModBridge(private val plugin: PaperMcDespawnedItems) : PluginMessageListen
         raw: String,
     ) {
         val parts = raw.trim().split(' ')
-        if (parts.size < MIN_REQUEST_FIELDS) return
+        if (parts.isEmpty()) return
         val verb = parts[0].uppercase()
-        val location = parseLocation(parts) ?: return
 
-        if (!player.hasPermission(TargetInteractListener.BUTTON_PERMISSION)) {
-            deny(player, location, "no permission")
+        // The handshake is answered first and separately: a refused client still gets a
+        // clear UNAVAILABLE so it can hide its interface rather than showing dead buttons.
+        if (verb == "HELLO") {
+            handshake(player)
             return
         }
+
+        val denial = ClientAccess.denialFor(plugin, player)
+        if (denial != null) {
+            send(player, "UNAVAILABLE ${denial.reason}")
+            return
+        }
+
+        if (parts.size < MIN_REQUEST_FIELDS) return
+        val location = parseLocation(parts) ?: return
+
         // Anti-spoof: a client may only act on a block it could plausibly be looking at.
         // Without this, a modified client could toggle targets anywhere in the world.
         if (player.world != location.world || player.location.distanceSquared(location) > MAX_REACH_SQUARED) {
@@ -179,12 +208,72 @@ class ModBridge(private val plugin: PaperMcDespawnedItems) : PluginMessageListen
             return
         }
 
+        dispatch(player, verb, location, parts.getOrNull(VALUE_INDEX))
+    }
+
+    /** Routes one validated request to its handler. Unknown verbs are ignored so the protocol can grow compatibly. */
+    private fun dispatch(
+        player: Player,
+        verb: String,
+        location: Location,
+        value: String?,
+    ) {
         when (verb) {
             "QUERY" -> sendStateFor(player, location)
             "MARK" -> mark(player, location)
             "UNMARK" -> unmark(player, location)
             "TOGGLE" -> toggle(player, location)
-            else -> Unit // unknown verb: ignore, so the protocol can grow compatibly
+            "PRIORITY" -> setPriority(player, location, value)
+            "CONTRABAND" -> setContraband(player, location, value)
+            else -> Unit
+        }
+    }
+
+    /** Answers a client's HELLO with either its capabilities or the reason it is refused. */
+    private fun handshake(player: Player) {
+        val denial = ClientAccess.denialFor(plugin, player)
+        if (denial != null) {
+            send(player, "UNAVAILABLE ${denial.reason}")
+            return
+        }
+        val capabilities = ClientAccess.capabilitiesFor(plugin, player)
+        send(player, "WELCOME ${ClientAccess.PROTOCOL_VERSION} ${capabilities.joinToString(" ")}".trim())
+    }
+
+    private fun setPriority(
+        player: Player,
+        location: Location,
+        rawValue: String?,
+    ) {
+        val value = rawValue?.toIntOrNull() ?: return
+        if (plugin.locations.targetAt(location, player.uniqueId) == null) {
+            deny(player, location, "not yours to change")
+            return
+        }
+        val updated =
+            plugin.locations.updateOptions(location, player.uniqueId) {
+                it.copy(priority = value.coerceIn(TargetOptions.MIN_PRIORITY, TargetOptions.MAX_PRIORITY))
+            }
+        if (updated != null) {
+            sendTargetState(player, updated)
+            broadcastTargetChanged(updated)
+        }
+    }
+
+    private fun setContraband(
+        player: Player,
+        location: Location,
+        rawValue: String?,
+    ) {
+        val value = rawValue?.toBooleanStrictOrNull() ?: return
+        if (plugin.locations.targetAt(location, player.uniqueId) == null) {
+            deny(player, location, "not yours to change")
+            return
+        }
+        val updated = plugin.locations.updateOptions(location, player.uniqueId) { it.copy(acceptContraband = value) }
+        if (updated != null) {
+            sendTargetState(player, updated)
+            broadcastTargetChanged(updated)
         }
     }
 
@@ -260,6 +349,7 @@ class ModBridge(private val plugin: PaperMcDespawnedItems) : PluginMessageListen
         const val X_INDEX = 2
         const val Y_INDEX = 3
         const val Z_INDEX = 4
+        const val VALUE_INDEX = 5
 
         /** Squared reach limit for a client request (8 blocks — comfortably past vanilla reach). */
         const val MAX_REACH_SQUARED = 64.0

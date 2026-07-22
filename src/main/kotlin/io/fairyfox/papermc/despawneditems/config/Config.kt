@@ -51,41 +51,27 @@ class Config(val plugin: PaperMcDespawnedItems) {
         commands = CommandSettings(plugin.config, plugin.logger)
         throttle = ThrottleSettings(plugin.config, plugin.logger)
         voiding = VoidSettings(plugin.config, plugin.logger)
-        targetUi = TargetUiSettings(plugin.config, plugin.logger)
+        targetUi = TargetUiSettings(plugin.config)
     }
 }
 
 /**
- * The `targets:` section — the in-world toggle button and its mod-integration channel.
+ * The `targets:` section — whether this server will talk to a **client-side mod**.
  *
- * On by default, because it is inert until a player deliberately holds a despawn wand: with
- * no wand in hand the plugin never touches an interaction. See
- * [io.fairyfox.papermc.despawneditems.ui.TargetInteractListener] for the full
- * conflict-avoidance contract.
+ * There is deliberately nothing here about in-world items or fake menus. The server-side
+ * surface is `/despi`, which works identically on every client and needs no config. This
+ * section governs only the optional extra: whether a player running the companion mod gets a
+ * real interface, which is a decision that belongs to the server owner.
  */
-class TargetUiSettings(c: FileConfiguration, logger: java.util.logging.Logger? = null) {
-    /** Master switch for the wand, the toggle and the options menu. */
-    val enabled: Boolean = c.getBoolean("targets.button.enabled", true)
-
+class TargetUiSettings(c: FileConfiguration) {
     /**
-     * Material used when a despawn wand is created. The wand is identified by a persistent
-     * data tag rather than by material, so changing this never invalidates existing wands.
+     * Whether client-side mods may drive this plugin at all.
+     *
+     * Set false and the plugin refuses the handshake, so a conforming mod hides its
+     * interface instead of showing controls that silently fail. Nothing else changes:
+     * `/despi` is unaffected, and no player loses a capability they had.
      */
-    val wandMaterial: org.bukkit.Material =
-        c.getString("targets.button.wand-material")?.let { name ->
-            org.bukkit.Material.matchMaterial(name.trim()).also {
-                if (it == null) {
-                    logger?.warning("Unknown targets.button.wand-material '$name'; using $DEFAULT_WAND.")
-                }
-            }
-        } ?: DEFAULT_WAND
-
-    /** Whether target state is published on the plugin-messaging channel for client mods. */
-    val modBridge: Boolean = c.getBoolean("targets.mod-bridge", true)
-
-    private companion object {
-        val DEFAULT_WAND: org.bukkit.Material = org.bukkit.Material.BLAZE_ROD
-    }
+    val clientModEnabled: Boolean = c.getBoolean("targets.client-mod.enabled", true)
 }
 
 /**

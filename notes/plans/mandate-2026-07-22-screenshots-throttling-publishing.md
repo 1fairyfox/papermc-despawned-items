@@ -44,6 +44,44 @@ Follow-up answers via AskUserQuestion are recorded in [Clarifications](#clarific
 | C23 | "A clean Kotlin multi-platform structure might be: common/ platform-paper/ platform-folia/ …" | Adopt the module layout as the design for Group C. | P11 | `done` (as design) — recorded in `platform-targets.md`, incl. the finding that extracting `core/` is the real prerequisite. |
 | C24 | "It is safer to state: This build targets Paper. Hybrid server implementations are unsupported unless explicitly listed." | Explicitly exclude Arclight/Mohist/Magma/Cardboard/Banner. | P11 | `done` — stated in `platform-targets.md` and README. |
 
+### Fourth message, 2026-07-22 — no wands, client-side interface, and honesty about screenshots
+
+| # | Owner's words (verbatim) | Interpretation | Phase | Status |
+|---|--------------------------|----------------|-------|--------|
+| C30 | "i dont like wands … id rather not if we didnt have to" · "I dont want items that do one thing but we pretend they do a different thing server hacks i always found them unintuitive" | Remove the wand and the fake chest menu entirely. No item pretending to be a tool, no container pretending to be a settings screen. | P16 | `done` — `TargetWand`, `TargetMenu`, and both interaction listeners deleted. |
+| C31 | "Believe it or not but a chat command is actually more intuitive than a hacky interface or menu to work with a vanilla client. I think it should stay as commands they should work in any target" | Commands are the server-side surface, and they must cover every per-target option. | P17 | `done` — `/despi target info\|enable\|disable\|toggle\|priority <1-10>\|contraband accept\|refuse`. |
+| C32 | "but i think a real interface with a client side mod can exist too or just only the command" | Keep the client-mod path as a genuine option alongside commands, not instead of them. | P18 | `done` (server half) — handshake + six verbs. The mod itself is still unwritten. |
+| C33 | "We already have permissions dealt with server side i never implied we trusted the client like that" | Correction accepted: the trust model was never in question. | — | noted |
+| C34 | "server owners may not want to have it used client side, like they may not want client side mods or they may not want this one so that does need to be a supported feature for server owners/admins" | A first-class server-owner switch, not an afterthought. | P18 | `done` — `targets.client-mod.enabled`; the plugin refuses the handshake and a conforming mod hides its UI. |
+| C35 | "Why not have a real options and setup menu client side for if they have permission to access it on the server and permission to use the client side mod" | The client must be told what it may show. | P18 | `done` — `WELCOME <version> <capabilities…>` / `UNAVAILABLE <reason>`; `despi.client` permission. |
+| C36 | "or its client-side only whereby they get the options anyways" | On a server with no plugin (or in single-player) the mod should still offer its options locally. | P19 | `awaiting-owner` — belongs to the mod, which is not written. Design recorded below. |
+| C37 | "maybe i should think more seamless between client and server rather than build targets" | Frame this as one product spanning client and server, not as per-platform builds. | P19 | `done` (as framing) — reflected in the protocol design and the README. |
+| C38 | "Im getting the feeling automated screenshots dont work well for minecraft, if thats the case manually when its needed to be changed would probably work but id still need some way to have it automated unless im wrong" | Give an honest verdict on automated screenshots and a workable fallback. | P20 | `done` — verdict below. |
+| C39 | "Why dont we finish work before releasing." | Do not release until the work is actually finished. | P9 | `done` (as policy) — nothing has been released; v1.5.0 is still unreleased on `dev`. |
+
+**Verdict on automated screenshots (C38).** The owner's instinct is right, with one correction.
+The *harness* works: CI boots a real server with the real plugin, drives eight scripted scenes,
+and writes eight PNGs. What does not work is the **headless renderer**. `prismarine-viewer`
+prerenders its block textures when the npm package is published, is not maintained in step with
+Minecraft releases, and fails silently because its mesher runs in a Web Worker. Five cycles
+found and fixed four real problems (a missing dependency, a wrong API call, a version mismatch,
+and mineflayer's physics overriding every camera teleport) and it still draws nothing.
+
+So: **the browser-renderer path is judged a dead end and should not receive more time.** Two
+things are worth keeping instead:
+
+1. **The scene script is the valuable part, and it is renderer-independent.** It builds every
+   scene, positions the camera and fires the despawns. Pointing it at a *real* client — the
+   `client` backend, already scaffolded — reuses all of it, and is the only way to photograph
+   particles anyway (clause C3).
+2. **A manual capture mode is a legitimate answer.** `scripts/local-playtest.ps1` already boots
+   a local server the owner can join. Adding a flag that builds the same eight scenes and then
+   waits means the owner joins, presses F2 eight times, and drops the files in — repeatable,
+   scripted, and honest about the one step a human does.
+
+Recommendation: try the `client` backend once; if it also proves fragile, ship manual capture
+with the scripted scenes and stop pretending otherwise.
+
 ### Third message, 2026-07-22 — the in-world toggle button
 
 | # | Owner's words (verbatim) | Interpretation | Phase | Status |

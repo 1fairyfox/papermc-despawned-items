@@ -16,9 +16,8 @@ import io.fairyfox.papermc.despawneditems.events.OnItemDespawnEvent
 import io.fairyfox.papermc.despawneditems.location.LocationManager
 import io.fairyfox.papermc.despawneditems.manage.RemoveMaterials
 import io.fairyfox.papermc.despawneditems.throttle.ThrottleManager
+import io.fairyfox.papermc.despawneditems.ui.ContainerOpenListener
 import io.fairyfox.papermc.despawneditems.ui.ModBridge
-import io.fairyfox.papermc.despawneditems.ui.TargetInteractListener
-import io.fairyfox.papermc.despawneditems.ui.TargetMenuListener
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -115,10 +114,9 @@ open class PaperMcDespawnedItems : JavaPlugin() {
         modBridge.register()
 
         Bukkit.getPluginManager().registerEvents(OnItemDespawnEvent(this), this)
-        // The in-world toggle button + its options menu. Inert unless a player is holding a
-        // tagged despawn wand, so ordinary container interaction is never intercepted.
-        Bukkit.getPluginManager().registerEvents(TargetInteractListener(this), this)
-        Bukkit.getPluginManager().registerEvents(TargetMenuListener(this), this)
+        // Read-only: tells a client mod what a container's despawn state is when it opens.
+        // Cancels nothing and adds nothing, so it cannot conflict with other plugins.
+        Bukkit.getPluginManager().registerEvents(ContainerOpenListener(this), this)
 
         // Register /despi and /recycle via Paper's Brigadier command API.
         DespiCommand.register(this)
