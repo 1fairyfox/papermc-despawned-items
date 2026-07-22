@@ -115,6 +115,34 @@ a blank-frame guard rather than publishing empty art.
 | Screenshotting the wrong element | Now screenshots the `<canvas>` directly; unchanged | 29948445257 |
 | Viewer started after chunk events | Reordered + forced a 2000-block round trip to re-fire `chunkColumnLoad`; unchanged | 29948978470 |
 
+**Second investigation round (runs 29952521790 → 29954038565).** Three more causes found and
+fixed, one of them a genuine bug:
+
+| Finding | Evidence | Outcome |
+|---|---|---|
+| prismarine-viewer **prerenders block textures at package-publish time** (1.33.0 was published Feb 2025), so it has no assets for a 2026 Minecraft version and meshes nothing — silently, because the mesher runs in a Web Worker whose errors never reach `pageerror` | package metadata + `prepare: node viewer/prerender.js` | **Fixed** — the screenshot server now boots a version the renderer knows (`mcVersion` input, default 1.21.4). Correctness on 1.21.11 stays with the smoke jobs. |
+| The internals probe was itself wrong: prismarine-viewer does not expose `viewer` on `window`, so `viewerPresent:false` meant "looked in the wrong place" | `VIEWER DIAG {"viewerPresent":false,…,"workers":["worker.js"×4]}` — four mesher workers plainly running | **Fixed** — replaced with a canvas pixel sample. |
+| **Mineflayer's client-side physics was dragging the camera back to ground level.** Every `/tp` to a vantage point was silently undone: X and Z applied, Y never did | `##[warning]camera Y did not take: asked for -53, bot reports -59.0` on every frame | **Fixed** — `bot.physicsEnabled = false`; Y now varies correctly (-53, -55, -56, -56.5, -57, -51). A real bug, and it would have produced wrong photographs even once the renderer works. |
+
+**Where it stands after all of that:** frames are *still* byte-identical. Since the camera is
+now demonstrably in the right places, the camera is ruled out and the remaining cause is
+squarely **the browser scene renders nothing**. Note also that the canvas pixel probe reports
+`distinctColours:1, first:"0,0,0"` — a WebGL canvas read back through `drawImage` without
+`preserveDrawingBuffer` cannot see the scene, so that probe is inconclusive by construction;
+puppeteer's own screenshot goes through the compositor and remains the source of truth.
+
+**Two ways forward, in order of cost:**
+
+1. **Walk the version back further.** prismarine-viewer 1.33.0's asset range may not reach
+   1.21.4 either. `mcVersion` is a workflow input, so trying 1.20.4 and then 1.19.4 is a
+   one-word change per run and needs no code. If a version renders, the harness is finished.
+2. **Switch to the `client` backend.** A real Minecraft client under Xvfb does not depend on
+   prismarine-viewer at all, and it is the *only* backend that can photograph particles —
+   which is clause C3, the thing the owner asked for first. The scaffold already exists
+   (`clientBackend()` + the Xvfb/ffmpeg install step, gated on `engine: client`). Given that
+   the viewer path has now cost five cycles and still cannot draw a block, this is probably
+   the better investment.
+
 **What is still open, with the next probe for each:**
 
 1. **`bot.entity.position.y` is pinned at `-59.0` in every frame** even though the director
