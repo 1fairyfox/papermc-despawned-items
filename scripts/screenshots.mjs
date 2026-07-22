@@ -45,6 +45,48 @@ mkdirSync(outDir, { recursive: true });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Counts distinct colours actually drawn on the page's canvas.
+ *
+ * prismarine-viewer does not expose its `viewer` on `window`, so reaching for internals
+ * told us nothing (the first probe reported `viewerPresent:false` while four mesher workers
+ * were plainly running). Sampling the pixels asks the only question that matters — "is
+ * anything drawn?" — without depending on the renderer's private shape at all.
+ *
+ * A rendered Minecraft scene has hundreds of distinct colours; a bare sky has one.
+ */
+async function inspect(page) {
+  return page.evaluate(() => {
+    const canvas = document.querySelector("canvas");
+    if (!canvas) return { canvas: false };
+    const w = 64;
+    const h = 36;
+    const scratch = document.createElement("canvas");
+    scratch.width = w;
+    scratch.height = h;
+    const ctx = scratch.getContext("2d");
+    let sampled = null;
+    try {
+      ctx.drawImage(canvas, 0, 0, w, h);
+      const data = ctx.getImageData(0, 0, w, h).data;
+      const colours = new Set();
+      for (let i = 0; i < data.length; i += 4) {
+        colours.add(`${data[i]},${data[i + 1]},${data[i + 2]}`);
+      }
+      sampled = { distinctColours: colours.size, first: [...colours][0] };
+    } catch (err) {
+      sampled = { error: String(err.message || err) };
+    }
+    return {
+      canvas: true,
+      size: `${canvas.width}x${canvas.height}`,
+      workers: (window.__diag?.workers ?? []).length,
+      errors: (window.__diag?.errors ?? []).slice(0, 6),
+      ...sampled,
+    };
+  });
+}
+
 // ---------------------------------------------------------------------------------------
 // Server lifecycle
 // ---------------------------------------------------------------------------------------
@@ -213,23 +255,7 @@ async function viewerBackend(bot) {
   // Decisive probe: is the browser scene actually populated? This one number separates
   // "the viewer never got world data" from "it has data and isn't drawing it", and every
   // further fix is guesswork until it is known.
-  const diag = await page.evaluate(() => {
-    const v = window.viewer || window.globalThis?.viewer;
-    const scene = v?.scene;
-    return {
-      viewerPresent: Boolean(v),
-      version: v?.version ?? null,
-      sceneChildren: scene?.children?.length ?? -1,
-      meshes: scene ? scene.children.filter((c) => c.type === "Mesh" || c.isMesh).length : -1,
-      canvases: document.querySelectorAll("canvas").length,
-      errors: (window.__diag?.errors ?? []).slice(0, 10),
-      workers: (window.__diag?.workers ?? []).slice(0, 5),
-    };
-  });
-  console.log(`VIEWER DIAG ${JSON.stringify(diag)}`);
-  if (diag.sceneChildren <= 0) {
-    console.warn("::warning::the browser scene is empty — frames will be bare sky");
-  }
+  console.log(`VIEWER DIAG ${JSON.stringify(await inspect(page))}`);
 
   return {
     engine: "viewer",
@@ -323,11 +349,33 @@ async function look(x, y, z, settleMs = 1_500) {
   await sleep(settleMs);
 }
 
-/** Teleports the camera to a vantage point and faces it at a target. */
+/**
+ * Teleports the camera to a vantage point and faces it at a target.
+ *
+ * Uses `/tp <x> <y> <z> <yaw> <pitch>` with the angles computed here rather than a
+ * teleport followed by `bot.lookAt`: one server-side command sets position *and* rotation
+ * atomically, so there is no window in which the frame could be taken mid-turn. The
+ * resulting position is read back and logged, because a teleport whose Y silently fails to
+ * apply is exactly the kind of thing that produces a photograph of the inside of a hill.
+ */
 async function camera(from, at) {
-  cmd(`tp Director ${from.x} ${from.y} ${from.z}`);
-  await sleep(1_200);
-  await look(at.x, at.y, at.z);
+  const dx = at.x - from.x;
+  const dy = at.y - from.y;
+  const dz = at.z - from.z;
+  const horizontal = Math.sqrt(dx * dx + dz * dz);
+  const yaw = (-Math.atan2(dx, dz) * 180) / Math.PI;
+  const pitch = (-Math.atan2(dy, horizontal) * 180) / Math.PI;
+
+  cmd(`tp Director ${from.x} ${from.y} ${from.z} ${yaw.toFixed(1)} ${pitch.toFixed(1)}`);
+  await sleep(1_800);
+
+  const pos = bot?.entity?.position;
+  if (pos && Math.abs(pos.y - from.y) > 1.5) {
+    console.warn(
+      `::warning::camera Y did not take: asked for ${from.y}, bot reports ${pos.y.toFixed(1)}`,
+    );
+  }
+  await sleep(700);
 }
 
 // ---------------------------------------------------------------------------------------
