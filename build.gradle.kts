@@ -12,7 +12,7 @@ plugins {
     // supports Kotlin *up to 2.4.0*, and its extractor hard-rejects anything newer
     // ("Kotlin version 2.4.10 is too recent"). 2.4.0 keeps the full SAST scan alive;
     // bump only after CodeQL's supported range catches up.
-    kotlin("jvm") version "2.4.0"
+    kotlin("jvm") version "2.4.10"
     id("com.gradleup.shadow") version "9.6.0"
     id("org.jetbrains.dokka") version "2.2.0"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
@@ -64,18 +64,18 @@ dependencies {
     // Database backend: HikariCP for the pool, SQLite driver to exercise JdbcLocationRepository.
     // In production these load at runtime via Paper's `libraries:` loader (see plugin.yml).
     testImplementation("com.zaxxer:HikariCP:5.1.0")
-    testRuntimeOnly("org.xerial:sqlite-jdbc:3.49.1.0")
+    testRuntimeOnly("org.xerial:sqlite-jdbc:3.53.2.1")
     // Real MySQL/MariaDB integration via Testcontainers (needs Docker; the tests disable
     // themselves cleanly where it's absent). Driver version matches plugin.yml `libraries:`.
-    testImplementation("org.testcontainers:junit-jupiter:1.21.3")
-    testImplementation("org.testcontainers:mariadb:1.21.3")
-    testRuntimeOnly("org.mariadb.jdbc:mariadb-java-client:3.5.3")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.4")
+    testImplementation("org.testcontainers:mariadb:1.21.4")
+    testRuntimeOnly("org.mariadb.jdbc:mariadb-java-client:3.5.9")
     // Surface Testcontainers/Hikari logs in test output (slf4j otherwise has no binding).
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.16")
+    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.18")
     // Kotest property testing — generator-driven invariants (roundtrips, store ops).
     testImplementation("io.kotest:kotest-property:5.9.1")
     // checkAll is a suspend fun; runBlocking hosts it inside JUnit tests.
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 }
 
 kotlin {
