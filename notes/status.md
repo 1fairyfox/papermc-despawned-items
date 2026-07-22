@@ -56,10 +56,14 @@ Landed on `dev` (both commits green through the full CI suite unless noted):
   `fair-share` / `combined`, allowances from `despi.throttle.*` permissions.
 - **Void chance + catch-all** (`void:`, inert by default) — probabilistic voiding rolled once
   at enqueue, admin-extensible banned materials, one or more catch-all containers.
-- **Automated release screenshots** — `scripts/screenshots.mjs` + a reusable
-  `screenshots.yml` called by CI (build artifacts) and Docs (gh-pages gallery at
-  `/screenshots.html`). Two backends: `viewer` (headless Chrome) and `client` (real MC under
-  Xvfb — the only one that can photograph particles).
+- **Automated release screenshots — harness done, output NOT yet usable.**
+  `scripts/screenshots.mjs` + a reusable `screenshots.yml` called by CI (build artifacts) and
+  Docs (gh-pages gallery at `/screenshots.html`). Two backends: `viewer` (headless Chrome)
+  and `client` (real MC under Xvfb — the only one that can photograph particles). It boots
+  the server, drives all eight scenes and writes eight PNGs — **but every frame is bare
+  sky**, so the job deliberately fails itself via a blank-frame guard rather than publish
+  empty art. Rule-out table + next probes: the mandate ledger's not-done list. **The
+  screenshots job is non-blocking and not a required check, so this does not gate anything.**
 - **Artifact bundle + multi-platform publishing** in `release.yml` (Modrinth, CurseForge,
   Hangar — each gated on its token secret, so inert until the owner creates the projects).
 - **Purpur** added to the `server-smoke` matrix so that platform claim is proven, not assumed.

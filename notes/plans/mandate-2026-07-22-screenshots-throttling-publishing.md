@@ -76,4 +76,57 @@ Asked via AskUserQuestion, 2026-07-22, before execution:
 
 ## Not-done list (S9)
 
-Maintained live; reproduced in the final response. Empty until the reconciliation pass in P10.
+### 1. The captured frames are blank — `blocked-with-evidence` (C1, C2, C3, C6)
+
+The harness is built, wired into CI and Docs, and runs green end to end: it boots Paper
+1.21.11 with the plugin, joins with the director bot, builds all eight scenes, and writes
+eight PNGs plus a manifest. **But every frame is bare sky.** Files existing is not
+screenshots working, so this is recorded as blocked, not done, and the job fails itself via
+a blank-frame guard rather than publishing empty art.
+
+**What has been ruled OUT** (each by a real CI run, not by reasoning):
+
+| Hypothesis | Evidence it is not the cause | Run |
+|---|---|---|
+| Missing dependency | `Cannot find module 'canvas'` fixed; `npm ci` clean | 29946807660 |
+| Bad API usage | `point.minus is not a function` fixed (lookAt needs a `Vec3`) | 29947321497 |
+| No WebGL in headless Chrome | Page reports `ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)), SwiftShader driver)` | 29948445257 |
+| A JS exception in the page | `console` / `pageerror` / `requestfailed` all forwarded; **zero** errors logged | 29948445257 |
+| World never loaded server-side | `waitForChunksToLoad()` resolves; `setblock` confirmed in the server log | 29948445257 |
+| Camera never moved | Eight distinct camera positions logged per frame | 29948445257 |
+| Screenshotting the wrong element | Now screenshots the `<canvas>` directly; unchanged | 29948445257 |
+| Viewer started after chunk events | Reordered + forced a 2000-block round trip to re-fire `chunkColumnLoad`; unchanged | 29948978470 |
+
+**What is still open, with the next probe for each:**
+
+1. **`bot.entity.position.y` is pinned at `-59.0` in every frame** even though the director
+   is `/tp`ed to `y+6` (and to y+8 for the load shot). X and Z track correctly. So either
+   mineflayer is not applying the vertical component of a server teleport, or the server is
+   snapping the spectator to the surface. Either way the camera may be sitting *in* the
+   terrain. **Probe:** log `bot.entity.position` immediately after each `/tp`, and use
+   `bot.waitForTicks` + an explicit `bot.entity.position.set()` or a `/tp` with rotation
+   (`/tp <x> <y> <z> <yaw> <pitch>`) instead of `lookAt`.
+2. **prismarine-viewer's browser scene may simply never receive geometry.** **Probe:** in
+   `page.evaluate`, read `window.viewer?.world` / count `scene.children` and log it. That
+   single number distinguishes "no data" from "data present but not drawn" and should be the
+   very next thing tried — it is ~10 lines and one CI cycle.
+3. **Fallback if the viewer proves unworkable:** the `client` backend (real Minecraft under
+   Xvfb) is already scaffolded and is the only backend that can photograph particles anyway.
+   Switching effort there may be a better use of the next cycle than debugging a renderer we
+   do not control.
+
+### 2. Not attempted this session
+
+- **The v1.5.0 release itself** — everything is on `dev`; no PR into `main`, no tag, no
+  back-merge. Deliberate: shipping a release whose headline feature produces blank images
+  would be shipping a lie.
+- **Folia** (C21/C22) — planned in detail in `platform-targets.md`, not built. Needs a
+  `PlatformScheduler` plus a shared-state audit that v1.5.0's throttle maps enlarged.
+- **Fabric / NeoForge / Sponge / Quilt / Velocity editions** (C21/C22) — each is a separate
+  implementation; `core/` extraction is the prerequisite and is itself a full session.
+- **Paper API deprecation warnings** — pre-existing in `DespawnBlockIntoAir`,
+  `DespawnIntoCooker`, `DespawnIntoVoid`. They violate the ship contract's "no deprecation
+  warnings left to rot" clause and should be cleared before v1.5.0 is tagged.
+- **Modrinth / CurseForge / Hangar projects** — the workflows are written and gated on token
+  secrets, but nothing can publish until the owner creates the projects and adds the
+  secrets/variables (listed at the end of `platform-targets.md`).
