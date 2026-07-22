@@ -12,7 +12,7 @@ plugins {
     // supports Kotlin *up to 2.4.0*, and its extractor hard-rejects anything newer
     // ("Kotlin version 2.4.10 is too recent"). 2.4.0 keeps the full SAST scan alive;
     // bump only after CodeQL's supported range catches up.
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.0"
     id("com.gradleup.shadow") version "9.6.0"
     id("org.jetbrains.dokka") version "2.2.0"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
@@ -50,7 +50,7 @@ dependencies {
     // HikariCP for the JDBC connection pool. compileOnly: Paper loads it (and the JDBC
     // drivers) at runtime via the `libraries:` block in plugin.yml, so nothing DB-related
     // is shaded into the jar.
-    compileOnly("com.zaxxer:HikariCP:5.1.0")
+    compileOnly("com.zaxxer:HikariCP:7.1.0")
 
     // --- Testing ---
     // MockBukkit mocks a live Paper 1.21 server for unit/integration tests (it
@@ -63,7 +63,7 @@ dependencies {
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     // Database backend: HikariCP for the pool, SQLite driver to exercise JdbcLocationRepository.
     // In production these load at runtime via Paper's `libraries:` loader (see plugin.yml).
-    testImplementation("com.zaxxer:HikariCP:5.1.0")
+    testImplementation("com.zaxxer:HikariCP:7.1.0")
     testRuntimeOnly("org.xerial:sqlite-jdbc:3.53.2.1")
     // Real MySQL/MariaDB integration via Testcontainers (needs Docker; the tests disable
     // themselves cleanly where it's absent). Driver version matches plugin.yml `libraries:`.
@@ -182,16 +182,16 @@ dokka {
 // fox brand icon (self-hosted-assets — no hot-links).
 
 // Chrome assets into the Dokka tree, so API pages resolve them via ${'$'}{pathToRoot}.
-val vendorChromeAssets by tasks.registering(Copy::class) {
+tasks.register<Copy>("vendorChromeAssets") {
     from(layout.projectDirectory.dir("docs-theme/chrome")) {
         include("main.css", "reader.js", "nav.js", "coins.js", "fox.png")
     }
     into(layout.buildDirectory.dir("dokka/html"))
 }
-tasks.named("dokkaGenerate") { finalizedBy(vendorChromeAssets) }
+tasks.named("dokkaGenerate") { finalizedBy("vendorChromeAssets") }
 
 // Assemble the hand-authored pages + generated changelog + rendered notes tree.
-val renderDocsSite by tasks.registering {
+tasks.register("renderDocsSite") {
     group = "documentation"
     description = "Render the chrome shell pages, changelog and notes into build/docs-pages"
     val pagesDir = layout.projectDirectory.dir("docs-theme/pages")
@@ -471,10 +471,10 @@ val renderDocsSite by tasks.registering {
 }
 
 // The publishable site: hand pages + assets at the root, the Dokka tree under /api/.
-val assembleDocsSite by tasks.registering(Copy::class) {
+tasks.register<Copy>("assembleDocsSite") {
     group = "documentation"
     description = "Assemble the full docs site (chrome pages + boundaried Dokka under /api/) into build/docs-site"
-    dependsOn("dokkaGenerate", vendorChromeAssets, renderDocsSite)
+    dependsOn("dokkaGenerate", "vendorChromeAssets", "renderDocsSite")
     into(layout.buildDirectory.dir("docs-site"))
     from(layout.buildDirectory.dir("docs-pages"))
     from(layout.projectDirectory.dir("docs-theme/chrome")) {
