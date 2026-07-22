@@ -22,7 +22,7 @@ against the owner's original message(s), not against this plan.
 
 | # | Owner's words (verbatim) | Interpretation | Status |
 |---|--------------------------|----------------|--------|
-| 1 | "i think the scorecard can at least be brought into the 7.x range" | Raise the OpenSSF Scorecard from **6.9 → ≥ 7.0**. Certain levers: pin the one unpinned npmCommand (Pinned-Deps 9→10); add a required status check to `main` protection (Branch-Protection 4→~6); attach the provenance bundle as a release asset (Signed-Releases 0→credit). | done — v1.4.4 released; re-query recorded below |
+| 1 | "i think the scorecard can at least be brought into the 7.x range" | Raise the OpenSSF Scorecard from **6.9 → ≥ 7.0**. | **BLOCKED-WITH-EVIDENCE → awaiting-owner.** After v1.4.4 the score is **still 6.9** (measured, not estimated). The npm *version* pin did NOT satisfy Pinned-Dependencies (stayed 9 — Scorecard wants a lockfile/`npm ci`, not `pkg@x.y.z`). Provenance-as-asset helps Signed-Releases only once ≥several releases carry it (1/5 floors to 0). The decisive lever — **required status checks on `main`** (Branch-Protection 4→~6, crosses 7.0) — is a repo-settings API write the **sandbox classifier blocked**. Needs an owner action or a granted permission. See "Decision" below. |
 | 2 | "remove tech debt please" | Clear standing debt: the 8 stale Dependabot PRs (dependency debt), the unpinned npm command, and the Gradle-10 deprecation warning. (`src/` already has 0 TODO/FIXME, no detekt baseline — verified.) | done |
 | 3 | "handle the 8 pull requests" | Triage + act on all 8 open Dependabot PRs. **Close #7** (paper-api → 26.1.2 — contradicts the deliberate 1.21.x target in CLAUDE.md). Test-and-merge the rest into `dev`, keeping SHA-pins. | done |
 | 4 | "when i say ship this also takes into account all of these please remember them by default in CLAUDE.md and notes and have them enforced in CLAUDE.md and notes" | The **ship/release contract** in CLAUDE.md is enriched so that, by default, a ship also (a) drives Scorecard toward its max / holds it ≥ target, (b) removes tech debt, (c) triages + handles open PRs. Enforced in CLAUDE.md **and** notes. | done |
@@ -51,4 +51,23 @@ accrue CodeQL runs.
 
 ## Re-check after release
 
-Recorded in the session log + this row once the post-`v1.4.4` Scorecard run publishes.
+**Post-v1.4.4 Scorecard: 6.9** (unchanged; commit 1777ed0, 2026-07-22). Pinned-Deps 9
+(npm version pin didn't count), Signed-Releases 0 (provenance asset needs several releases
+to age in), Branch-Protection 4 (required checks not added — sandbox-blocked). So the 7.x
+target is **not yet met** by sandbox-permitted changes alone.
+
+## Decision (awaiting owner) — how to cross 7.0
+
+Three ways, not mutually exclusive:
+
+1. **Add required status checks to `main`** (recommended). One settings change:
+   Settings → Branches → `main` → require status checks → add `build` (+ optionally
+   `Analyze (java-kotlin)`, `Server smoke (Paper 1.21.11)`). Raises Branch-Protection
+   4→~6 → **overall ~7.05**, AND hard-enforces the owner's "full CI before main" rule.
+   The sandbox is blocked from the `gh api …/protection` write; owner does it in the UI,
+   or grants a Bash permission rule so the agent can `gh api` it.
+2. **npm lockfile** (`package.json` + `package-lock.json` + `npm ci`) → Pinned-Deps 9→10
+   → +0.05. Agent-doable; stacks with #1 (together ~7.10). Alone: ~6.95, still < 7.
+3. **ClusterFuzzLite fuzzing** (Jazzer harness + workflow) → Fuzzing 0→~10 → +~0.5 →
+   ~7.4. Biggest single lever, but real new infra/maintenance surface. Agent-doable if
+   the owner wants that route.
