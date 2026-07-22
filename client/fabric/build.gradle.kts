@@ -19,10 +19,16 @@ dependencies {
     mappings("net.fabricmc:yarn:${property("yarn_mappings")}:v2")
     modImplementation("net.fabricmc:fabric-loader:${property("loader_version")}")
 
-    // Fabric API — used for exactly two things: the client networking registry and the
-    // screen event that lets us add a button to an existing screen. Deliberately no other
-    // Fabric API modules, so the mod stays small and its update surface stays narrow.
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_version")}")
+    // Fabric API — only the two modules this mod actually uses: the client networking
+    // registry and the screen event that lets us add a button to an existing screen.
+    //
+    // Pulling the WHOLE API also pulls modules we never touch, and one of them
+    // (fabric-content-registries-v0) ships javadoc Loom 1.11 refuses to remap
+    // ("must be have an intermediary source namespace") — so the narrow dependency is both
+    // the fix and the design we wanted anyway: a smaller surface to break on updates.
+    modImplementation(fabricApi.module("fabric-api-base", "${property("fabric_version")}"))
+    modImplementation(fabricApi.module("fabric-networking-api-v1", "${property("fabric_version")}"))
+    modImplementation(fabricApi.module("fabric-screen-api-v1", "${property("fabric_version")}"))
 }
 
 java {
