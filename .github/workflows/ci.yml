@@ -17,15 +17,15 @@ jobs:
       # to the step's own condition).
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: temurin
           java-version: "21"
       # Proves the checked-in gradle-wrapper.jar is an official Gradle release — the
       # accepted mitigation for Scorecard's Binary-Artifacts finding on wrapper jars.
-      - uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
-      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+      - uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
       - name: Doc link gate (repo-hygiene standard)
         run: node scripts/check-links.mjs
       - name: Build
@@ -51,7 +51,7 @@ jobs:
         if: env.SONAR_TOKEN != ''
         uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
       - name: Upload plugin jar
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: papermc-despawned-items-jar
           path: build/libs/papermc-despawned-items-*.jar
@@ -74,8 +74,8 @@ jobs:
           - mc: "26.1.2" # forward-compat check
             java: "25"
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
@@ -93,8 +93,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: temurin
           java-version: "21"
@@ -108,7 +108,9 @@ jobs:
           curl -fsSL -o smoke-ingame/paper.jar "$URL"
           cp papermc-despawned-items-*.jar smoke-ingame/plugins/
       - name: Install Mineflayer
-        run: npm install --no-save --no-package-lock mineflayer
+        # Pinned to an exact version (not a floating range) so the build is
+        # reproducible and Scorecard's Pinned-Dependencies check is satisfied.
+        run: npm install --no-save --no-package-lock mineflayer@4.37.1
       - name: Join with a bot - permissions, gameplay, load and spark profiling
         run: node scripts/ingame-smoke.mjs smoke-ingame
       # The server ran under Java Flight Recorder; summarize and keep the profile so
@@ -121,7 +123,7 @@ jobs:
           else
             echo "no JFR profile produced"
           fi
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: server-jfr-profile
