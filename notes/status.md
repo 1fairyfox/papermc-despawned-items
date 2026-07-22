@@ -24,6 +24,13 @@ Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
 `git merge --ff-only main` on dev). Direct `dev → main` pushes no longer work. Tags stay
 by-hand (CI does not own tagging). Full audit: `notes/plans/standards-audit-2026-07-20.md`.
 
+**Ship contract (since 2026-07-21, enforced in CLAUDE.md):** a "ship"/release, by
+default and every time, also (a) drives OpenSSF Scorecard toward its max / never below
+the **≥ 7.0** floor, (b) removes tech debt (no stale dep PRs, no deprecation warnings,
+Quality Bar intact), and (c) triages + handles every open PR (merge or close-with-reason).
+**Phase by default:** any owner/fairyfox request — or a self-set task — is broken into as
+many phases as needed. Worked example: `notes/plans/mandate-2026-07-21-ship-contract.md`.
+
 ## Current state (read this first)
 
 **Major refactor largely complete** (2026-07-20) on `dev` — see

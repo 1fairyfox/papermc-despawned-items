@@ -107,6 +107,16 @@ Owner mandate (2026-07-21). These are release-blocking rules, not goals:
 first in `notes/plans/`, then execute against it. Full rule: the shared `planning`
 standard.
 
+**Phase by default — decompose every ask (a standing instruction).** Break **any**
+request — one the **owner** gives, one the **fairyfox system** gives, *or a task you
+set yourself* — into as many phases as it needs, **by default**. Do not collapse a
+multi-part ask into one undifferentiated push: name the phases up front (a task list,
+plus a `notes/plans/` entry for anything non-trivial), execute them in order, and
+report against them. More phases is the safe default; a single phase is only for the
+genuinely atomic. This pairs with the mandate ledger — clauses become phases, phases
+become tracked tasks. Under-phasing is exactly how clauses get lost (see
+`notes/fairyfox-reports/2026-07-21-mandate-execution-failure-analysis.md`).
+
 Then, after making changes, run this loop **without being asked**:
 
 1. **Build / check** the change (`./gradlew build`).
@@ -123,6 +133,27 @@ Then, after making changes, run this loop **without being asked**:
    (CI does not own tagging here). **Then back-merge**
    (`git checkout dev && git merge --ff-only main`). Full rules:
    `notes/reference/git-workflow.md`.
+
+**What "ship"/"release" includes by default (a standing instruction).** When the owner
+says "ship" (or a release is cut), the release is not just the code diff — **by default,
+every time**, it also:
+
+- **Drives OpenSSF Scorecard toward its maximum**, and never below the **≥ 7.0 floor**:
+  read the live score (`https://api.securityscorecards.dev/projects/github.com/1fairyfox/papermc-despawned-items`),
+  fix the cheap gaps this release (unpinned deps, missing branch-protection status
+  checks, provenance-as-release-asset), and record before/after in the session log.
+  Solo-unfixable checks (Code-Review, Contributors, CII-Best-Practices, Fuzzing) are
+  **noted, not chased**.
+- **Removes tech debt** instead of parking it — no stale dependency PRs, no deprecation
+  warnings left to rot, and nothing that violates the Quality Bar (no skipped tests, no
+  `TODO`/`FIXME` in `src/`, no detekt baseline).
+- **Triages and handles the open PRs** — every open Dependabot/other PR is either
+  test-and-merged or **closed with a reason** (e.g. a bump that contradicts the
+  deliberate 1.21.x target). Never release on top of an unhandled PR backlog.
+
+These ride the **same green gate** as the code (`./gradlew build` + `check-links` + PR
+CI + CodeQL); they are enforced here and mirrored in `notes/status.md`. The canonical
+worked example is `notes/plans/mandate-2026-07-21-ship-contract.md`.
 
 **Hard safety rules:** never `push --force` / rewrite pushed history; never
 `reset --hard` / `rebase` / `clean -fd` / delete a long-lived branch without an
