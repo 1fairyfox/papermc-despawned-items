@@ -1,0 +1,10 @@
+{
+  "name": "papermc-despawned-items-ci",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CI-only dependencies for the in-game (Mineflayer) smoke test. Not part of the plugin jar — see .github/workflows/ci.yml and scripts/ingame-smoke.mjs.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "mineflayer": "4.37.1"
+  }
+}

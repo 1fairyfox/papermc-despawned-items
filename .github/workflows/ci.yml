@@ -108,9 +108,9 @@ jobs:
           curl -fsSL -o smoke-ingame/paper.jar "$URL"
           cp papermc-despawned-items-*.jar smoke-ingame/plugins/
       - name: Install Mineflayer
-        # Pinned to an exact version (not a floating range) so the build is
-        # reproducible and Scorecard's Pinned-Dependencies check is satisfied.
-        run: npm install --no-save --no-package-lock mineflayer@4.37.1
+        # `npm ci` installs the exact tree from the committed package-lock.json
+        # (integrity-hash pinned), satisfying Scorecard's Pinned-Dependencies check.
+        run: npm ci
       - name: Join with a bot - permissions, gameplay, load and spark profiling
         run: node scripts/ingame-smoke.mjs smoke-ingame
       # The server ran under Java Flight Recorder; summarize and keep the profile so
