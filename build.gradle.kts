@@ -50,7 +50,7 @@ dependencies {
     // HikariCP for the JDBC connection pool. compileOnly: Paper loads it (and the JDBC
     // drivers) at runtime via the `libraries:` block in plugin.yml, so nothing DB-related
     // is shaded into the jar.
-    compileOnly("com.zaxxer:HikariCP:5.1.0")
+    compileOnly("com.zaxxer:HikariCP:7.1.0")
 
     // --- Testing ---
     // MockBukkit mocks a live Paper 1.21 server for unit/integration tests (it
@@ -63,7 +63,7 @@ dependencies {
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     // Database backend: HikariCP for the pool, SQLite driver to exercise JdbcLocationRepository.
     // In production these load at runtime via Paper's `libraries:` loader (see plugin.yml).
-    testImplementation("com.zaxxer:HikariCP:5.1.0")
+    testImplementation("com.zaxxer:HikariCP:7.1.0")
     testRuntimeOnly("org.xerial:sqlite-jdbc:3.53.2.1")
     // Real MySQL/MariaDB integration via Testcontainers (needs Docker; the tests disable
     // themselves cleanly where it's absent). Driver version matches plugin.yml `libraries:`.
