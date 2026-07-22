@@ -26,8 +26,9 @@ Thumbs.db
 # ── Local scratch (build/test helper logs) ───────────────────────────────────
 *.log
 
-# Local test scratch (server smoke + mineflayer deps)
+# Local test scratch (server smoke + mineflayer deps + local playtest server)
 node_modules/
 smoke-*/
+run/
 # NB: package.json + package-lock.json ARE committed now (the `npm ci` Mineflayer
 # smoke needs the lockfile for Scorecard Pinned-Dependencies). Only node_modules is scratch.

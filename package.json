@@ -6,5 +6,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "mineflayer": "4.37.1"
+  },
+  "comment_overrides": "Force the uuid transitive dep >= 11.1.1 to clear GHSA-w5hq-g745-h8pq (buffer bounds check). CI-only smoke dep, never in the plugin jar, but kept clean per the no-parked-findings bar.",
+  "overrides": {
+    "uuid": "^11.1.1"
   }
 }
