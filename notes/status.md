@@ -39,10 +39,36 @@ GitHub itself blocks a merge unless all of them pass. A green local `./gradlew b
 necessary but not sufficient (the v1.4.4 PR proved it: local build green, but server-smoke
 caught a runtime `sqlite-jdbc` version absent from Paper's library-loader mirror).
 
-**OpenSSF Scorecard: 7.1** (2026-07-22, up from 6.9). Lift came from Signed-Releases (0→2,
-provenance `.intoto.jsonl` release asset) + Binary-Artifacts (9→10). Remaining headroom
-(logged in the mandate ledger): npm lockfile for Pinned-Deps, more releases for
-Signed-Releases; Code-Review/Contributors/CII/Fuzzing are solo-capped.
+**OpenSSF Scorecard: 7.6** (read live 2026-07-22, up from 7.1 → 6.9). Comfortably above the
+≥ 7.0 floor. Remaining headroom: more releases for Signed-Releases;
+Code-Review/Contributors/CII/Fuzzing are solo-capped. **Open PR backlog: empty** (checked
+2026-07-22) — nothing to triage before shipping.
+
+## In flight — v1.5.0 (2026-07-22, on `dev`, not yet released)
+
+Owner mandate of 2026-07-22 (two messages). Ledger, clause by clause:
+[`plans/mandate-2026-07-22-screenshots-throttling-publishing.md`](plans/mandate-2026-07-22-screenshots-throttling-publishing.md).
+Platform survey answer: [`plans/platform-targets.md`](plans/platform-targets.md).
+
+Landed on `dev` (both commits green through the full CI suite unless noted):
+
+- **Per-user throttling** (`throttle:`, off by default) — `rate` / `concurrent` /
+  `fair-share` / `combined`, allowances from `despi.throttle.*` permissions.
+- **Void chance + catch-all** (`void:`, inert by default) — probabilistic voiding rolled once
+  at enqueue, admin-extensible banned materials, one or more catch-all containers.
+- **Automated release screenshots** — `scripts/screenshots.mjs` + a reusable
+  `screenshots.yml` called by CI (build artifacts) and Docs (gh-pages gallery at
+  `/screenshots.html`). Two backends: `viewer` (headless Chrome) and `client` (real MC under
+  Xvfb — the only one that can photograph particles).
+- **Artifact bundle + multi-platform publishing** in `release.yml` (Modrinth, CurseForge,
+  Hangar — each gated on its token secret, so inert until the owner creates the projects).
+- **Purpur** added to the `server-smoke` matrix so that platform claim is proven, not assumed.
+- **README rewritten completely** (problem-first, admin reasons, player reasons, honest
+  platform matrix).
+
+**Not yet done for v1.5.0:** the release itself (PR into `main`, full CI, tag, back-merge);
+Folia support (planned, needs a `PlatformScheduler` + a shared-state audit that the new
+throttle maps enlarged); any Group-C platform edition (Fabric/NeoForge/Sponge/Velocity).
 
 ## Current state (read this first)
 

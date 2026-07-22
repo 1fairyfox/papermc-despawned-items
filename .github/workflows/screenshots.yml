@@ -48,6 +48,12 @@ jobs:
           curl -fsSL -o smoke-screenshots/paper.jar "$URL"
           cp build/libs/papermc-despawned-items-*.jar smoke-screenshots/plugins/
 
+      # node-canvas (needed by prismarine-viewer's texture-atlas builder) ships prebuilt
+      # binaries for most runners, but falls back to compiling against cairo/pango. Install
+      # the headers so a prebuild miss degrades to a slow build rather than a hard failure.
+      - name: Install native image libraries
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+
       - name: Install the capture toolchain
         # npm ci installs the exact integrity-pinned tree from package-lock.json
         # (Scorecard Pinned-Dependencies).

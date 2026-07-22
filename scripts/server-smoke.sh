@@ -5,10 +5,11 @@
 # two rolling channels below.
 #
 # usage: server-smoke.sh <mc-version> <plugin-jar-glob>
-#   <mc-version> may be a concrete version (e.g. 1.21.11) OR one of two rolling tokens
-#   resolved live from fill.papermc.io:
+#   <mc-version> may be a concrete version (e.g. 1.21.11), one of two rolling tokens
+#   resolved live from fill.papermc.io, or a Purpur target:
 #     latest-stable        — newest Paper version whose latest build channel is STABLE
 #     latest-experimental  — newest Paper version overall (a dev/beta build)
+#     purpur-<version>     — a real Purpur server of that version (api.purpurmc.org)
 set -euo pipefail
 
 MC_VERSION="${1:?usage: server-smoke.sh <mc-version> <plugin-jar>}"
@@ -36,17 +37,27 @@ resolve_channel() {
   return 1
 }
 
+# Purpur is a Paper FORK: the same jar is supposed to run on it unmodified. "Supposed to"
+# is exactly the kind of claim that should be proven rather than advertised, so
+# `purpur-<version>` boots a real Purpur server from Purpur's own API instead of Paper's.
+FLAVOUR="paper"
 case "$MC_VERSION" in
   latest-stable)       MC_VERSION="$(resolve_channel stable)" ;;
   latest-experimental) MC_VERSION="$(resolve_channel experimental)" ;;
+  purpur-*)            FLAVOUR="purpur"; MC_VERSION="${MC_VERSION#purpur-}" ;;
 esac
-echo "Target Paper version: $MC_VERSION"
-WORK="smoke-${MC_VERSION}"
+echo "Target: $FLAVOUR $MC_VERSION"
+WORK="smoke-${FLAVOUR}-${MC_VERSION}"
 
 mkdir -p "$WORK/plugins"
-echo "Resolving Paper $MC_VERSION from fill.papermc.io…"
-URL="$(curl -fsSL "https://fill.papermc.io/v3/projects/paper/versions/${MC_VERSION}/builds/latest" | jq -r '.downloads["server:default"].url')"
-curl -fsSL -o "$WORK/paper.jar" "$URL"
+if [ "$FLAVOUR" = "purpur" ]; then
+  echo "Resolving Purpur $MC_VERSION from api.purpurmc.org…"
+  curl -fsSL -o "$WORK/paper.jar" "https://api.purpurmc.org/v2/purpur/${MC_VERSION}/latest/download"
+else
+  echo "Resolving Paper $MC_VERSION from fill.papermc.io…"
+  URL="$(curl -fsSL "https://fill.papermc.io/v3/projects/paper/versions/${MC_VERSION}/builds/latest" | jq -r '.downloads["server:default"].url')"
+  curl -fsSL -o "$WORK/paper.jar" "$URL"
+fi
 cp $PLUGIN_JAR "$WORK/plugins/"
 
 cd "$WORK"
@@ -78,13 +89,13 @@ fail() {
   exit 1
 }
 
-[ $BOOTED -eq 0 ] || fail "server never reached 'Done' on $MC_VERSION"
+[ $BOOTED -eq 0 ] || fail "server never reached 'Done' on $FLAVOUR $MC_VERSION"
 grep -q 'Enabling papermc-despawned-items' server-out.log || fail "plugin was never enabled"
 grep -q '\[papermc-despawned-items\] Enabled' server-out.log || fail "plugin did not log its Enabled line"
 if grep -qiE 'Could not load plugin|Error occurred while enabling|Disabling papermc-despawned-items' server-out.log; then
-  fail "plugin errored during enable on $MC_VERSION"
+  fail "plugin errored during enable on $FLAVOUR $MC_VERSION"
 fi
 
 kill "$PID" 2>/dev/null || true
 wait "$PID" 2>/dev/null || true
-echo "Server smoke OK on Paper $MC_VERSION"
+echo "Server smoke OK on $FLAVOUR $MC_VERSION"

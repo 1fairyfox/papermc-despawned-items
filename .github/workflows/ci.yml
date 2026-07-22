@@ -71,6 +71,8 @@ jobs:
         include:
           - mc: "1.21.11" # the build target
             java: "21"
+          - mc: "purpur-1.21.11" # Paper fork — proves the "runs on Purpur" claim
+            java: "21"
           - mc: "26.1.2" # forward-compat check
             java: "25"
     steps:

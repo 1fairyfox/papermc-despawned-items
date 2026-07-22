@@ -5,10 +5,12 @@
   "description": "CI-only dependencies for the in-game (Mineflayer) smoke test and the automated release screenshots. Not part of the plugin jar — see .github/workflows/ci.yml, scripts/ingame-smoke.mjs and scripts/screenshots.mjs.",
   "license": "Apache-2.0",
   "dependencies": {
+    "canvas": "3.2.0",
     "mineflayer": "4.37.1",
     "prismarine-viewer": "1.33.0",
     "puppeteer": "24.10.2"
   },
+  "comment_canvas": "prismarine-viewer's server side requires node-canvas to build the texture atlas but declares it only as an optional peer, so `npm ci` without it fails at runtime with \"Cannot find module 'canvas'\" (caught by the first screenshots CI run, 2026-07-22). Pinned explicitly; the screenshots job also installs the cairo/pango system libs in case no prebuilt binary matches the runner.",
   "comment_overrides": "Force the uuid transitive dep >= 11.1.1 to clear GHSA-w5hq-g745-h8pq (buffer bounds check). CI-only smoke dep, never in the plugin jar, but kept clean per the no-parked-findings bar.",
   "overrides": {
     "uuid": "^11.1.1"
