@@ -98,6 +98,13 @@ Owner mandate (2026-07-21). These are release-blocking rules, not goals:
   the built jar in `plugins/`, run `java -jar paper.jar --nogui`, confirm
   `papermc-despawned-items` enabling cleanly with no plugin stack traces. Repeat on a 26.1 jar to
   confirm forward-compat.
+- **Optional pre-ship playtest (owner, opt-in — `scripts/local-playtest.ps1`).** A manual,
+  hands-on last stage: builds the plugin, downloads Paper, and boots a **local real server in
+  YAML storage mode** (offline `online-mode=false`, under git-ignored `run/`) so the owner can
+  connect their own Minecraft client to `localhost:25565` and play-test. **Only offered when
+  previewing work or right before a ship, and only if the owner wants it** — it is never
+  automatic and never blocks a release (the required CI smoke jobs are the hard gate). When set
+  up live, also help the owner open/update their Minecraft client to the matching version.
 - **Toolchain:** JDK 21 (auto-provisioned via the foojay resolver in
   `settings.gradle.kts`), Gradle wrapper 9.6.1, Kotlin 2.4.x, Paper API 1.21.11.
 
