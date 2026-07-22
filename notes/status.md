@@ -31,15 +31,18 @@ Quality Bar intact), and (c) triages + handles every open PR (merge or close-wit
 **Phase by default:** any owner/fairyfox request — or a self-set task — is broken into as
 many phases as needed. Worked example: `notes/plans/mandate-2026-07-21-ship-contract.md`.
 
-**Full-CI gate (owner 2026-07-21):** no merge to `main` until the **entire** CI suite is
-green on the release PR — `build`, CodeQL, **and every server-smoke / forward-compat /
-in-game (Mineflayer) job**, not just `build`. A green local `./gradlew build` is necessary
-but not sufficient (the v1.4.4 PR proved it: local build green, but server-smoke caught a
-runtime `sqlite-jdbc` version absent from Paper's library-loader mirror). **Owner action to
-make it hard-enforced:** add these job contexts to `main`'s required status checks
-(Settings → Branches, or `gh api … /branches/main/protection/required_status_checks`) — the
-sandbox is blocked from writing branch protection. This is also the main lever to raise the
-Scorecard **Branch-Protection** check (4 → ~6).
+**Full-CI gate (owner 2026-07-21) — now platform-enforced.** No merge to `main` until the
+**entire** CI suite is green on the release PR. As of 2026-07-22 `main`'s **required status
+checks** are: `build`, `Analyze (java-kotlin)`, `Server smoke (Paper 1.21.11)`, `Server
+smoke (Paper 26.1.2)`, `In-game client smoke (Mineflayer)`, with strict up-to-date — so
+GitHub itself blocks a merge unless all of them pass. A green local `./gradlew build` is
+necessary but not sufficient (the v1.4.4 PR proved it: local build green, but server-smoke
+caught a runtime `sqlite-jdbc` version absent from Paper's library-loader mirror).
+
+**OpenSSF Scorecard: 7.1** (2026-07-22, up from 6.9). Lift came from Signed-Releases (0→2,
+provenance `.intoto.jsonl` release asset) + Binary-Artifacts (9→10). Remaining headroom
+(logged in the mandate ledger): npm lockfile for Pinned-Deps, more releases for
+Signed-Releases; Code-Review/Contributors/CII/Fuzzing are solo-capped.
 
 ## Current state (read this first)
 
