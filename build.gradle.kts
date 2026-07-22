@@ -64,7 +64,9 @@ dependencies {
     // Database backend: HikariCP for the pool, SQLite driver to exercise JdbcLocationRepository.
     // In production these load at runtime via Paper's `libraries:` loader (see plugin.yml).
     testImplementation("com.zaxxer:HikariCP:7.1.0")
-    testRuntimeOnly("org.xerial:sqlite-jdbc:3.53.2.1")
+    // Kept in sync with plugin.yml `libraries:` (runtime). Held at 3.49.1.0: 3.53.2.1
+    // is not on Paper's library-loader mirror yet, so it breaks runtime plugin load.
+    testRuntimeOnly("org.xerial:sqlite-jdbc:3.49.1.0")
     // Real MySQL/MariaDB integration via Testcontainers (needs Docker; the tests disable
     // themselves cleanly where it's absent). Driver version matches plugin.yml `libraries:`.
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")

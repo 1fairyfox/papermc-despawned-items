@@ -10,7 +10,10 @@ api-version: '1.21'
 # HikariCP is the pool; the JDBC drivers back the sqlite/mysql storage backends.
 libraries:
   - com.zaxxer:HikariCP:7.1.0
-  - org.xerial:sqlite-jdbc:3.53.2.1
+  # sqlite-jdbc held at 3.49.1.0: 3.53.2.1 is on Maven Central but NOT yet on Paper's
+  # library-loader mirror (maven-central.storage-download.googleapis.com), so it fails
+  # runtime resolution and the plugin won't load. Caught by the server-smoke CI job.
+  - org.xerial:sqlite-jdbc:3.49.1.0
   - org.mariadb.jdbc:mariadb-java-client:3.5.9
 
 # Commands (/despi, /recycle) are registered in code via Paper's Brigadier command API

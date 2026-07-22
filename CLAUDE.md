@@ -151,9 +151,20 @@ every time**, it also:
   test-and-merged or **closed with a reason** (e.g. a bump that contradicts the
   deliberate 1.21.x target). Never release on top of an unhandled PR backlog.
 
-These ride the **same green gate** as the code (`./gradlew build` + `check-links` + PR
-CI + CodeQL); they are enforced here and mirrored in `notes/status.md`. The canonical
-worked example is `notes/plans/mandate-2026-07-21-ship-contract.md`.
+These ride the **same green gate** as the code; they are enforced here and mirrored in
+`notes/status.md`. The canonical worked example is
+`notes/plans/mandate-2026-07-21-ship-contract.md`.
+
+**Every deployment to `main` passes the FULL CI suite — all of it, including all testing
+(a standing instruction, owner 2026-07-21).** No merge to `main` until **every** job on
+the release PR is green — `build`, CodeQL, **and every server-smoke, forward-compat, and
+in-game (Mineflayer) integration job** — not a subset. A green local `./gradlew build` is
+**necessary but not sufficient**: the real-server smoke jobs catch what unit/MockBukkit
+tests cannot (e.g. a runtime `libraries:` version that resolves on Maven Central but is
+absent from Paper's library-loader mirror, so the plugin fails to load in production).
+Wait for the whole suite (`gh pr checks --watch`) and **hold on any failure** — diagnose
+and fix, never merge red or partial. (Enforcement mechanism: the required-status-checks on
+`main` should list these jobs — an owner action; see `notes/status.md`.)
 
 **Hard safety rules:** never `push --force` / rewrite pushed history; never
 `reset --hard` / `rebase` / `clean -fd` / delete a long-lived branch without an

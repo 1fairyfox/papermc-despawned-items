@@ -31,6 +31,16 @@ Quality Bar intact), and (c) triages + handles every open PR (merge or close-wit
 **Phase by default:** any owner/fairyfox request — or a self-set task — is broken into as
 many phases as needed. Worked example: `notes/plans/mandate-2026-07-21-ship-contract.md`.
 
+**Full-CI gate (owner 2026-07-21):** no merge to `main` until the **entire** CI suite is
+green on the release PR — `build`, CodeQL, **and every server-smoke / forward-compat /
+in-game (Mineflayer) job**, not just `build`. A green local `./gradlew build` is necessary
+but not sufficient (the v1.4.4 PR proved it: local build green, but server-smoke caught a
+runtime `sqlite-jdbc` version absent from Paper's library-loader mirror). **Owner action to
+make it hard-enforced:** add these job contexts to `main`'s required status checks
+(Settings → Branches, or `gh api … /branches/main/protection/required_status_checks`) — the
+sandbox is blocked from writing branch protection. This is also the main lever to raise the
+Scorecard **Branch-Protection** check (4 → ~6).
+
 ## Current state (read this first)
 
 **Major refactor largely complete** (2026-07-20) on `dev` — see
