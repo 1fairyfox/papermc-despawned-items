@@ -32,3 +32,6 @@ permissions:
   recycle.use:
     description: Allows use of the /recycle command
     default: true
+  despi.throttle.bypass:
+    description: Ignore per-user despawn throttling (also grant despi.throttle.rate.<n> / .concurrent.<n> / .weight.<n> for specific allowances)
+    default: op

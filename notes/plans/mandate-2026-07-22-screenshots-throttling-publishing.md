@@ -1,0 +1,69 @@
+# Mandate ledger — 2026-07-22 · screenshots · throttling · void/catch-all · publishing · README
+
+Per the **"Owner Mandates Become Ledgers"** standing instruction in `CLAUDE.md`: the owner's
+words are transcribed **verbatim**, one row per clause. Completion is claimed **row by row**,
+never in summary. A clause that never became a row is the root failure mode this file exists
+to prevent.
+
+Source: owner message, 2026-07-22 (single message, Cowork session).
+Follow-up answers via AskUserQuestion are recorded in [Clarifications](#clarifications).
+
+---
+
+## Ledger
+
+| # | Owner's words (verbatim) | Interpretation | Phase | Status |
+|---|--------------------------|----------------|-------|--------|
+| C1 | "I need automated screenshots for each release." | Screenshot capture must be automated and run as part of the release pipeline — not a manual step. | P4/P5 | `todo` |
+| C2 | "Anyway you can fire up the minecraft client thing we use for testing, and take good quality high quality screenshots at the perfect place and time." | Reuse the existing Mineflayer harness (`scripts/ingame-smoke.mjs`) as the driver; capture must be **high quality** (high resolution, good angle) and **time-precise** (fired at the exact tick the subject is on screen). | P4 | `todo` |
+| C3 | "The particle effects is one place a screenshot will be good." | A dedicated scene capturing the landing particle/sound effect. | P4 | `todo` |
+| C4 | "Id also like to support throttling for different users so some users get more depsawned items than others and some have it slowed down to a max per chunk of time or max per each one or something." | Per-user (per-player) throttling of the despawn pipeline: differing per-user allowances; a rate limit ("max per chunk of time"); a per-item/in-flight cap ("max per each one"). Permission-driven so groups/ranks differ. | P1 | `todo` |
+| C5 | "A good set of strategies is also good." | Not one hard-coded policy — a named, selectable set of throttling strategies. | P1 | `todo` |
+| C6 | "But screenshotting the particles and maybe a group of items disappearing." | A second scene: a **group** of items despawning together (bulk relocation), in addition to the particle scene. | P4 | `todo` |
+| C7 | "Maybe have a configurable chance for things to despawn into the void" | A configurable probability that an item is destroyed (voided) instead of relocated. | P2 | `todo` |
+| C8 | "or 1 or more \"catch all\" storage to catch things like banned items and items randomly voided." | One **or more** configurable catch-all destinations that receive (a) banned/contraband items and (b) items selected by the random void chance — instead of destroying them. | P2 | `todo` |
+| C9 | "Any testing we can do for the latest release and latest dev would be great i know we cant do much." | Exercise the newest Paper **stable** and newest **experimental/dev** builds; report honestly what is and is not coverable. | P8 | `todo` |
+| C10 | "It would be nice to soemhow plan multiple great automated screenshots to automated capture and serve on gh-pages as build artifacts on its own screenshots page" | **Multiple** planned scenes; captured automatically; published as **build artifacts** AND served on **gh-pages** under a dedicated **screenshots page**. | P5 | `todo` |
+| C11 | "so the README can reference up-to-date images automatically." | README image URLs must be stable and auto-refreshing — no manual re-embedding per release. | P5/P7 | `todo` |
+| C12 | "Can you rewrite README completely to explain what it is, what it does, things that are interesting or useful about it." | Full README rewrite (not a patch): identity, behaviour, and the genuinely interesting/useful properties. | P7 | `todo` |
+| C13 | "Give reasons why an admin may want to include it," | An explicit admin-facing "why install this" section. | P7 | `todo` |
+| C14 | "give reasons why a player might want to use it." | An explicit player-facing "why use this" section. | P7 | `todo` |
+| C15 | "Does fabric and other modded clients have an automated publish method id love to target the clients too" | **Research question + action:** determine which mod/plugin distribution platforms support automated publishing, and wire them. | P6 | `todo` |
+| C16 | "and have a big bundle of build artifacts" | The release should carry a large, complete artifact bundle — not just the plugin jar. | P6 | `todo` |
+| C17 | "it all needs to be as highly testable as possible" | Every clause above ships with tests at every testable layer; nothing untested. | P3/P4/P8 | `todo` |
+| C18 | "proceed normally with everything that is required and mandated by me" | Apply the standing `CLAUDE.md` contract in full: Quality Bar, ship contract (Scorecard / tech debt / PR triage), full-CI gate, notes maintenance. | P9/P10 | `todo` |
+| C19 | "in as many phases as needed, ensure this reaches the completion i asked for in full in as many phases needed" | Phase-by-default; **exhaustion, not a milestone**. The work ends when every row is `done` or `blocked-with-evidence`. | all | `todo` |
+
+---
+
+## Clarifications
+
+Asked via AskUserQuestion, 2026-07-22, before execution:
+
+| Question | Owner's answer (verbatim) | Effect |
+|---|---|---|
+| Screenshot capture engine (real client under Xvfb + fallback / prismarine-viewer only / real client hard-gated) | "what are these 3 options, completely background automated is preferable, ci is bonus points, any options" | Owner wants **fully background automated**; CI is a bonus, engine choice delegated. → Take the real-client-under-Xvfb path **with** a headless-renderer fallback, since that is the option that is both fully background and highest fidelity. Explain the three options back to the owner in the response. |
+| Fabric/modded scope | "Multi-platform publishing + artifact bundle (Recommended)" | **No client mod is written.** Wire automated publishing of the server plugin to Modrinth + Hangar + GitHub Releases, plus a large artifact bundle. C15 is answered as research + publishing, not as a new product. |
+| Defaults for the new features | "Off by default, fully documented (Recommended)" | Throttling, void-chance and catch-all all ship **inert**; zero behaviour change on upgrade. Documented in `config.yml` + README. |
+
+---
+
+## Phases
+
+| Phase | Covers | Gate |
+|---|---|---|
+| P0 | this ledger + plan | file exists, every clause a row |
+| P1 | C4, C5 | throttle package + config + permissions; `./gradlew build` green |
+| P2 | C7, C8 | void chance + catch-all; build green |
+| P3 | C17 (code layers) | unit + property + MockBukkit + dispatch + permission-matrix + load tests; Kover ≥ 90 |
+| P4 | C1, C2, C3, C6 | screenshot harness runs headless and produces images |
+| P5 | C10, C11 | CI job, artifacts, gh-pages screenshots page, stable URLs |
+| P6 | C15, C16 | publishing workflow + artifact bundle |
+| P7 | C12, C13, C14 | README rewritten end to end |
+| P8 | C9 | latest-stable + latest-experimental exercised; honest coverage report |
+| P9 | C18 | full local gate → release PR → **entire** CI suite green → tag → back-merge; Scorecard, tech debt, PR triage |
+| P10 | C19 | notes, changelog, status; ledger re-read clause by clause; NOT-done list disclosed |
+
+## Not-done list (S9)
+
+Maintained live; reproduced in the final response. Empty until the reconciliation pass in P10.

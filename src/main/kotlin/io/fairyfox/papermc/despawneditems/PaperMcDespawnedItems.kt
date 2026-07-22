@@ -6,6 +6,7 @@ import io.fairyfox.papermc.despawneditems.despawn.DespawnEffect
 import io.fairyfox.papermc.despawneditems.despawn.DespawnProcess
 import io.fairyfox.papermc.despawneditems.despawn.DespawnScheduler
 import io.fairyfox.papermc.despawneditems.despawn.into.AbstractDespawnInto
+import io.fairyfox.papermc.despawneditems.despawn.into.CatchAllDelivery
 import io.fairyfox.papermc.despawneditems.despawn.into.DespawnBlockIntoAir
 import io.fairyfox.papermc.despawneditems.despawn.into.DespawnIntoCooker
 import io.fairyfox.papermc.despawneditems.despawn.into.DespawnIntoStorage
@@ -14,6 +15,7 @@ import io.fairyfox.papermc.despawneditems.despawn.into.DespawnItemIntoEntity
 import io.fairyfox.papermc.despawneditems.events.OnItemDespawnEvent
 import io.fairyfox.papermc.despawneditems.location.LocationManager
 import io.fairyfox.papermc.despawneditems.manage.RemoveMaterials
+import io.fairyfox.papermc.despawneditems.throttle.ThrottleManager
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -54,6 +56,17 @@ open class PaperMcDespawnedItems : JavaPlugin() {
     lateinit var despawnScheduler: DespawnScheduler
         private set
 
+    /**
+     * Per-user throttling of the pipeline — how much of the server budget any one player
+     * may take. Inert unless `throttle.enabled` is set.
+     */
+    lateinit var throttle: ThrottleManager
+        private set
+
+    /** Delivers banned and voided items to the admin-configured catch-all containers. */
+    lateinit var catchAll: CatchAllDelivery
+        private set
+
     /** Effects currently playing — held so they are not garbage collected. */
     val effectsPlaying: MutableList<DespawnEffect> = mutableListOf()
 
@@ -81,6 +94,13 @@ open class PaperMcDespawnedItems : JavaPlugin() {
                 DespawnIntoStorage(this),
             )
 
+        throttle =
+            ThrottleManager(
+                settingsSupplier = { settings.throttle },
+                onlineLookup = { uuid -> Bukkit.getPlayer(uuid) },
+            )
+        catchAll = CatchAllDelivery(this)
+
         despawnScheduler = DespawnScheduler(this)
         despawnScheduler.start()
 
@@ -94,6 +114,7 @@ open class PaperMcDespawnedItems : JavaPlugin() {
 
     override fun onDisable() {
         if (this::despawnScheduler.isInitialized) despawnScheduler.stop()
+        if (this::throttle.isInitialized) throttle.reset()
         if (this::locations.isInitialized) locations.shutdown()
         logger.info("Disabled")
     }

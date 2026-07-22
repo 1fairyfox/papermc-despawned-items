@@ -22,14 +22,25 @@ class DespawnIntoVoid(plugin: PaperMcDespawnedItems) : AbstractDespawnInto(plugi
     ): DespawnIntoResult {
         val item = process.item ?: return DespawnIntoResult.NONE
 
-        if (item.type in CONTRABAND) {
-            item.amount = 0
-            item.type = Material.AIR
-            return DespawnIntoResult.CONTRABAND
+        if (!isContraband(item.type)) return DespawnIntoResult.NONE
+
+        // Contraband is never *placed*. But if the admin configured a catch-all, hand it a
+        // copy first so banned items can be audited instead of silently ceasing to exist.
+        if (plugin.settings.voiding.catchAllUsable) {
+            plugin.catchAll.deliver(item.clone())
         }
 
-        return DespawnIntoResult.NONE
+        item.amount = 0
+        item.type = Material.AIR
+        return DespawnIntoResult.CONTRABAND
     }
+
+    /**
+     * True when [material] is contraband — either built into the plugin, or added by the
+     * admin through `void.banned-materials`. Read from config on each call so
+     * `/despi reload` takes effect without a restart.
+     */
+    fun isContraband(material: Material): Boolean = material in CONTRABAND || material in plugin.settings.voiding.bannedMaterials
 
     // Void destroys contraband on placement; there is nothing stored to bulk-remove.
     override fun removeFrom(

@@ -16,7 +16,15 @@ import org.bukkit.scheduler.BukkitRunnable
  * [item] is nullable because the storage strategies null it out while reconstructing
  * oversized leftover stacks.
  */
-class DespawnProcess(var item: ItemStack?, private val plugin: PaperMcDespawnedItems) {
+class DespawnProcess(
+    var item: ItemStack?,
+    private val plugin: PaperMcDespawnedItems,
+    /**
+     * The player this relocation is attributed to, if any. Carried so the per-user
+     * throttler can release the actor's concurrency slot when the process ends.
+     */
+    private val actor: java.util.UUID? = null,
+) {
     private var loopsLeft: Int
     private val tried: MutableSet<DespawnLocation> = HashSet()
 
@@ -81,6 +89,8 @@ class DespawnProcess(var item: ItemStack?, private val plugin: PaperMcDespawnedI
 
     fun selfDestroy() {
         plugin.despawnProcesses.remove(this)
+        // Release the actor's concurrency slot exactly once, however the process ended.
+        if (!invalid) plugin.throttle.onFinish(actor)
         invalid = true
     }
 

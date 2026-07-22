@@ -44,6 +44,91 @@ performance:
   # When the queue is full: true = ignore new items, false = drop the oldest.
   drop-when-full: true
 
+# Per-user throttling — how much of the server budget above any ONE player may take.
+#
+# The performance: section stops the SERVER being overwhelmed. This section stops a single
+# PLAYER starving everyone else: without it, one person dumping a double chest of cobble
+# can consume the whole pipeline while other players' items quietly expire.
+#
+# OFF BY DEFAULT — nothing here is consulted until enabled: true, so upgrading changes
+# no behaviour.
+throttle:
+  enabled: false
+
+  # Which policies apply:
+  #   none        no per-user throttling (same as enabled: false)
+  #   rate        max relocations per player per window          ("max per chunk of time")
+  #   concurrent  max relocations in flight per player at once   ("max per each one")
+  #   fair-share  weighted round-robin so nobody monopolises the drain
+  #   combined    all three (recommended when throttling at all)
+  strategy: combined
+
+  rate:
+    # Relocations a player may start per window before being throttled.
+    max-per-window: 60
+    window-seconds: 60
+
+  concurrent:
+    # Relocations a single player may have in flight simultaneously.
+    max-per-player: 20
+
+  fair-share:
+    # Drain weight for players with no despi.throttle.weight.<n> permission.
+    # A weight-3 player is drained three times as fast as a weight-1 player when the
+    # pipeline is contended — this is how some users get more than others.
+    default-weight: 1
+
+  # Whether ownerless drops (mob loot, dispensers, block breaks) are throttled too.
+  # Left false so a busy mob farm doesn't eat the budget players are meant to share.
+  throttle-unowned: false
+
+  # What happens to an item whose owner is over quota:
+  #   defer  keep it queued and relocate it once their budget refills (default, lossless)
+  #   drop   give up on it — it despawns as vanilla would
+  #   void   hand it to the void / catch-all path below
+  on-limit: defer
+
+  # Per-rank allowances are granted via permissions rather than listed here:
+  #   despi.throttle.rate.<n>        that many relocations per window (highest wins)
+  #   despi.throttle.concurrent.<n>  that many in flight at once
+  #   despi.throttle.weight.<n>      fair-share weight
+  #   despi.throttle.bypass          ignore throttling entirely (default: op)
+  # e.g. give a LuckPerms "vip" group  despi.throttle.weight.4  and  despi.throttle.rate.240
+
+# The void: outright destruction, and the catch-all safety net.
+#
+# INERT BY DEFAULT — chance 0.0, no extra banned materials, catch-all disabled.
+void:
+  # Probability (0.0–1.0) that any given despawning item is voided instead of relocated.
+  # 0.0 disables the roll entirely. 0.05 voids roughly one item in twenty — a light sink
+  # for servers that want despawn recovery without it being a perfect safety net.
+  chance: 0.0
+
+  # Extra materials always treated as contraband, on top of the built-in list (command
+  # blocks, debug sticks, structure blocks, netherite…). Unknown names are warned about
+  # and skipped rather than failing the load.
+  # e.g. banned-materials: [BEDROCK, BARRIER, SPAWNER]
+  banned-materials: []
+
+  # One or more containers that receive banned items and items lost to the void roll,
+  # instead of them ceasing to exist. Useful for auditing what players are dropping,
+  # for staff to hand things back, or as a server-wide "lost and found".
+  catch-all:
+    enabled: false
+
+    # first  — fill the listed containers in order
+    # random — spread across them (avoids always filling the first)
+    mode: first
+
+    # Block positions as  world;x;y;z  — each should be a chest, barrel, shulker box or
+    # any other container. Malformed or non-container entries are warned about and skipped.
+    # e.g. locations: ["world;100;64;200", "world;101;64;200"]
+    locations: []
+
+    # When every catch-all is full: true = destroy the item, false = let it fall through
+    # to ordinary relocation.
+    destroy-when-full: true
+
 # Where despawn locations are stored.
 storage:
   # yaml  — flat files under userdata/ (default, zero setup, fine for most servers)
