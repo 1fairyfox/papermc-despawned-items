@@ -34,6 +34,16 @@ Follow-up answers via AskUserQuestion are recorded in [Clarifications](#clarific
 | C18 | "proceed normally with everything that is required and mandated by me" | Apply the standing `CLAUDE.md` contract in full: Quality Bar, ship contract (Scorecard / tech debt / PR triage), full-CI gate, notes maintenance. | P9/P10 | `todo` |
 | C19 | "in as many phases as needed, ensure this reaches the completion i asked for in full in as many phases needed" | Phase-by-default; **exhaustion, not a milestone**. The work ends when every row is `done` or `blocked-with-evidence`. | all | `todo` |
 
+### Second message, 2026-07-22 — the platform matrix
+
+| # | Owner's words (verbatim) | Interpretation | Phase | Status |
+|---|--------------------------|----------------|-------|--------|
+| C20 | "i guess target 1.21.x where possible" | 1.21.x stays the target line across every platform claim. | P11 | `done` — reaffirmed in `platform-targets.md`; publishing declares `1.21.x`. |
+| C21 | "can you target as many of these as possible" (table of Purpur, Folia, Sponge, Velocity, BungeeCord, Fabric, Quilt, NeoForge, Forge, Minestom, PocketMine, Cloudburst/Nukkit) | Maximise real platform coverage — **without** claiming platforms the jar cannot actually run on. | P11 | `partial` — Group A (Paper/Purpur/Spigot/Bukkit) claimed + published; Groups B and C planned with per-target status. See NOT-done. |
+| C22 | "The strongest practical public release claim would be: **Supported:** Paper, Purpur and Folia / **Separate mod editions:** Fabric and NeoForge / **Optional network integration:** Velocity" | Adopt this as the target claim. | P11 | `partial` — Paper + Purpur true today; Folia/Fabric/NeoForge are roadmap, and the README says so rather than over-claiming. |
+| C23 | "A clean Kotlin multi-platform structure might be: common/ platform-paper/ platform-folia/ …" | Adopt the module layout as the design for Group C. | P11 | `done` (as design) — recorded in `platform-targets.md`, incl. the finding that extracting `core/` is the real prerequisite. |
+| C24 | "It is safer to state: This build targets Paper. Hybrid server implementations are unsupported unless explicitly listed." | Explicitly exclude Arclight/Mohist/Magma/Cardboard/Banner. | P11 | `done` — stated in `platform-targets.md` and README. |
+
 ---
 
 ## Clarifications

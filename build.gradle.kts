@@ -242,7 +242,7 @@ tasks.register("renderDocsSite") {
             h =
                 h.replace("{{ACTIVE_HOME}}", if (active == "HOME") " active" else "")
                     .replace("{{ARIA_HOME}}", if (active == "HOME") " aria-current=\"page\"" else "")
-            for (t in listOf("OVERVIEW", "NOTES", "SYSTEMS", "REFERENCE", "TUTORIALS", "CHANGELOG", "DOWNLOAD", "LEGAL")) {
+            for (t in listOf("OVERVIEW", "NOTES", "SYSTEMS", "REFERENCE", "TUTORIALS", "SCREENSHOTS", "CHANGELOG", "DOWNLOAD", "LEGAL")) {
                 h =
                     h.replace(
                         "{{ACTIVE_$t}}",
@@ -273,6 +273,19 @@ tasks.register("renderDocsSite") {
                 "TUTORIALS",
                 true,
                 body("tutorials.html"),
+            ),
+        )
+        // The gallery of automatically captured release screenshots. The page is static;
+        // the images + manifest.json are injected into build/docs-site/screenshots/ by the
+        // Docs workflow, so a newer capture set needs no rebuild of this page.
+        File(out, "screenshots.html").writeText(
+            page(
+                "",
+                "Screenshots · PaperMC Despawned Items",
+                "Automatically captured screenshots of PaperMC Despawned Items, taken from a real Paper server on every build.",
+                "SCREENSHOTS",
+                false,
+                body("screenshots.html"),
             ),
         )
         File(out, "downloads.html").writeText(

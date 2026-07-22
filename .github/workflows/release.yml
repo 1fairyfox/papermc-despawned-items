@@ -44,20 +44,110 @@ jobs:
       # invisible to it. This makes provenance detectable and raises Signed-Releases.
       - name: Stage provenance as a release asset
         run: cp "${{ steps.attest.outputs.bundle-path }}" papermc-despawned-items-provenance.intoto.jsonl
-      - name: Attach jar + provenance to the GitHub Release
+
+      # ── The artifact bundle ────────────────────────────────────────────────────
+      # A release should carry more than one jar: the API docs people actually read, the
+      # exact source that produced the binary, the default config an admin wants before
+      # installing, and checksums so any of it can be verified independently.
+      - name: Build the API docs
+        run: ./gradlew dokkaGenerate --no-daemon
+      - name: Assemble the bundle
+        id: bundle
+        run: |
+          set -euo pipefail
+          VERSION="$(cat VERSION)"
+          mkdir -p bundle
+          cp build/libs/papermc-despawned-items-*.jar bundle/
+          cp papermc-despawned-items-provenance.intoto.jsonl bundle/
+          cp src/main/resources/config.yml "bundle/config.default-${VERSION}.yml"
+          cp LICENSE bundle/LICENSE.txt
+          (cd build/dokka && zip -qr "$GITHUB_WORKSPACE/bundle/papermc-despawned-items-${VERSION}-apidocs.zip" html)
+          git archive --format=zip --prefix="papermc-despawned-items-${VERSION}/" \
+            -o "bundle/papermc-despawned-items-${VERSION}-sources.zip" HEAD
+          # Checksums LAST, over everything else in the bundle.
+          (cd bundle && sha256sum ./* > SHA256SUMS.txt)
+          ls -la bundle
+
+      # Screenshots ride along when a capture exists for this commit; never a blocker.
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        continue-on-error: true
+        with:
+          name: release-screenshots
+          path: screenshots
+      - name: Add screenshots to the bundle (if any)
+        continue-on-error: true
+        run: |
+          if [ -d screenshots ] && [ -n "$(ls -A screenshots 2>/dev/null)" ]; then
+            zip -qr "bundle/papermc-despawned-items-$(cat VERSION)-screenshots.zip" screenshots
+            (cd bundle && sha256sum ./* > SHA256SUMS.txt)
+          fi
+
+      - name: Attach the bundle to the GitHub Release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
-          files: |
-            build/libs/papermc-despawned-items-*.jar
-            papermc-despawned-items-provenance.intoto.jsonl
+          files: bundle/*
           generate_release_notes: true
 
-      # ── Optional: publish to Hangar (PaperMC's plugin repository) ──────────────
-      # Requires a Hangar project and a HANGAR_API_TOKEN repo secret, plus the
-      # Hangar Gradle publishing plugin wired into build.gradle.kts. Uncomment
-      # once those exist. See https://docs.papermc.io/misc/hangar-publishing/
-      #
-      # - name: Publish to Hangar
-      #   env:
-      #     HANGAR_API_TOKEN: ${{ secrets.HANGAR_API_TOKEN }}
-      #   run: ./gradlew publishPluginPublicationToHangar --no-daemon
+  # ── Multi-platform publishing ────────────────────────────────────────────────────
+  # The plugin jar is a Paper/Bukkit-family artifact: it runs unmodified on Paper, Purpur
+  # and other Paper forks, and on Spigot/Bukkit within the declared API level. Each step
+  # below skips itself when its token secret is absent, so this workflow stays green on a
+  # fork or before the owner has created the project on that platform.
+  #
+  # Platform coverage and the roadmap for the loaders that need a *separate implementation*
+  # (Folia, Fabric, NeoForge, Sponge, Velocity …) live in notes/plans/platform-targets.md.
+  publish:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+      HANGAR_API_TOKEN: ${{ secrets.HANGAR_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - name: Build the jar
+        run: ./gradlew shadowJar --no-daemon
+
+      # Modrinth + CurseForge in one step. `loaders` is the set of server platforms this
+      # single jar genuinely runs on — Paper-family only. Fabric/NeoForge are deliberately
+      # NOT listed: they would need a separate implementation, and claiming them here would
+      # be a lie that ends in bug reports.
+      - name: Publish to Modrinth and CurseForge
+        if: env.MODRINTH_TOKEN != '' || env.CURSEFORGE_TOKEN != ''
+        # Repo moved from Kir-Antipov/mc-publish to Kira-NT/mc-publish; SHA read from the
+        # live v3.3 tag on the new canonical repo (2026-07-22).
+        uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3
+        with:
+          modrinth-id: ${{ vars.MODRINTH_PROJECT_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          curseforge-id: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: build/libs/papermc-despawned-items-*.jar
+          name: PaperMC Despawned Items ${{ github.ref_name }}
+          version: ${{ github.ref_name }}
+          version-type: release
+          loaders: |
+            paper
+            purpur
+            spigot
+            bukkit
+          game-versions: |
+            1.21.x
+          java: |
+            21
+          changelog-file: notes/version/*.md
+
+      # Hangar is PaperMC's own repository and needs its own publisher. Gated on the token
+      # AND still requires io.papermc.hangar-publish-plugin to be applied in
+      # build.gradle.kts — see notes/plans/platform-targets.md for the owner-side steps
+      # (create the Hangar project, mint HANGAR_API_TOKEN, apply the plugin).
+      - name: Publish to Hangar
+        if: env.HANGAR_API_TOKEN != ''
+        run: ./gradlew publishPluginPublicationToHangar --no-daemon

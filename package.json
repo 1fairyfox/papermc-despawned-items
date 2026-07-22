@@ -2,10 +2,12 @@
   "name": "papermc-despawned-items-ci",
   "version": "0.0.0",
   "private": true,
-  "description": "CI-only dependencies for the in-game (Mineflayer) smoke test. Not part of the plugin jar — see .github/workflows/ci.yml and scripts/ingame-smoke.mjs.",
+  "description": "CI-only dependencies for the in-game (Mineflayer) smoke test and the automated release screenshots. Not part of the plugin jar — see .github/workflows/ci.yml, scripts/ingame-smoke.mjs and scripts/screenshots.mjs.",
   "license": "Apache-2.0",
   "dependencies": {
-    "mineflayer": "4.37.1"
+    "mineflayer": "4.37.1",
+    "prismarine-viewer": "1.33.0",
+    "puppeteer": "24.10.2"
   },
   "comment_overrides": "Force the uuid transitive dep >= 11.1.1 to clear GHSA-w5hq-g745-h8pq (buffer bounds check). CI-only smoke dep, never in the plugin jar, but kept clean per the no-parked-findings bar.",
   "overrides": {

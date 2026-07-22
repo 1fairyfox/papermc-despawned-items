@@ -17,7 +17,16 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Capture the gallery that /screenshots.html renders. Non-blocking: if a renderer hiccups
+  # the docs still publish, and the page degrades honestly to "no frames published yet".
+  screenshots:
+    uses: ./.github/workflows/screenshots.yml
+    with:
+      engine: viewer
+
   build-and-deploy:
+    needs: screenshots
+    if: always() # publish the docs even if the capture job failed
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,6 +44,21 @@ jobs:
       - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
       - name: Build the docs site (chrome pages + boundaried Dokka under /api/)
         run: ./gradlew assembleDocsSite --no-daemon --stacktrace
+      # Weave the freshly captured frames into the site so README/docs image URLs
+      # (…/screenshots/<name>.png) always resolve to the current build's screenshots —
+      # the "README references up-to-date images automatically" requirement.
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        continue-on-error: true
+        with:
+          name: release-screenshots
+          path: build/docs-site/screenshots
+      - name: Report the published gallery
+        run: |
+          if [ -f build/docs-site/screenshots/manifest.json ]; then
+            echo "Publishing $(jq '.scenes | length' build/docs-site/screenshots/manifest.json) screenshot(s)."
+          else
+            echo "No screenshots artifact — the gallery page will say so rather than showing stale art."
+          fi
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:

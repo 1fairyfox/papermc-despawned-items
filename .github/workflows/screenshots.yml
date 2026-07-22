@@ -1,0 +1,98 @@
+name: Screenshots
+
+# Captures the release screenshots from a REAL Paper server running the freshly built
+# plugin (mandate 2026-07-22, C1–C3/C6/C10). Reusable so both CI (build artifacts on every
+# push) and Docs (publish to GitHub Pages on release) drive exactly the same capture, with
+# no duplicated steps to drift apart.
+#
+# Deliberately non-blocking: the job is `continue-on-error` at every call site and is NOT a
+# required status check on main. Screenshots are a deliverable, not a correctness gate — a
+# renderer hiccup must never hold a good release. Failures still show up red in the run.
+on:
+  workflow_call:
+    inputs:
+      engine:
+        description: "Capture backend: viewer (headless Chrome) or client (real MC under Xvfb)"
+        type: string
+        default: viewer
+  workflow_dispatch:
+    inputs:
+      engine:
+        description: "Capture backend"
+        type: choice
+        options: [viewer, client]
+        default: viewer
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    name: Capture release screenshots
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+
+      - name: Build the plugin jar
+        run: ./gradlew shadowJar --no-daemon --stacktrace
+
+      - name: Prepare the server directory
+        run: |
+          mkdir -p smoke-screenshots/plugins
+          URL="$(curl -fsSL "https://fill.papermc.io/v3/projects/paper/versions/1.21.11/builds/latest" | jq -r '.downloads["server:default"].url')"
+          curl -fsSL -o smoke-screenshots/paper.jar "$URL"
+          cp build/libs/papermc-despawned-items-*.jar smoke-screenshots/plugins/
+
+      - name: Install the capture toolchain
+        # npm ci installs the exact integrity-pinned tree from package-lock.json
+        # (Scorecard Pinned-Dependencies).
+        run: npm ci
+
+      # Only needed by the `client` backend; cheap enough to always have available so a
+      # workflow_dispatch with engine=client works without editing this file.
+      - name: Install Xvfb + ffmpeg (client backend)
+        if: inputs.engine == 'client'
+        run: sudo apt-get update && sudo apt-get install -y xvfb ffmpeg x11-apps mesa-utils
+
+      - name: Capture
+        env:
+          SCREENSHOT_ENGINE: ${{ inputs.engine || 'viewer' }}
+          SCREENSHOT_WIDTH: "1920"
+          SCREENSHOT_HEIGHT: "1080"
+        run: |
+          if [ "$SCREENSHOT_ENGINE" = "client" ]; then
+            xvfb-run -a --server-args="-screen 0 1920x1080x24" \
+              node scripts/screenshots.mjs smoke-screenshots screenshots
+          else
+            node scripts/screenshots.mjs smoke-screenshots screenshots
+          fi
+
+      - name: Summarise what was captured
+        if: always()
+        run: |
+          if [ -f screenshots/manifest.json ]; then
+            echo "### Captured screenshots" >> "$GITHUB_STEP_SUMMARY"
+            jq -r '.scenes[] | "- **\(.name)** (`\(.engine)`) — \(.caption)"' screenshots/manifest.json >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No manifest produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: release-screenshots
+          path: screenshots
+          if-no-files-found: warn
+
+      # The server log is the first thing you want when a scene comes out wrong.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: screenshots-server-logs
+          path: smoke-screenshots/logs
+          if-no-files-found: ignore
