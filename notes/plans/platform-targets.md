@@ -40,7 +40,8 @@ owner listed (transformed internals, registry/mapping differences, event-orderin
 | 2 | **Purpur** | ✅ claimed, ⏳ unsmoked | Paper fork — the existing jar runs unmodified. **Next action:** add a Purpur row to the `server-smoke` matrix so the claim is *proven*, not assumed. Cheap; do it before advertising Purpur anywhere user-facing. |
 | 3 | **Spigot / Bukkit** | ✅ claimed via `api-version: '1.21'` | Declared in the Modrinth/CurseForge `loaders` list. No Paper-only API is required for the core path. |
 | 4 | **Folia** | ❌ not started — **highest-value next platform** | Needs `PlatformScheduler` (see below). Until then the plugin must NOT declare `folia-supported: true`: on Folia the current code would throw on its first `runTaskLater`. |
-| 5 | **Fabric** | ❌ not started | Separate implementation. Server-side only (no client install needed) — `ServerTickEvents` + `ItemEntity` age, writing into `Container` block entities. |
+| 5 | **Fabric (client mod)** | 🟡 **written, unbuilt** | `client/fabric/` — a separate Loom build providing the container-screen button and options screen over the plugin's `papermc-despawned-items:targets` channel. Source complete; **not yet compiled** (Loom needs to resolve Minecraft + Yarn for the target version). This is a *companion* to the plugin, not a port of it. |
+| 5b | **Fabric (server-side port)** | ❌ not started | A genuine port — `ServerTickEvents` + `ItemEntity` age, writing into `Container` block entities — so Fabric *servers* get the feature without Paper. Independent of 5. |
 | 6 | **NeoForge** | ❌ not started | Preferred over Forge for current versions, per the owner's own ordering. |
 | 7 | **Sponge** | ❌ not started | Independent API; smaller audience. Do on request. |
 | 8 | **Velocity** | ❌ not started, and **not applicable as a port** | A proxy has no worlds, chunks or item entities. Only meaningful as an *optional companion* for cross-server shared storage (the MySQL backend already makes network-wide storage work without it). |
@@ -50,6 +51,26 @@ owner listed (transformed internals, registry/mapping differences, event-orderin
 | 12 | **Minestom** | ❌ not planned | Vanilla mechanics aren't guaranteed; a survival-recovery plugin has little audience there. |
 | 13 | **PocketMine-MP** | ❌ not planned | PHP, Bedrock — effectively a rewrite. |
 | 14 | **Cloudburst/Nukkit** | ❌ not planned | JVM, but shares no platform code. |
+
+## Client ↔ server, not "build targets" (owner, 2026-07-22)
+
+The owner's reframing, adopted: think of this as **one product spanning client and server**,
+not as a matrix of independent build targets. The plugin is the authority; the Fabric mod is a
+face for it. They are versioned and released together.
+
+**Does targeting Fabric 1.21.x put everything on one Mojang baseline?** Yes, in the sense that
+matters: client and server on the same Minecraft version speak the same network protocol, and
+the bridge is an ordinary vanilla custom-payload packet, so a Fabric 1.21.x client talks to a
+Paper 1.21.x server natively. Two things it does *not* mean, both recorded in
+`client/fabric/README.md`:
+
+1. **No shared code.** Fabric compiles against the deobfuscated client via Yarn; the plugin
+   compiles against the Bukkit API. Nothing can be passed between them but bytes — which is
+   why the protocol is plain text rather than a shared class.
+2. **`1.21.x` is one API for the plugin but not one protocol for the client.** The plugin runs
+   across the whole line via `api-version: '1.21'`; a client can only join a server of its
+   exact protocol version. So the mod is built per version — one line in
+   `client/fabric/gradle.properties`.
 
 ## Group B — the Folia plan (next platform to actually build)
 

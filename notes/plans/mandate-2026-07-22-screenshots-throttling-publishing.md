@@ -44,6 +44,22 @@ Follow-up answers via AskUserQuestion are recorded in [Clarifications](#clarific
 | C23 | "A clean Kotlin multi-platform structure might be: common/ platform-paper/ platform-folia/ …" | Adopt the module layout as the design for Group C. | P11 | `done` (as design) — recorded in `platform-targets.md`, incl. the finding that extracting `core/` is the real prerequisite. |
 | C24 | "It is safer to state: This build targets Paper. Hybrid server implementations are unsupported unless explicitly listed." | Explicitly exclude Arclight/Mohist/Magma/Cardboard/Banner. | P11 | `done` — stated in `platform-targets.md` and README. |
 
+### Fifth message, 2026-07-22 — Fabric 1.21.x, and screenshots handed off
+
+| # | Owner's words (verbatim) | Interpretation | Phase | Status |
+|---|--------------------------|----------------|-------|--------|
+| C40 | "Actually cant I open fabric 1.21.x the version we should be targeting right so everything is on the same mojang code baseline unless im wrong about that logic" | A question to answer, and a direction: build the client mod for Fabric on the same 1.21.x version the server runs. | P22 | `done` — the logic is right; answered with its two nuances in `client/fabric/README.md` and `platform-targets.md`. |
+| C41 | "regarding screenshots im going to build an mcp driver seperately so thatll be in that" | Screenshot automation leaves this repo. Stop spending effort on it here; leave behind whatever is reusable. | P21 | `done` — CI job parked behind `workflow_dispatch`, removed from `ci.yml`/`docs.yml`; the renderer-independent **scene plan** and `SCREENSHOT_ENGINE=manual` remain as the handoff. |
+
+**Answer to C40, recorded because it is the design premise.** Yes. Client and server on the
+same Minecraft version share the **network protocol**, and this bridge is an ordinary vanilla
+custom-payload packet — so a Fabric 1.21.x client talks to a Paper 1.21.x server natively. Two
+things it does not mean: (1) they share no *code* — Fabric compiles against the deobfuscated
+client via Yarn, the plugin against the Bukkit API, so only bytes can cross, which is why the
+protocol is plain text; (2) `1.21.x` is one API for the *plugin* (`api-version: '1.21'`, whole
+line) but not one protocol for a *client*, which can only join a server of its exact version.
+Hence the mod is built per version — one line in `client/fabric/gradle.properties`.
+
 ### Fourth message, 2026-07-22 — no wands, client-side interface, and honesty about screenshots
 
 | # | Owner's words (verbatim) | Interpretation | Phase | Status |

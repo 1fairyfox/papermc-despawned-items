@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "papermc-despawned-items-client",
+  "version": "${version}",
+  "name": "PaperMC Despawned Items (Client)",
+  "description": "Adds a button to the chest/furnace screen for marking a container as a despawn target, for servers running the PaperMC Despawned Items plugin. Client-side only — installing it changes nothing on servers that do not have the plugin, or that have client-mod support switched off.",
+  "authors": ["Fairy Fox"],
+  "contact": {
+    "homepage": "https://fairyfox.io/papermc-despawned-items/",
+    "sources": "https://github.com/1fairyfox/papermc-despawned-items"
+  },
+  "license": "Apache-2.0",
+  "icon": "assets/papermc-despawned-items-client/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["io.fairyfox.papermc.despawneditems.client.DespawnedItemsClient"]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

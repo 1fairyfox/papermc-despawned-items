@@ -114,15 +114,10 @@ jobs:
         continue-on-error: true
         run: bash scripts/server-smoke.sh latest-experimental "papermc-despawned-items-*.jar"
 
-  # Release screenshots as build artifacts on every push (mandate C1/C10). Reuses the same
-  # capture workflow the docs publish uses, so the images on the site and the images in the
-  # artifacts are produced by identical code. Non-blocking by design — see screenshots.yml.
-  screenshots:
-    name: Release screenshots
-    needs: build
-    uses: ./.github/workflows/screenshots.yml
-    with:
-      engine: viewer
+  # NOTE: the release-screenshots job used to run here. It is parked in screenshots.yml
+  # behind workflow_dispatch — the headless renderer is a dead end (see that file), and
+  # screenshot automation has moved to a separate MCP driver. A permanently-red job on every
+  # push teaches people to ignore red, which is worse than not having the job.
 
   # In-game client acceptance (testing.md §83–87): a Mineflayer bot — a real Minecraft
   # client on the wire — joins the server and runs plugin commands; asserts the replies

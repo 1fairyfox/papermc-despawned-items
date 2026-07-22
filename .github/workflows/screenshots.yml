@@ -5,9 +5,18 @@ name: Screenshots
 # push) and Docs (publish to GitHub Pages on release) drive exactly the same capture, with
 # no duplicated steps to drift apart.
 #
-# Deliberately non-blocking: the job is `continue-on-error` at every call site and is NOT a
-# required status check on main. Screenshots are a deliverable, not a correctness gate — a
-# renderer hiccup must never hold a good release. Failures still show up red in the run.
+# STATUS (2026-07-22): manual-dispatch only. The scene scripting works — it boots a real
+# server with the real plugin and drives eight scenes — but the headless *renderer*
+# (prismarine-viewer) draws nothing, and five investigation cycles concluded it is a dead
+# end (it prerenders block textures at npm-publish time and fails silently inside a Web
+# Worker). Rather than leave a permanently-red job wired into every push, the automated
+# capture is parked here behind `workflow_dispatch`.
+#
+# Screenshot automation has moved OUT of this repo: the owner is building a separate MCP
+# driver for it. What stays useful here is `scripts/screenshots.mjs`'s **scene plan** — the
+# world setup, camera placement and the exact tick each effect fires — which is
+# renderer-independent and is the part worth reusing from that driver. `SCREENSHOT_ENGINE=manual`
+# runs the same scenes and pauses for a human to press F2.
 on:
   workflow_call:
     inputs:

@@ -17,16 +17,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Capture the gallery that /screenshots.html renders. Non-blocking: if a renderer hiccups
-  # the docs still publish, and the page degrades honestly to "no frames published yet".
-  screenshots:
-    uses: ./.github/workflows/screenshots.yml
-    with:
-      engine: viewer
-
+  # The screenshot capture job is parked (see screenshots.yml). /screenshots.html degrades
+  # honestly to "no frames published yet" when no artifact is present, so the docs publish
+  # unchanged and the gallery lights up as soon as images are produced again — by the
+  # separate MCP driver, or by a manual capture run.
   build-and-deploy:
-    needs: screenshots
-    if: always() # publish the docs even if the capture job failed
     runs-on: ubuntu-latest
     permissions:
       contents: read

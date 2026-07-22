@@ -1,0 +1,15 @@
+{
+  "papermc-despawned-items.button.loading": "Despawn target: …",
+  "papermc-despawned-items.button.mark": "Mark as despawn target",
+  "papermc-despawned-items.button.on": "Despawn target: ON",
+  "papermc-despawned-items.button.off": "Despawn target: OFF",
+
+  "papermc-despawned-items.options.title": "Despawn target options",
+  "papermc-despawned-items.options.enabled": "Target is ON — items may be relocated here",
+  "papermc-despawned-items.options.disabled": "Target is OFF — registered but skipped",
+  "papermc-despawned-items.options.priority": "Priority: %s (drawn %s× as often)",
+  "papermc-despawned-items.options.contraband.accept": "Accepts banned items",
+  "papermc-despawned-items.options.contraband.refuse": "Refuses banned items",
+  "papermc-despawned-items.options.remove": "Remove this despawn target",
+  "papermc-despawned-items.options.unregistered": "This block is not a despawn target yet"
+}
