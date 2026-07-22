@@ -56,6 +56,17 @@ Landed on `dev` (both commits green through the full CI suite unless noted):
   `fair-share` / `combined`, allowances from `despi.throttle.*` permissions.
 - **Void chance + catch-all** (`void:`, inert by default) — probabilistic voiding rolled once
   at enqueue, admin-extensible banned materials, one or more catch-all containers.
+- **Per-target settings by command** — `/despi target info|enable|disable|toggle|priority
+  <1-10>|contraband accept|refuse` on the block you're looking at. Disabling keeps the
+  registration; the pipeline just skips it.
+- **Optional client-mod protocol** — handshake (`HELLO` → `WELCOME`/`UNAVAILABLE`) plus six
+  verbs on `papermc-despawned-items:targets`. **Server owners can switch it off entirely**
+  (`targets.client-mod.enabled`), and `despi.client` gates it per rank. The client is never
+  trusted: permission, reach, ownership and limits are all re-checked server-side.
+  **The client mod itself is not written** — this is only the server half.
+- **No wand, no fake chest menu.** An earlier pass added both; the owner rejected the
+  approach (an item pretending to be a tool is less predictable than a command) and they are
+  deleted. Recorded in `decisions/rejected.md` territory — see the changelog entry.
 - **Automated release screenshots — harness done, output NOT yet usable.**
   `scripts/screenshots.mjs` + a reusable `screenshots.yml` called by CI (build artifacts) and
   Docs (gh-pages gallery at `/screenshots.html`). Two backends: `viewer` (headless Chrome)
