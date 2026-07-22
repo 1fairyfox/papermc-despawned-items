@@ -40,7 +40,7 @@ owner listed (transformed internals, registry/mapping differences, event-orderin
 | 2 | **Purpur** | ✅ claimed, ⏳ unsmoked | Paper fork — the existing jar runs unmodified. **Next action:** add a Purpur row to the `server-smoke` matrix so the claim is *proven*, not assumed. Cheap; do it before advertising Purpur anywhere user-facing. |
 | 3 | **Spigot / Bukkit** | ✅ claimed via `api-version: '1.21'` | Declared in the Modrinth/CurseForge `loaders` list. No Paper-only API is required for the core path. |
 | 4 | **Folia** | ❌ not started — **highest-value next platform** | Needs `PlatformScheduler` (see below). Until then the plugin must NOT declare `folia-supported: true`: on Folia the current code would throw on its first `runTaskLater`. |
-| 5 | **Fabric (client mod)** | 🟡 **written, unbuilt** | `client/fabric/` — a separate Loom build providing the container-screen button and options screen over the plugin's `papermc-despawned-items:targets` channel. Source complete; **not yet compiled** (Loom needs to resolve Minecraft + Yarn for the target version). This is a *companion* to the plugin, not a port of it. |
+| 5 | **Fabric (client mod)** | 🟡 **written, build in progress** | `client/fabric/` — a separate Loom build providing the container-screen button and options screen over the plugin's `papermc-despawned-items:targets` channel. A *companion* to the plugin, not a port. Toolchain confirmed working for **1.21.11** (see below); compilation of the mod's own sources not yet observed green. |
 | 5b | **Fabric (server-side port)** | ❌ not started | A genuine port — `ServerTickEvents` + `ItemEntity` age, writing into `Container` block entities — so Fabric *servers* get the feature without Paper. Independent of 5. |
 | 6 | **NeoForge** | ❌ not started | Preferred over Forge for current versions, per the owner's own ordering. |
 | 7 | **Sponge** | ❌ not started | Independent API; smaller audience. Do on request. |
@@ -51,6 +51,21 @@ owner listed (transformed internals, registry/mapping differences, event-orderin
 | 12 | **Minestom** | ❌ not planned | Vanilla mechanics aren't guaranteed; a survival-recovery plugin has little audience there. |
 | 13 | **PocketMine-MP** | ❌ not planned | PHP, Bedrock — effectively a rewrite. |
 | 14 | **Cloudburst/Nukkit** | ❌ not planned | JVM, but shares no platform code. |
+
+## Fabric toolchain findings (2026-07-22)
+
+Three CI cycles took the Loom build from nothing to "resolves everything". Recorded because
+each was a real, non-obvious fact rather than a typo:
+
+| Failure | Cause | Fix |
+|---|---|---|
+| `./gradlew: Permission denied` (exit 126) | The wrapper was copied from the plugin on Windows, which carries no POSIX exec bit | `git update-index --chmod=+x` |
+| `Could not find net.fabricmc.fabric-api:fabric-api:0.115.0+1.21.11` | **fabric-api is published per Minecraft version, not as a range** — the `0.115.x` line belongs to 1.21.4/1.21.5 | read the live maven metadata; `0.141.4+1.21.11` |
+| `Javadoc provided by mod (fabric-content-registries-v0) must be have an intermediary source namespace` | Pulling the **whole** Fabric API drags in modules the mod never uses, and Loom 1.11 refuses to remap that one's javadoc | depend on `fabric-api-base` + `fabric-networking-api-v1` + `fabric-screen-api-v1` only |
+
+**The important positive finding: Minecraft 1.21.11 and Yarn `1.21.11+build.1` resolve
+cleanly under Loom 1.11.8.** The owner's premise — target Fabric on the same 1.21.x version
+as the server — is not just sound in principle, the toolchain supports it today.
 
 ## Client ↔ server, not "build targets" (owner, 2026-07-22)
 
