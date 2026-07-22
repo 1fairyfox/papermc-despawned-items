@@ -484,6 +484,14 @@ const SCENES = [
 
 async function run() {
   await sleep(2_000);
+
+  // Mineflayer simulates physics client-side and will keep correcting the bot back to
+  // where IT thinks the body belongs — which is why every previous run logged
+  // "camera Y did not take: asked for -53, bot reports -59.0" while X and Z applied fine,
+  // leaving the camera parked at ground level looking at nothing. A camera is not a body:
+  // turn the simulation off and let server teleports be the only thing that moves it.
+  bot.physicsEnabled = false;
+
   cmd("op Director");
   cmd("gamerule doDaylightCycle false");
   cmd("time set noon");
