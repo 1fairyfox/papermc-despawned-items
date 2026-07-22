@@ -30,6 +30,9 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve, join } from "node:path";
 import process from "node:process";
 import mineflayer from "mineflayer";
+// bot.lookAt requires a real Vec3 — a plain {x,y,z} fails at runtime with
+// "point.minus is not a function" (caught by the first green-ish screenshots CI run).
+import { Vec3 } from "vec3";
 
 const workDir = resolve(process.argv[2] ?? "smoke-screenshots");
 const outDir = resolve(process.argv[3] ?? "screenshots");
@@ -228,7 +231,7 @@ function setBlock(x, y, z, block) {
 
 /** Points the camera at a spot and lets the renderer settle. */
 async function look(x, y, z, settleMs = 1_500) {
-  await bot.lookAt({ x, y, z }, true);
+  await bot.lookAt(new Vec3(x, y, z), true);
   await sleep(settleMs);
 }
 
@@ -358,16 +361,21 @@ async function run() {
 
   capture = await makeCapture(bot);
 
-  // Register the row of containers as real despawn locations so relocation actually
-  // happens in the photographed scenes.
-  setBlock(x, y + 1, z, "minecraft:chest");
-  await sleep(800);
-  cmd(`tp Director ${x} ${y + 3} ${z}`);
-  await sleep(800);
-  await bot.lookAt({ x, y: y + 1, z }, true);
-  await sleep(500);
-  bot.chat("/despi add this");
-  await sleep(800);
+  // Register a container as a real despawn location so relocation actually happens in the
+  // photographed scenes. Guarded: a hiccup here must not cost us all seven scenes (it did
+  // exactly that on the first CI run).
+  try {
+    setBlock(x, y + 1, z, "minecraft:chest");
+    await sleep(800);
+    cmd(`tp Director ${x} ${y + 3} ${z}`);
+    await sleep(800);
+    await bot.lookAt(new Vec3(x, y + 1, z), true);
+    await sleep(500);
+    bot.chat("/despi add this");
+    await sleep(800);
+  } catch (err) {
+    console.warn(`::warning::scene setup failed (${err.message}); capturing anyway`);
+  }
 
   let failures = 0;
   for (const [label, scene] of SCENES) {
