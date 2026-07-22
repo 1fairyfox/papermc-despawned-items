@@ -177,6 +177,24 @@ async function viewerBackend(bot) {
   page.on("pageerror", (e) => console.warn(`::warning::[page error] ${e.message}`));
   page.on("requestfailed", (r) => console.warn(`::warning::[page request failed] ${r.url()}`));
 
+  // prismarine-viewer builds chunk meshes inside a WEB WORKER. Errors thrown in a worker
+  // do NOT reach page.on('pageerror'), which is exactly how we ended up with "zero errors,
+  // empty scene". Install a collector before any page script runs so worker-adjacent
+  // failures and unhandled rejections are captured too.
+  await page.evaluateOnNewDocument(() => {
+    window.__diag = { errors: [], workers: [] };
+    window.addEventListener("error", (e) => window.__diag.errors.push(String(e.message || e)));
+    window.addEventListener("unhandledrejection", (e) => window.__diag.errors.push("rejection: " + String(e.reason)));
+    const RealWorker = window.Worker;
+    window.Worker = function (...args) {
+      const w = new RealWorker(...args);
+      window.__diag.workers.push(String(args[0]));
+      w.addEventListener("error", (e) => window.__diag.errors.push("worker: " + String(e.message || e)));
+      return w;
+    };
+    window.Worker.prototype = RealWorker.prototype;
+  });
+
   await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 1 });
   await page.goto(`http://127.0.0.1:${VIEWER_PORT}`, { waitUntil: "networkidle2", timeout: 60_000 });
 
@@ -191,6 +209,27 @@ async function viewerBackend(bot) {
   console.log(`WebGL renderer: ${webgl}`);
 
   await sleep(12_000); // texture atlas + world mesh upload under software GL is slow
+
+  // Decisive probe: is the browser scene actually populated? This one number separates
+  // "the viewer never got world data" from "it has data and isn't drawing it", and every
+  // further fix is guesswork until it is known.
+  const diag = await page.evaluate(() => {
+    const v = window.viewer || window.globalThis?.viewer;
+    const scene = v?.scene;
+    return {
+      viewerPresent: Boolean(v),
+      version: v?.version ?? null,
+      sceneChildren: scene?.children?.length ?? -1,
+      meshes: scene ? scene.children.filter((c) => c.type === "Mesh" || c.isMesh).length : -1,
+      canvases: document.querySelectorAll("canvas").length,
+      errors: (window.__diag?.errors ?? []).slice(0, 10),
+      workers: (window.__diag?.workers ?? []).slice(0, 5),
+    };
+  });
+  console.log(`VIEWER DIAG ${JSON.stringify(diag)}`);
+  if (diag.sceneChildren <= 0) {
+    console.warn("::warning::the browser scene is empty — frames will be bare sky");
+  }
 
   return {
     engine: "viewer",

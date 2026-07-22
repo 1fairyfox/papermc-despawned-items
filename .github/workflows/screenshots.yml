@@ -15,6 +15,19 @@ on:
         description: "Capture backend: viewer (headless Chrome) or client (real MC under Xvfb)"
         type: string
         default: viewer
+      mcVersion:
+        # NOT the build target, deliberately. prismarine-viewer PRERENDERS its block
+        # textures at package-publish time, so a viewer released in Feb 2025 has no assets
+        # for a 2026 Minecraft version and silently meshes nothing — which is exactly why
+        # the first working runs produced eight frames of bare sky.
+        #
+        # The plugin declares api-version '1.21', so it runs unmodified across the whole
+        # 1.21 line; photographing it on a version the renderer actually knows shows the
+        # same plugin doing the same thing. Correctness on 1.21.11 is proven by the
+        # server-smoke and in-game jobs, which are the right place for it.
+        description: "Minecraft version to photograph on (must be a version prismarine-viewer has assets for)"
+        type: string
+        default: "1.21.4"
   workflow_dispatch:
     inputs:
       engine:
@@ -42,9 +55,12 @@ jobs:
         run: ./gradlew shadowJar --no-daemon --stacktrace
 
       - name: Prepare the server directory
+        env:
+          MC_VERSION: ${{ inputs.mcVersion || '1.21.4' }}
         run: |
           mkdir -p smoke-screenshots/plugins
-          URL="$(curl -fsSL "https://fill.papermc.io/v3/projects/paper/versions/1.21.11/builds/latest" | jq -r '.downloads["server:default"].url')"
+          echo "Photographing on Paper $MC_VERSION"
+          URL="$(curl -fsSL "https://fill.papermc.io/v3/projects/paper/versions/${MC_VERSION}/builds/latest" | jq -r '.downloads["server:default"].url')"
           curl -fsSL -o smoke-screenshots/paper.jar "$URL"
           cp build/libs/papermc-despawned-items-*.jar smoke-screenshots/plugins/
 
