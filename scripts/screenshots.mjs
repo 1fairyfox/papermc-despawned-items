@@ -134,18 +134,25 @@ async function viewerBackend(bot) {
   const { mineflayer: mineflayerViewer } = await import("prismarine-viewer");
   const puppeteer = (await import("puppeteer")).default;
 
-  // The viewer renders the chunks the BOT has loaded. Starting it before they arrive gives
-  // an empty scene that renders as bare sky — exactly the blank frames the first working
-  // CI run produced. Wait for real chunk data first.
+  // prismarine-viewer pushes world data to the browser from `chunkColumnLoad` EVENTS. It
+  // does not walk chunks the bot already has, so starting it after the world is loaded
+  // leaves the browser with an empty scene — which renders as bare sky.
+  //
+  // Evidence (CI run 29948445257): chunks loaded, WebGL confirmed working
+  // ("ANGLE … SwiftShader"), zero page errors, camera at eight different positions — and
+  // all eight frames byte-identical. An empty scene is the only explanation left.
+  //
+  // So: start the viewer FIRST, then force fresh chunk events by walking the bot out of
+  // its loaded set and back.
+  mineflayerViewer(bot, { port: VIEWER_PORT, firstPerson: false, viewDistance: 6 });
+  await sleep(2_000);
+
   try {
     await bot.waitForChunksToLoad();
     console.log("chunks loaded around the director");
   } catch (err) {
     console.warn(`::warning::waitForChunksToLoad failed: ${err.message}`);
   }
-  await sleep(3_000);
-
-  mineflayerViewer(bot, { port: VIEWER_PORT, firstPerson: false, viewDistance: 6 });
   await sleep(6_000); // let the mesher build the initial geometry
 
   const browser = await puppeteer.launch({
@@ -402,6 +409,14 @@ async function run() {
   await sleep(1_500);
 
   capture = await makeCapture(bot);
+
+  // Force a fresh set of chunkColumnLoad events now that the viewer is listening: walk
+  // well outside the loaded set and come back. Without this the browser scene stays empty
+  // (see the comment in viewerBackend).
+  cmd(`tp Director ${x + 2000} ${y + 6} ${z + 2000}`);
+  await sleep(5_000);
+  cmd(`tp Director ${x + 6} ${y + 6} ${z + 12}`);
+  await sleep(8_000);
 
   // Register a container as a real despawn location so relocation actually happens in the
   // photographed scenes. Guarded: a hiccup here must not cost us all seven scenes (it did
