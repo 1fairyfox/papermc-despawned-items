@@ -26,7 +26,7 @@
 //
 // usage: node screenshots.mjs <server-work-dir> <output-dir>
 import { spawn } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, statSync } from "node:fs";
 import { resolve, join } from "node:path";
 import process from "node:process";
 import mineflayer from "mineflayer";
@@ -134,8 +134,19 @@ async function viewerBackend(bot) {
   const { mineflayer: mineflayerViewer } = await import("prismarine-viewer");
   const puppeteer = (await import("puppeteer")).default;
 
+  // The viewer renders the chunks the BOT has loaded. Starting it before they arrive gives
+  // an empty scene that renders as bare sky — exactly the blank frames the first working
+  // CI run produced. Wait for real chunk data first.
+  try {
+    await bot.waitForChunksToLoad();
+    console.log("chunks loaded around the director");
+  } catch (err) {
+    console.warn(`::warning::waitForChunksToLoad failed: ${err.message}`);
+  }
+  await sleep(3_000);
+
   mineflayerViewer(bot, { port: VIEWER_PORT, firstPerson: false, viewDistance: 6 });
-  await sleep(4_000); // let the chunk meshes build before the first frame
+  await sleep(6_000); // let the mesher build the initial geometry
 
   const browser = await puppeteer.launch({
     headless: "new",
@@ -143,21 +154,48 @@ async function viewerBackend(bot) {
       "--no-sandbox",
       "--disable-setuid-sandbox",
       // SwiftShader gives us real WebGL without a GPU — the whole point of this backend.
-      "--use-gl=swiftshader",
+      "--use-gl=angle",
+      "--use-angle=swiftshader",
       "--enable-unsafe-swiftshader",
+      "--ignore-gpu-blocklist",
+      "--enable-webgl",
       "--disable-dev-shm-usage",
       `--window-size=${WIDTH},${HEIGHT}`,
     ],
   });
   const page = await browser.newPage();
+  // Forward the page's own diagnostics into the job log — without this a blank frame is
+  // completely opaque, which cost a full CI cycle to discover.
+  page.on("console", (m) => console.log(`[page:${m.type()}] ${m.text()}`));
+  page.on("pageerror", (e) => console.warn(`::warning::[page error] ${e.message}`));
+  page.on("requestfailed", (r) => console.warn(`::warning::[page request failed] ${r.url()}`));
+
   await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 1 });
   await page.goto(`http://127.0.0.1:${VIEWER_PORT}`, { waitUntil: "networkidle2", timeout: 60_000 });
-  await sleep(6_000); // texture atlas + world mesh
+
+  // Prove WebGL actually exists in this browser before blaming the world data.
+  const webgl = await page.evaluate(() => {
+    const c = document.createElement("canvas");
+    const gl = c.getContext("webgl2") || c.getContext("webgl");
+    if (!gl) return "none";
+    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+    return dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : "available";
+  });
+  console.log(`WebGL renderer: ${webgl}`);
+
+  await sleep(12_000); // texture atlas + world mesh upload under software GL is slow
 
   return {
     engine: "viewer",
     async shot(file) {
-      await page.screenshot({ path: file, type: "png" });
+      // Screenshot the canvas itself when we can find it: it rules out page chrome and
+      // makes a blank result unambiguously "the scene is empty" rather than "wrong element".
+      const canvas = await page.$("canvas");
+      if (canvas) {
+        await canvas.screenshot({ path: file, type: "png" });
+      } else {
+        await page.screenshot({ path: file, type: "png" });
+      }
     },
     async close() {
       await browser.close();
@@ -214,8 +252,12 @@ async function makeCapture(bot) {
 async function shot(name, caption) {
   const file = join(outDir, `${name}.png`);
   await capture.shot(file);
-  manifest.push({ name, file: `${name}.png`, caption, engine: capture.engine });
-  console.log(`captured ${name}.png — ${caption}`);
+  const bytes = statSync(file).size;
+  manifest.push({ name, file: `${name}.png`, caption, engine: capture.engine, bytes });
+  const pos = bot?.entity?.position;
+  console.log(
+    `captured ${name}.png (${bytes} bytes, camera ${pos ? `${pos.x.toFixed(1)},${pos.y.toFixed(1)},${pos.z.toFixed(1)}` : "?"}) — ${caption}`,
+  );
 }
 
 // ---------------------------------------------------------------------------------------
@@ -393,6 +435,20 @@ async function run() {
     finish(1);
     return;
   }
+
+  // Blank-frame guard. The first working run produced eight files of *identical* byte
+  // length — a flat sky with nothing rendered. "Files exist" is not "screenshots work",
+  // so the harness now says so itself instead of shipping empty art.
+  const distinct = new Set(manifest.map((s) => s.bytes));
+  if (distinct.size === 1 && manifest.length > 1) {
+    console.error(
+      `::error::all ${manifest.length} frames are byte-identical (${[...distinct][0]} bytes) — the scene is almost certainly not rendering`,
+    );
+    console.log(`Captured ${manifest.length} screenshot(s); ${failures} scene(s) failed.`);
+    finish(1);
+    return;
+  }
+
   console.log(`Captured ${manifest.length} screenshot(s); ${failures} scene(s) failed.`);
   finish(0);
 }
