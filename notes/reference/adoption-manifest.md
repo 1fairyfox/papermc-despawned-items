@@ -2,40 +2,54 @@
 
 One row per hub standard. **Rules:** `copied-only` is NOT adopted — only a recorded
 Verify pass flips a row to `implemented`. No summary claim (status.md, registry,
-process reports) is permitted without a row here backing it. A `gap` row carries a due
-marker; an overdue gap on a mandatory standard (git-workflow, supply-chain-hardening)
-holds releases. Proposed as mesh standard in
+process reports) is permitted without a row here backing it. A `gap`/`partial` row carries a due
+marker; an overdue gap on a mandatory standard (git-workflow, supply-chain-hardening) holds
+releases. Proposed as mesh standard in
 `fairyfox-reports/2026-07-20-checklist-noncompliance-failure-analysis.md` (S1).
 
-Hub baseline: 0.20.2 / commit 697bc5c (clone of 2026-07-19–20) · chrome bundle 2.2.1.
+Hub baseline: **1.5.1 / commit a6d7e68** (adopted 2026-07-24, up from 0.20.2 / 697bc5c).
+Full Verify pass: `fairyfox-reports/2026-07-24-compliance-audit.md`. Chrome bundle: 2.2.1
+(hub now ships 2.3.0 — see the docs-site row).
+
+## Recorded user exceptions
+
+| Date | Exception | Scope | Recorded because |
+|------|-----------|-------|------------------|
+| 2026-07-24 | **Do not edit the GitHub repo description or topics/tags.** | onboarding "project details complete by default" / hub-registration, GitHub-repo-metadata only | Owner instruction, mid-turn. The badges 20-set, `_data/projects.yml` blurb, and every other detail rule are unaffected; only editing the GitHub repo's own description/topics is out of scope until the owner lifts it. |
+
+## Per-standard state
 
 | Standard | State | Verify last run | Evidence / notes |
 |----------|-------|-----------------|------------------|
-| adopting-updates | implemented | 2026-07-20 | Flow followed 3× (reports in fairyfox-reports/) |
-| agent-tooling | implemented | 2026-07-20 | PowerShell+file-tools rule in CLAUDE.md; .gitattributes present; audit #67 |
-| ai-context | implemented | 2026-07-20 | CLAUDE.md carries required pieces incl. mesh block; audit #68 |
-| badges | copied-only | — | README badge block exists from onboarding; full Verify vs badges.md due next adopt pass |
-| coins | implemented | 2026-07-20 | coins.js in vendored chrome, `fairyfox:coins:a`, nothing gated; audit #17 |
-| compliance | implemented | 2026-07-20 | First full matrix pass = plans/standards-audit-2026-07-20.md |
-| cross-project-sync | implemented | 2026-07-20 | Read-only git-ignored clone; on-request only; audit #95 |
-| dependencies | implemented | 2026-07-20 | Dependabot on (gradle + actions) → dev; suite gates; audit #58/#62 |
-| deployment | copied-only | — | Docs deploy = Pages on release; formal Verify vs deployment.md due next adopt pass |
-| docs-lifecycle | implemented | 2026-07-20 | Current-state docs swept this pass (status/CLAUDE); audit #107 |
-| docs-site (13 modules) | implemented | 2026-07-20 (corrected same day) | 08 checklist run = audit A–I; **first pass was a lenient read caught by the owner** — corrected to Case A (overview default, Notes/Tutorials/Changelog pages, API under /api/) in v1.3.4; see audit "Correction round". Open: #26 breadcrumb (recommended), #46 live-deploy sign-off |
-| engineering-quality | copied-only | — | Practices held informally; itemized Verify due next adopt pass |
+| adopting-updates | implemented | 2026-07-24 | Flow run again this date (report on file); reference copy refreshed to 1.5.1 |
+| agent-tooling | implemented | 2026-07-24 | PowerShell+file-tools used throughout; `.gitattributes` LF-normalized; no CRLF noise in diff |
+| ai-context | implemented | 2026-07-24 | CLAUDE.md carries required pieces + mesh block + new Docker Build/Run rule |
+| badges | **implemented** | 2026-07-24 | **Full 20-badge set in canonical order** verified in README (was `copied-only`); runtime Java/Paper before CI; distribution badges commented; docs badge → `fairyfox.io/<key>/`; no omission → no exception needed |
+| checklists-are-contracts | **implemented** | 2026-07-24 | NEW standard. Behaviour already in CLAUDE.md ("Checklists Are Contracts"); reference copy vendored; per-item recording + not-done disclosure practised in the 2026-07-24 audit |
+| ci-secrets | **implemented** | 2026-07-24 | NEW standard. `gh secret list`: SONAR/CODECOV/SCORECARD all set; names canonical; each referenced by a workflow |
+| coins | implemented | 2026-07-24 | Counter from shared chrome; nothing gated. 2.3.0 counter refresh rides the docs-site row |
+| compliance | implemented | 2026-07-24 | Full matrix pass = `fairyfox-reports/2026-07-24-compliance-audit.md`; reference copy refreshed |
+| cross-project-sync | implemented | 2026-07-24 | Read-only git-ignored mirror; on-request; ledger read from clone; anti-recursion held |
+| dependencies | implemented | 2026-07-24 | Dependabot gradle + github-actions → dev; local gate; open-PR backlog empty |
+| deployment | copied-only | — | Docs deploy = Pages on release; formal Verify vs deployment.md still light — kept `copied-only` pending an itemized pass |
+| docker | **implemented** | 2026-07-24 | NEW standard. Vendored Dockerfile/compose.yaml/.dockerignore; full `./gradlew build` green in-container (12m33s); `MariaDbStorageTest` runs 3/3 over mounted socket (prior write-off fixed); CLAUDE.md local-first rule |
+| docs-lifecycle | implemented | 2026-07-24 | Current-state docs swept today; dated history unedited; single-source |
+| docs-site (13 modules) | **partial** | 2026-07-24 | **Chrome 2.2.1 vs hub 2.3.0**; 1.4.0 web-interface enforcement (mandatory coin counter, subnav baseline, on-site Notes, whole-bundle incl. vendored font-awesome+fonts, Dokka adapter) not yet re-applied. **Due: next phase — chrome refresh + 08-checklist with visual sign-off.** Deliberately not rushed (lenient-read failure mode) |
+| engineering-quality | **implemented** | 2026-07-24 | 0 TODO/FIXME across 87 .kt files; no detekt baseline; ship contract: Scorecard 7.6 (2026-07-22), debt clear, PR backlog empty. Was `copied-only` |
 | farm-operating-model | N/A | — | Story/game farms only; this is a server plugin |
-| git-workflow | implemented | 2026-07-21 | v1.3.3 shipped via PR path; dev==main; audit J all green |
-| legal-docs | implemented | 2026-07-21 | **Previous "N/A — hub serves /legal/" was a wrong lenient read** (the standard is mandatory per-repo; the footer links had been 404ing). Three self-hosted code-accurate pages at legal/{privacy,terms,cookies}/ + index, Legal subnav item, brand minimum met (local-storage disclosure, coins no-value + shared explainer link, processors named, fonts IP flagged, project-owned contact), Last updated 2026-07-21 |
-| maintenance-sweep | copied-only | — | No sweep run yet; first sweep due within a month of active work |
+| git-workflow | implemented | 2026-07-24 | main protected, PR path, `--no-ff` tagged; newest tag v1.4.8; dev clean+pushed; history intact |
+| legal-docs | **implemented** | 2026-07-24 | NEW reference copy. Self-hosted privacy/terms/cookies/index under docs-theme/…/legal/; accurate to code (no data-practice change since 2026-07-21); footer legal column intact |
+| maintenance-sweep | copied-only | — | First whole-repo sweep **still never run** (pre-existing); due within a month of active work — recommend next |
+| mandate-ledger | **implemented** | 2026-07-24 | NEW standard. CLAUDE.md "Owner Mandates Become Ledgers"; owner directive + GitHub-details exception transcribed this session |
 | new-project-setup | N/A | — | One-time runbook; project predates mesh |
-| notes-system | implemented | 2026-07-20 | Full tree live; inline changelog; session logs |
-| onboarding-existing-project | N/A | — | Completed 2026-07-19 (report on file; outcome partial → gaps closed 2026-07-20) |
-| planning | implemented | 2026-07-20 | Plan-before-execute in CLAUDE.md; audit ran off a written plan |
-| process-reports | implemented | 2026-07-20 | 4 reports filed; template followed |
-| repo-hygiene | implemented | 2026-07-21 | Gates in CI + session use; auto-delete on; dev protected; audit P |
-| research-capture | copied-only | — | Notes-first practiced; itemized Verify due next adopt pass |
-| self-hosted-assets | implemented | 2026-07-20 | Fox icon vendored (v1.3.4); zero fairyfox.io asset hot-links in the built site; fonts follow the shared-chrome bundle pattern (Google-hosted, as the master chrome ships — hub-level exception) |
-| supply-chain-hardening | implemented | 2026-07-21 | main protected (solo config), PR release proven, attestation ran green on v1.3.3; audit K |
-| testing | implemented | 2026-07-20 | Audit O #98–#103; regression-per-fix ongoing practice (#100) |
-| versioning | implemented | 2026-07-21 | VERSION 1.3.3 == newest main tag v1.3.3 |
-| working-rhythm | copied-only | — | Task-tracking practiced; itemized Verify due next adopt pass |
+| notes-system | implemented | 2026-07-24 | Full tree; status current; inline changelog; session logs; reference copy refreshed |
+| onboarding-existing-project | N/A | — | Completed 2026-07-19; hub-registration + GitHub-details are hub-side (details exception recorded above) |
+| planning | implemented | 2026-07-24 | Phased task list + runbook-as-plan; CLAUDE.md phase-by-default; reference copy refreshed |
+| process-reports | implemented | 2026-07-24 | 2 reports filed this date; template followed; hub_version anchor advanced to 1.5.1 |
+| repo-hygiene | implemented | 2026-07-24 | check-links green (37 OK) incl. new files; tree clean post-commit; auto-delete on; dev+main protected |
+| research-capture | **implemented** | 2026-07-24 | Findings in notes same session; load-bearing Docker claim probed (real build + DB test), not assumed. Was `copied-only` |
+| self-hosted-assets | implemented | 2026-07-24 | No third-party hot-links in built site; fonts follow shared-chrome bundle. 2.3.0 font-awesome/fonts vendoring rides docs-site row |
+| supply-chain-hardening | implemented | 2026-07-24 | SHA-pins (0 unpinned); SECURITY.md; provenance-as-`.intoto.jsonl` asset; main contexts = full CI suite; SAST pinned. Minor: scorecard.yml top-level `read-all` (vendor form) — optional tighten |
+| testing | implemented | 2026-07-24 | ~200 tests/layer; Kover min-90 gates build; regression-per-fix; suite green in-container; probe-the-mock lore |
+| versioning | implemented | 2026-07-24 | VERSION 1.5.0 (one SemVer line) ahead of newest main tag v1.4.8 — expected mid-flight on dev; nothing hardcoded |
+| working-rhythm | **implemented** | 2026-07-24 | Task-tracked phases; long build backgrounded (dockerd-owned) + surfaced; ask-first honoured (GitHub-details constraint). Was `copied-only` |
