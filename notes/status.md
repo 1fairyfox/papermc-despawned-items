@@ -138,5 +138,6 @@ Done on `dev` (all green, CI passing):
 | Static analysis (Ktlint + Detekt) + coverage (Kover) | ✅ gate the build; all detekt rules on, no baseline |
 | Forward-compat load on Paper 26.1.2 | ✅ **automated in CI** (`server-smoke` matrix, Java 25) |
 | GitHub Pages docs | ⏳ enabled; deploys on release to `main` |
-| Standards adopted (project side) | per-standard state: [`reference/adoption-manifest.md`](reference/adoption-manifest.md) — 17 implemented · 6 copied-only (due next adopt pass) · 1 gap · 4 N/A (no bare ✅ — see the checklist-noncompliance report) |
+| Standards adopted (project side) | **hub anchor 1.5.1** (adopted 2026-07-24, up from 0.20.2). per-standard state: [`reference/adoption-manifest.md`](reference/adoption-manifest.md). Span brought checklists-are-contracts + mandate-ledger (already in CLAUDE.md), the 20-badge default set (already met), and the **Docker** standard (adopted + validated: local `./gradlew build` green in-container, Testcontainers DB tests now run 3/3). Full Verify: [`fairyfox-reports/2026-07-24-compliance-audit.md`](fairyfox-reports/2026-07-24-compliance-audit.md) |
+| Docker (local-first build/test) | ✅ **adopted 2026-07-24** — vendored `Dockerfile`/`compose.yaml`; `docker compose run --rm build` runs the full Linux gate locally; host-side Testcontainers↔Docker-29.x write-off fixed (DB tests execute over the mounted socket) |
 | Hub registration | ❌ not yet (hub-side) |

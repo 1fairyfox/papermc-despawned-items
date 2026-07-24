@@ -1,0 +1,11 @@
+# The build/test image COPYs nothing (source is bind-mounted at runtime — see
+# compose.yaml), so the build context is tiny by design. Still exclude heavy/generated
+# trees defensively in case the context is ever sent.
+.git
+build
+run
+.gradle
+gradle-cache
+assets/references
+node_modules
+*.log

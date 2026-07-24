@@ -91,6 +91,17 @@ Owner mandate (2026-07-21). These are release-blocking rules, not goals:
 > mis-reports truncated files on this environment. Execute verify/commit/release
 > directly. Full rule: the shared `agent-tooling` standard.
 
+> **Docker (mesh rule — local-first).** The Linux-only loops — the full `./gradlew build`,
+> the Testcontainers MariaDB/MySQL integration tests, and (as they grow) `server-smoke` /
+> Mineflayer — run **locally in a container first** via the vendored `Dockerfile` +
+> `compose.yaml`: `docker compose run --rm build` (full build) or
+> `docker compose run --rm build ./gradlew test --tests '*Database*'` (a slice). CI is the
+> **backstop gate, not where Linux is discovered.** The host Docker socket is mounted so
+> Testcontainers drives the host daemon (docker-outside-of-docker, `host.docker.internal`
+> pinned) — **the earlier host-side Testcontainers↔Docker-29.x write-off is fixed, not routed
+> around.** Fix Docker breakage in the vendored assets; don't fall back to CI-only. Full
+> rule: the shared `docker` standard (`notes/reference/docker.md`).
+
 - **Build the plugin jar:** `./gradlew build` → `build/libs/papermc-despawned-items-<version>.jar`
   (a shaded jar with the Kotlin stdlib inside; drop it in a server's `plugins/`).
 - **API docs:** `./gradlew dokkaGenerate` → `build/dokka/html/`.
