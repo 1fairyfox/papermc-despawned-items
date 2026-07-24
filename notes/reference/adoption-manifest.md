@@ -49,7 +49,7 @@ Full Verify pass: `fairyfox-reports/2026-07-24-compliance-audit.md`. Chrome bund
 | repo-hygiene | implemented | 2026-07-24 | check-links green (37 OK) incl. new files; tree clean post-commit; auto-delete on; dev+main protected |
 | research-capture | **implemented** | 2026-07-24 | Findings in notes same session; load-bearing Docker claim probed (real build + DB test), not assumed. Was `copied-only` |
 | self-hosted-assets | implemented | 2026-07-24 | No third-party hot-links in built site; fonts follow shared-chrome bundle. 2.3.0 font-awesome/fonts vendoring rides docs-site row |
-| supply-chain-hardening | implemented | 2026-07-24 | SHA-pins (0 unpinned); SECURITY.md; provenance-as-`.intoto.jsonl` asset; main contexts = full CI suite; SAST pinned. Minor: scorecard.yml top-level `read-all` (vendor form) — optional tighten |
+| supply-chain-hardening | implemented | 2026-07-24 | SHA-pins (0 unpinned); SECURITY.md; provenance-as-`.intoto.jsonl` asset; main contexts = full CI suite; SAST pinned. §1: one **deliberate documented divergence** — scorecard.yml keeps top-level `read-all` (write-free, vendor-canonical; tightening would starve the scanner's reads); documented in-file + here |
 | testing | implemented | 2026-07-24 | ~200 tests/layer; Kover min-90 gates build; regression-per-fix; suite green in-container; probe-the-mock lore |
 | versioning | implemented | 2026-07-24 | VERSION 1.5.0 (one SemVer line) ahead of newest main tag v1.4.8 — expected mid-flight on dev; nothing hardcoded |
 | working-rhythm | **implemented** | 2026-07-24 | Task-tracked phases; long build backgrounded (dockerd-owned) + surfaced; ask-first honoured (GitHub-details constraint). Was `copied-only` |

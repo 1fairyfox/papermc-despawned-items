@@ -13,7 +13,13 @@ on:
   push:
     branches: [main]
 
-# Read-only by default; the job below elevates only what it needs.
+# Deliberate divergence from supply-chain-hardening §1's literal `contents: read`:
+# the OpenSSF Scorecard analysis reads across many scopes (workflows, branch-protection,
+# dependency tooling), so the vendor-canonical top level is `read-all`. It is WRITE-FREE —
+# it grants no write anywhere — so it fully meets the standard's security intent (no broad
+# default *write*); the job below elevates only the two writes it needs. Tightening to
+# `contents: read` would starve the scanner's reads and lower the score, the opposite of the
+# goal. Recorded as an intentional divergence in notes/reference/adoption-manifest.md.
 permissions: read-all
 
 jobs:
