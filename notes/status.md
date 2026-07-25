@@ -3,7 +3,7 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.5.0` — in flight on `dev`, newest released tag **v1.4.8** (source of truth:
+**Version:** `1.5.1` — in flight on `dev`, newest released tag **v1.5.0** (source of truth:
 repo-root `VERSION`). Released: v1.1.0 → v1.2.0
 (Brigadier commands) → v1.3.0 (naming + quality gates) → v1.3.1 (package →
 `io.fairyfox.papermc.despawneditems`) → v1.3.2 (docs site wears the shared fairyfox chrome,
@@ -19,10 +19,12 @@ Paper 1.21.11 + 26.1.2 smoke, Mineflayer in-game acceptance; Sonar CI scan wired
 Kotest/Pitest/JMH adopted, spark+JFR profiling) → **v1.4.3** (docs/process: the
 "Owner Mandates Become Ledgers" standing instruction + mandate-execution failure analysis) →
 **v1.4.4–v1.4.8** (patch releases incl. the `sqlite-jdbc` library-loader fix server-smoke
-caught; per-commit detail in `version/2026-07.md`). **v1.5.0** is the current in-flight `dev`
-milestone (per-user throttling, void chance, per-target commands, optional client-mod protocol,
-multi-platform publishing) plus the 2026-07-24 fairyfox adoption (hub 1.5.1, Docker local-first,
-docs-site chrome 2.3.0). Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
+caught; per-commit detail in `version/2026-07.md`) → **v1.5.0** (the milestone: per-user
+throttling, void chance, per-target commands, optional client-mod protocol, multi-platform
+publishing, Fabric client mod; plus the 2026-07-24 fairyfox adoption — hub 1.5.1, Docker
+local-first, docs-site chrome 2.3.0 — **released to `main`, tag v1.5.0**) → **v1.5.1**
+(in-flight `dev`: hub 1.6.0 README cross-linking standard). Artifact/plugin-id/data-folder are
+all `papermc-despawned-items`.
 
 **Release path (since 2026-07-20):** `main` is branch-protected — releases go through a
 **PR** (`gh pr create --base main` → checks green → `gh pr merge --merge` → back-merge
@@ -49,7 +51,7 @@ caught a runtime `sqlite-jdbc` version absent from Paper's library-loader mirror
 Code-Review/Contributors/CII/Fuzzing are solo-capped. **Open PR backlog: empty** (checked
 2026-07-22) — nothing to triage before shipping.
 
-## In flight — v1.5.0 (2026-07-22, on `dev`, not yet released)
+## v1.5.0 — released to `main` (tag v1.5.0); v1.5.1 in flight on `dev`
 
 Owner mandate of 2026-07-22 (two messages). Ledger, clause by clause:
 [`plans/mandate-2026-07-22-screenshots-throttling-publishing.md`](plans/mandate-2026-07-22-screenshots-throttling-publishing.md).
@@ -86,9 +88,10 @@ Landed on `dev` (both commits green through the full CI suite unless noted):
 - **README rewritten completely** (problem-first, admin reasons, player reasons, honest
   platform matrix).
 
-**Not yet done for v1.5.0:** the release itself (PR into `main`, full CI, tag, back-merge);
-Folia support (planned, needs a `PlatformScheduler` + a shared-state audit that the new
-throttle maps enlarged); any Group-C platform edition (Fabric/NeoForge/Sponge/Velocity).
+**v1.5.0 shipped** (PR into `main`, full CI, tag v1.5.0, back-merge — all done). **v1.5.1**
+(hub 1.6.0 README cross-linking standard) is on `dev`, shipping now. **Still not done:** Folia
+support (planned, needs a `PlatformScheduler` + a shared-state audit that the new throttle maps
+enlarged); any Group-C platform edition (NeoForge/Sponge/Velocity).
 
 ## Current state (read this first)
 

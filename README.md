@@ -43,6 +43,20 @@ a placed block.
 [![Modrinth version](https://img.shields.io/modrinth/v/papermc-despawned-items?style=flat-square&logo=modrinth&logoColor=white)](https://modrinth.com/plugin/papermc-despawned-items/versions)
 -->
 
+📖 **Documentation** — <https://fairyfox.io/papermc-despawned-items/>
+
+## Get it
+
+| | |
+|---|---|
+| **Documentation** | <https://fairyfox.io/papermc-despawned-items/> — full docs, hosted on the shared domain |
+| **Download** | [GitHub Releases](https://github.com/1fairyfox/papermc-despawned-items/releases) — the plugin `.jar` plus the per-release artifact bundle |
+| **Source** | [Repository](https://github.com/1fairyfox/papermc-despawned-items) · [Notes](https://github.com/1fairyfox/papermc-despawned-items/tree/main/notes) |
+
+> **Also coming to Modrinth, Hangar, and CurseForge.** Publishing to all three is already wired
+> in [`release.yml`](.github/workflows/release.yml) and goes live the moment each project page
+> exists — a labelled row lands here for each as it ships.
+
 ---
 
 ## Screenshots
@@ -261,3 +275,10 @@ Contributions welcome — fork and open a pull request against `dev`. Security i
 ## License
 
 [Apache 2.0](LICENSE) — do what you like, just credit back.
+
+---
+
+Part of the **[Fairy Fox](https://fairyfox.io/)** project mesh —
+[all projects](https://fairyfox.io/projects/) ·
+[this project](https://fairyfox.io/papermc-despawned-items/) ·
+[shared standards & docs](https://fairyfox.io/docs/).
