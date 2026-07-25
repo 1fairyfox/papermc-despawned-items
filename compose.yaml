@@ -1,0 +1,38 @@
+# Local-first Linux build / test / setup for papermc-despawned-items.
+# Fairyfox `docker` standard (notes/reference/docker.md): run the Linux-only loops here
+# on the Windows dev box first; let CI confirm. Drive it from PowerShell (agent-tooling).
+#
+# Usage (PowerShell, repo root):
+#   docker compose run --rm build                       # full ./gradlew build on Linux
+#   docker compose run --rm build ./gradlew test        # just the test suite
+#   docker compose run --rm build ./gradlew test --tests '*Database*'   # a slice
+#   docker compose run --rm build ./gradlew --version   # smoke the toolchain + mount
+#
+# The host Docker socket is mounted so Testcontainers-based DB tests (MariaDB) start
+# their containers on the HOST daemon while the test JVM runs in THIS container
+# (docker-outside-of-docker). This is the LOCAL fix for the host-side Testcontainers↔
+# Docker incompatibility that was previously deferred to CI only — not a route-around.
+#
+# The DooD networking gotcha is handled: a Testcontainers container maps its port on the
+# host, and getHost() would otherwise return "localhost" (i.e. THIS container). We pin
+# host.docker.internal via host-gateway and tell Testcontainers to resolve there.
+services:
+  build:
+    build: .
+    working_dir: /workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/workspace
+      - gradle-cache:/gradle-cache
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      GRADLE_USER_HOME: /gradle-cache
+      DOCKER_HOST: unix:///var/run/docker.sock
+      # Testcontainers reaches host-published ports via the host gateway, not "localhost".
+      TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+      # Ryuk (Testcontainers' reaper) works fine over the shared socket; leave it on.
+    command: ["./gradlew", "build", "--no-daemon"]
+
+volumes:
+  gradle-cache:

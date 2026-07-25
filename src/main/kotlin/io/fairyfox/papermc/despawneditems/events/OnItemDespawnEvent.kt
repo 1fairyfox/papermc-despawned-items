@@ -15,6 +15,9 @@ class OnItemDespawnEvent(private val plugin: PaperMcDespawnedItems) : Listener {
     fun onEvent(event: ItemDespawnEvent) {
         // Clone so we don't operate on the soon-to-be-removed item entity.
         val item = event.entity.itemStack.clone()
-        plugin.despawnScheduler.enqueue(item)
+        // Attribute the item to whoever dropped it, so per-user throttling has an actor.
+        // Mob loot, dispensers and block breaks have no thrower — those stay ownerless and
+        // are only throttled when `throttle.throttle-unowned` is switched on.
+        plugin.despawnScheduler.enqueue(item, event.entity.thrower)
     }
 }

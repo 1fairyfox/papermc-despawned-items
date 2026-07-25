@@ -71,6 +71,8 @@ jobs:
         include:
           - mc: "1.21.11" # the build target
             java: "21"
+          - mc: "purpur-1.21.11" # Paper fork — proves the "runs on Purpur" claim
+            java: "21"
           - mc: "26.1.2" # forward-compat check
             java: "25"
     steps:
@@ -111,6 +113,11 @@ jobs:
       - name: Latest EXPERIMENTAL Paper — load smoke (soft; investigate, don't block)
         continue-on-error: true
         run: bash scripts/server-smoke.sh latest-experimental "papermc-despawned-items-*.jar"
+
+  # NOTE: the release-screenshots job used to run here. It is parked in screenshots.yml
+  # behind workflow_dispatch — the headless renderer is a dead end (see that file), and
+  # screenshot automation has moved to a separate MCP driver. A permanently-red job on every
+  # push teaches people to ignore red, which is worse than not having the job.
 
   # In-game client acceptance (testing.md §83–87): a Mineflayer bot — a real Minecraft
   # client on the wire — joins the server and runs plugin commands; asserts the replies

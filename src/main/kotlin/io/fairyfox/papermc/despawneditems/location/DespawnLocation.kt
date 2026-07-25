@@ -28,16 +28,32 @@ data class DespawnLocation(
     val y: Int,
     val z: Int,
     val owner: UUID,
+    /**
+     * Per-target settings (on/off, priority, contraband opt-in) — the state behind the
+     * in-world toggle button. Defaulted so every existing call site is unchanged and a
+     * target that has never been configured costs nothing extra on disk.
+     */
+    val options: TargetOptions = TargetOptions.DEFAULT,
 ) {
     /** The position component, without the owner — the [LocationStore] spatial key. */
     val blockKey: BlockKey get() = BlockKey(world, x, y, z)
 
+    /** Shorthand used on the relocation hot path. */
+    val enabled: Boolean get() = options.enabled
+
     /**
-     * Serialised form stored in each owner's file: `x;y;z;world`. The owner is implied
-     * by which file the entry lives in, so it is not part of the string (kept
-     * byte-compatible with the original on-disk format).
+     * Serialised form stored in each owner's file. A target with default options is
+     * written as `x;y;z;world` — byte-compatible with the original on-disk format — and one
+     * with non-default options is prefixed with `@key=value,…|`. See [TargetOptions] for
+     * why the options go in front rather than at the end.
+     *
+     * The owner is implied by which file the entry lives in, so it is not part of the string.
      */
-    fun serialize(): String = "$x;$y;$z;$world"
+    fun serialize(): String {
+        val body = "$x;$y;$z;$world"
+        if (options.isDefault) return body
+        return "${TargetOptions.MARKER}${options.serializeFields()}${TargetOptions.TERMINATOR}$body"
+    }
 
     /** Resolves to a Bukkit [Location] if the world is currently loaded, else null. */
     fun toLocation(): Location? {
@@ -64,14 +80,39 @@ data class DespawnLocation(
             serialized: String,
             owner: UUID,
         ): DespawnLocation? {
-            val parts = serialized.split(';')
+            val (options, body) = stripOptions(serialized) ?: return null
+
+            val parts = body.split(';')
             if (parts.size < MIN_FIELDS) return null
+            val (x, y, z) = parseCoordinates(parts) ?: return null
+            val world = parts.subList(WORLD_INDEX, parts.size).joinToString(";")
+            if (world.isEmpty()) return null
+            return DespawnLocation(world, x, y, z, owner, options)
+        }
+
+        /** The three leading integer fields, or null when any of them is not an integer. */
+        private fun parseCoordinates(parts: List<String>): Triple<Int, Int, Int>? {
             val x = parts[0].toIntOrNull() ?: return null
             val y = parts[1].toIntOrNull() ?: return null
             val z = parts[2].toIntOrNull() ?: return null
-            val world = parts.subList(WORLD_INDEX, parts.size).joinToString(";")
-            if (world.isEmpty()) return null
-            return DespawnLocation(world, x, y, z, owner)
+            return Triple(x, y, z)
+        }
+
+        /**
+         * Splits an optional leading `@key=value,…|` block off [serialized], returning the
+         * parsed options and the remaining classic `x;y;z;world` body — or null when a
+         * marker is present but never terminated.
+         *
+         * Every pre-existing entry has no marker and takes the identity path, which is what
+         * makes the format change invisible to existing data.
+         */
+        private fun stripOptions(serialized: String): Pair<TargetOptions, String>? {
+            if (serialized.isEmpty() || serialized[0] != TargetOptions.MARKER) {
+                return TargetOptions.DEFAULT to serialized
+            }
+            val end = serialized.indexOf(TargetOptions.TERMINATOR)
+            if (end < 0) return null
+            return TargetOptions.parseFields(serialized.substring(1, end)) to serialized.substring(end + 1)
         }
 
         /** Builds a [DespawnLocation] from a live Bukkit [Location] and owner (block coords). */

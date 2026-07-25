@@ -3,7 +3,8 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.4.3` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
+**Version:** `1.5.0` — in flight on `dev`, newest released tag **v1.4.8** (source of truth:
+repo-root `VERSION`). Released: v1.1.0 → v1.2.0
 (Brigadier commands) → v1.3.0 (naming + quality gates) → v1.3.1 (package →
 `io.fairyfox.papermc.despawneditems`) → v1.3.2 (docs site wears the shared fairyfox chrome,
 bundle v2.2.1) → v1.3.3 (full standards audit: nav/subnav corrected, Downloads page,
@@ -16,8 +17,12 @@ v1.3.7 (badge wall + supply-chain/quality tooling parity with `random-ai-prompt`
 Paper 1.21.11 + 26.1.2 smoke, Mineflayer in-game acceptance; Sonar CI scan wired) →
 **v1.4.2** (123-node permission matrix, combined load + throughput proofs,
 Kotest/Pitest/JMH adopted, spark+JFR profiling) → **v1.4.3** (docs/process: the
-"Owner Mandates Become Ledgers" standing instruction + mandate-execution failure analysis).
-Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
+"Owner Mandates Become Ledgers" standing instruction + mandate-execution failure analysis) →
+**v1.4.4–v1.4.8** (patch releases incl. the `sqlite-jdbc` library-loader fix server-smoke
+caught; per-commit detail in `version/2026-07.md`). **v1.5.0** is the current in-flight `dev`
+milestone (per-user throttling, void chance, per-target commands, optional client-mod protocol,
+multi-platform publishing) plus the 2026-07-24 fairyfox adoption (hub 1.5.1, Docker local-first,
+docs-site chrome 2.3.0). Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
 
 **Release path (since 2026-07-20):** `main` is branch-protected — releases go through a
 **PR** (`gh pr create --base main` → checks green → `gh pr merge --merge` → back-merge
@@ -39,10 +44,51 @@ GitHub itself blocks a merge unless all of them pass. A green local `./gradlew b
 necessary but not sufficient (the v1.4.4 PR proved it: local build green, but server-smoke
 caught a runtime `sqlite-jdbc` version absent from Paper's library-loader mirror).
 
-**OpenSSF Scorecard: 7.1** (2026-07-22, up from 6.9). Lift came from Signed-Releases (0→2,
-provenance `.intoto.jsonl` release asset) + Binary-Artifacts (9→10). Remaining headroom
-(logged in the mandate ledger): npm lockfile for Pinned-Deps, more releases for
-Signed-Releases; Code-Review/Contributors/CII/Fuzzing are solo-capped.
+**OpenSSF Scorecard: 7.6** (read live 2026-07-22, up from 7.1 → 6.9). Comfortably above the
+≥ 7.0 floor. Remaining headroom: more releases for Signed-Releases;
+Code-Review/Contributors/CII/Fuzzing are solo-capped. **Open PR backlog: empty** (checked
+2026-07-22) — nothing to triage before shipping.
+
+## In flight — v1.5.0 (2026-07-22, on `dev`, not yet released)
+
+Owner mandate of 2026-07-22 (two messages). Ledger, clause by clause:
+[`plans/mandate-2026-07-22-screenshots-throttling-publishing.md`](plans/mandate-2026-07-22-screenshots-throttling-publishing.md).
+Platform survey answer: [`plans/platform-targets.md`](plans/platform-targets.md).
+
+Landed on `dev` (both commits green through the full CI suite unless noted):
+
+- **Per-user throttling** (`throttle:`, off by default) — `rate` / `concurrent` /
+  `fair-share` / `combined`, allowances from `despi.throttle.*` permissions.
+- **Void chance + catch-all** (`void:`, inert by default) — probabilistic voiding rolled once
+  at enqueue, admin-extensible banned materials, one or more catch-all containers.
+- **Per-target settings by command** — `/despi target info|enable|disable|toggle|priority
+  <1-10>|contraband accept|refuse` on the block you're looking at. Disabling keeps the
+  registration; the pipeline just skips it.
+- **Optional client-mod protocol** — handshake (`HELLO` → `WELCOME`/`UNAVAILABLE`) plus six
+  verbs on `papermc-despawned-items:targets`. **Server owners can switch it off entirely**
+  (`targets.client-mod.enabled`), and `despi.client` gates it per rank. The client is never
+  trusted: permission, reach, ownership and limits are all re-checked server-side.
+  **The client mod itself is not written** — this is only the server half.
+- **No wand, no fake chest menu.** An earlier pass added both; the owner rejected the
+  approach (an item pretending to be a tool is less predictable than a command) and they are
+  deleted. Recorded in `decisions/rejected.md` territory — see the changelog entry.
+- **Automated release screenshots — harness done, output NOT yet usable.**
+  `scripts/screenshots.mjs` + a reusable `screenshots.yml` called by CI (build artifacts) and
+  Docs (gh-pages gallery at `/screenshots.html`). Two backends: `viewer` (headless Chrome)
+  and `client` (real MC under Xvfb — the only one that can photograph particles). It boots
+  the server, drives all eight scenes and writes eight PNGs — **but every frame is bare
+  sky**, so the job deliberately fails itself via a blank-frame guard rather than publish
+  empty art. Rule-out table + next probes: the mandate ledger's not-done list. **The
+  screenshots job is non-blocking and not a required check, so this does not gate anything.**
+- **Artifact bundle + multi-platform publishing** in `release.yml` (Modrinth, CurseForge,
+  Hangar — each gated on its token secret, so inert until the owner creates the projects).
+- **Purpur** added to the `server-smoke` matrix so that platform claim is proven, not assumed.
+- **README rewritten completely** (problem-first, admin reasons, player reasons, honest
+  platform matrix).
+
+**Not yet done for v1.5.0:** the release itself (PR into `main`, full CI, tag, back-merge);
+Folia support (planned, needs a `PlatformScheduler` + a shared-state audit that the new
+throttle maps enlarged); any Group-C platform edition (Fabric/NeoForge/Sponge/Velocity).
 
 ## Current state (read this first)
 
@@ -97,5 +143,7 @@ Done on `dev` (all green, CI passing):
 | Static analysis (Ktlint + Detekt) + coverage (Kover) | ✅ gate the build; all detekt rules on, no baseline |
 | Forward-compat load on Paper 26.1.2 | ✅ **automated in CI** (`server-smoke` matrix, Java 25) |
 | GitHub Pages docs | ⏳ enabled; deploys on release to `main` |
-| Standards adopted (project side) | per-standard state: [`reference/adoption-manifest.md`](reference/adoption-manifest.md) — 17 implemented · 6 copied-only (due next adopt pass) · 1 gap · 4 N/A (no bare ✅ — see the checklist-noncompliance report) |
+| Standards adopted (project side) | **hub anchor 1.5.1** (adopted 2026-07-24, up from 0.20.2). per-standard state: [`reference/adoption-manifest.md`](reference/adoption-manifest.md) — **all applicable standards `implemented`** except maintenance-sweep (first sweep pending). Span brought checklists-are-contracts + mandate-ledger (already in CLAUDE.md), the 20-badge set (already met), the **Docker** standard (adopted + validated), and **docs-site chrome 2.3.0** (self-hosted fonts). Full Verify: [`fairyfox-reports/2026-07-24-compliance-audit.md`](fairyfox-reports/2026-07-24-compliance-audit.md) |
+| Docs-site chrome | ✅ **2.3.0** (adopted 2026-07-24) — self-hosted fonts (no Google Fonts); `assembleDocsSite` green in-container |
+| Docker (local-first build/test) | ✅ **adopted 2026-07-24** — vendored `Dockerfile`/`compose.yaml`; `docker compose run --rm build` runs the full Linux gate locally; host-side Testcontainers↔Docker-29.x write-off fixed (DB tests execute over the mounted socket) |
 | Hub registration | ❌ not yet (hub-side) |

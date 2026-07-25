@@ -10,6 +10,14 @@ build/
 .kotlin/
 # The committed wrapper jar (gradle/wrapper/gradle-wrapper.jar) stays tracked.
 
+# Fabric Loom's working directories (client/fabric is a separate Gradle build).
+# Loom caches a deobfuscated Minecraft and remapped dependencies here — large, machine
+# specific, and fully regenerable.
+client/fabric/.gradle/
+client/fabric/build/
+client/fabric/run/
+client/fabric/*.log
+
 # ── IDE / editor ─────────────────────────────────────────────────────────────
 .idea/
 *.iml

@@ -1,0 +1,70 @@
+<h1>Screenshots</h1>
+<p>Every image on this page is captured <strong>automatically</strong>, from a real Paper
+server running the current build. There is no hand-taken marketing art here: CI boots the
+server with the freshly built plugin, joins it with a Mineflayer director bot, builds each
+scene, points the camera and takes the frame at the exact tick the subject is on screen.
+When the build changes, these change with it.</p>
+
+<div class="pg-card">
+  <h2>How they are made</h2>
+  <p>The harness (<code>scripts/screenshots.mjs</code>) drives a headless capture backend:</p>
+  <ul>
+    <li><strong>viewer</strong> — prismarine-viewer's renderer inside headless Chrome
+      (SwiftShader WebGL). No GPU, no X server, runs anywhere CI runs. Real block textures,
+      entities and dropped items.</li>
+    <li><strong>client</strong> — a real Minecraft client under Xvfb, grabbed with
+      <code>ffmpeg</code>. The only backend that can photograph Minecraft's
+      <em>particle system</em>, because particles are drawn client-side from a network
+      packet and no server-side renderer ever sees them.</li>
+  </ul>
+  <p class="pg-meta">Each frame below is tagged with the backend that produced it. A
+     <code>viewer</code> frame of the landing effect captures the <em>moment</em> the effect
+     fires, not the particle sprites themselves.</p>
+</div>
+
+<div id="shots" class="pg-card">
+  <p id="shots-status">Loading the latest captured frames…</p>
+</div>
+
+<script>
+  // The gallery is data-driven: CI drops the images plus a manifest.json into
+  // /screenshots/ when the site is published, so this page never needs rebuilding to show
+  // a newer set — and degrades honestly when a build produced none.
+  (function () {
+    var host = document.getElementById("shots");
+    var status = document.getElementById("shots-status");
+    fetch("screenshots/manifest.json", { cache: "no-store" })
+      .then(function (r) {
+        if (!r.ok) throw new Error("no manifest");
+        return r.json();
+      })
+      .then(function (data) {
+        var scenes = (data && data.scenes) || [];
+        if (!scenes.length) throw new Error("empty");
+        status.remove();
+        scenes.forEach(function (s) {
+          var fig = document.createElement("figure");
+          fig.style.margin = "0 0 2rem";
+          var a = document.createElement("a");
+          a.href = "screenshots/" + s.file;
+          var img = document.createElement("img");
+          img.src = "screenshots/" + s.file;
+          img.alt = s.caption || s.name;
+          img.loading = "lazy";
+          img.style.width = "100%";
+          img.style.borderRadius = "10px";
+          a.appendChild(img);
+          var cap = document.createElement("figcaption");
+          cap.className = "pg-meta";
+          cap.textContent = (s.caption || s.name) + "  ·  captured by the " + (s.engine || "viewer") + " backend";
+          fig.appendChild(a);
+          fig.appendChild(cap);
+          host.appendChild(fig);
+        });
+      })
+      .catch(function () {
+        status.textContent =
+          "No captured frames are published yet — they appear here as soon as a build with the screenshot job reaches main.";
+      });
+  })();
+</script>

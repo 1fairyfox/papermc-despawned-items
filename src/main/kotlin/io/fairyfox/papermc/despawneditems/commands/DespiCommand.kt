@@ -8,6 +8,7 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import io.fairyfox.papermc.despawneditems.PaperMcDespawnedItems
+import io.fairyfox.papermc.despawneditems.location.TargetOptions
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
@@ -53,6 +54,7 @@ object DespiCommand {
     ) = Commands.literal(name)
         .requires { it.sender.hasPermission(USE) }
         .then(recycleBranch(a))
+        .then(targetBranch(a))
         .then(addBranch(a))
         .then(removeBranch(a))
         .then(clearBranch(a))
@@ -63,6 +65,30 @@ object DespiCommand {
         .then(effectsBranch(a))
         .then(literal("reload").requires(elevated).then(literal("do").executes(sender { s, _ -> a.reload(s) })))
         .then(literal("save").requires(elevated).then(literal("do").executes(sender { s, _ -> a.save(s) })))
+
+    /**
+     * `/despi target …` — per-target settings on the block you are looking at.
+     *
+     * The universal surface for a target's options: works on every client, needs no mod,
+     * and reads like the rest of the tree.
+     */
+    private fun targetBranch(a: DespiActions) =
+        literal("target")
+            .then(literal("info").executes(player { p, _ -> a.targets.info(p) }))
+            .then(literal("enable").executes(player { p, _ -> a.targets.setEnabled(p, true) }))
+            .then(literal("disable").executes(player { p, _ -> a.targets.setEnabled(p, false) }))
+            .then(literal("toggle").executes(player { p, _ -> a.targets.setEnabled(p, null) }))
+            .then(
+                literal("priority").then(
+                    Commands.argument("priority", IntegerArgumentType.integer(TargetOptions.MIN_PRIORITY, TargetOptions.MAX_PRIORITY))
+                        .executes(player { p, c -> a.targets.setPriority(p, IntegerArgumentType.getInteger(c, "priority")) }),
+                ),
+            )
+            .then(
+                literal("contraband")
+                    .then(literal("accept").executes(player { p, _ -> a.targets.setContraband(p, true) }))
+                    .then(literal("refuse").executes(player { p, _ -> a.targets.setContraband(p, false) })),
+            )
 
     /** `/despi recycle` — the same behaviour as the standalone recycle command. */
     private fun recycleBranch(a: DespiActions) =

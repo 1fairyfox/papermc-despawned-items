@@ -1,0 +1,129 @@
+name: Screenshots
+
+# Captures the release screenshots from a REAL Paper server running the freshly built
+# plugin (mandate 2026-07-22, C1–C3/C6/C10). Reusable so both CI (build artifacts on every
+# push) and Docs (publish to GitHub Pages on release) drive exactly the same capture, with
+# no duplicated steps to drift apart.
+#
+# STATUS (2026-07-22): manual-dispatch only. The scene scripting works — it boots a real
+# server with the real plugin and drives eight scenes — but the headless *renderer*
+# (prismarine-viewer) draws nothing, and five investigation cycles concluded it is a dead
+# end (it prerenders block textures at npm-publish time and fails silently inside a Web
+# Worker). Rather than leave a permanently-red job wired into every push, the automated
+# capture is parked here behind `workflow_dispatch`.
+#
+# Screenshot automation has moved OUT of this repo: the owner is building a separate MCP
+# driver for it. What stays useful here is `scripts/screenshots.mjs`'s **scene plan** — the
+# world setup, camera placement and the exact tick each effect fires — which is
+# renderer-independent and is the part worth reusing from that driver. `SCREENSHOT_ENGINE=manual`
+# runs the same scenes and pauses for a human to press F2.
+on:
+  workflow_call:
+    inputs:
+      engine:
+        description: "Capture backend: viewer (headless Chrome) or client (real MC under Xvfb)"
+        type: string
+        default: viewer
+      mcVersion:
+        # NOT the build target, deliberately. prismarine-viewer PRERENDERS its block
+        # textures at package-publish time, so a viewer released in Feb 2025 has no assets
+        # for a 2026 Minecraft version and silently meshes nothing — which is exactly why
+        # the first working runs produced eight frames of bare sky.
+        #
+        # The plugin declares api-version '1.21', so it runs unmodified across the whole
+        # 1.21 line; photographing it on a version the renderer actually knows shows the
+        # same plugin doing the same thing. Correctness on 1.21.11 is proven by the
+        # server-smoke and in-game jobs, which are the right place for it.
+        description: "Minecraft version to photograph on (must be a version prismarine-viewer has assets for)"
+        type: string
+        default: "1.21.4"
+  workflow_dispatch:
+    inputs:
+      engine:
+        description: "Capture backend"
+        type: choice
+        options: [viewer, client]
+        default: viewer
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    name: Capture release screenshots
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+
+      - name: Build the plugin jar
+        run: ./gradlew shadowJar --no-daemon --stacktrace
+
+      - name: Prepare the server directory
+        env:
+          MC_VERSION: ${{ inputs.mcVersion || '1.21.4' }}
+        run: |
+          mkdir -p smoke-screenshots/plugins
+          echo "Photographing on Paper $MC_VERSION"
+          URL="$(curl -fsSL "https://fill.papermc.io/v3/projects/paper/versions/${MC_VERSION}/builds/latest" | jq -r '.downloads["server:default"].url')"
+          curl -fsSL -o smoke-screenshots/paper.jar "$URL"
+          cp build/libs/papermc-despawned-items-*.jar smoke-screenshots/plugins/
+
+      # node-canvas (needed by prismarine-viewer's texture-atlas builder) ships prebuilt
+      # binaries for most runners, but falls back to compiling against cairo/pango. Install
+      # the headers so a prebuild miss degrades to a slow build rather than a hard failure.
+      - name: Install native image libraries
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+
+      - name: Install the capture toolchain
+        # npm ci installs the exact integrity-pinned tree from package-lock.json
+        # (Scorecard Pinned-Dependencies).
+        run: npm ci
+
+      # Only needed by the `client` backend; cheap enough to always have available so a
+      # workflow_dispatch with engine=client works without editing this file.
+      - name: Install Xvfb + ffmpeg (client backend)
+        if: inputs.engine == 'client'
+        run: sudo apt-get update && sudo apt-get install -y xvfb ffmpeg x11-apps mesa-utils
+
+      - name: Capture
+        env:
+          SCREENSHOT_ENGINE: ${{ inputs.engine || 'viewer' }}
+          SCREENSHOT_WIDTH: "1920"
+          SCREENSHOT_HEIGHT: "1080"
+        run: |
+          if [ "$SCREENSHOT_ENGINE" = "client" ]; then
+            xvfb-run -a --server-args="-screen 0 1920x1080x24" \
+              node scripts/screenshots.mjs smoke-screenshots screenshots
+          else
+            node scripts/screenshots.mjs smoke-screenshots screenshots
+          fi
+
+      - name: Summarise what was captured
+        if: always()
+        run: |
+          if [ -f screenshots/manifest.json ]; then
+            echo "### Captured screenshots" >> "$GITHUB_STEP_SUMMARY"
+            jq -r '.scenes[] | "- **\(.name)** (`\(.engine)`) — \(.caption)"' screenshots/manifest.json >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No manifest produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: release-screenshots
+          path: screenshots
+          if-no-files-found: warn
+
+      # The server log is the first thing you want when a scene comes out wrong.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: screenshots-server-logs
+          path: smoke-screenshots/logs
+          if-no-files-found: ignore

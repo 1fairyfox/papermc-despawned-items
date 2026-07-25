@@ -1,0 +1,54 @@
+name: Client mod
+
+# Builds the Fabric companion client mod (client/fabric).
+#
+# A SEPARATE workflow from CI because it is a separate Gradle build: Fabric Loom resolves a
+# deobfuscated Minecraft client and Yarn mappings, which is a slow, network-heavy toolchain
+# with an entirely different failure surface from the plugin's. Keeping them apart means a
+# mappings outage cannot redden the plugin's required checks.
+#
+# NOT a required status check on `main` for the same reason — the plugin must remain
+# releasable when the mod's toolchain is having a bad day. A red run here is still
+# investigated before shipping the mod.
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - "client/fabric/**"
+      - ".github/workflows/client-mod.yml"
+  pull_request:
+    paths:
+      - "client/fabric/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the Fabric client mod
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client/fabric
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: "21" # Minecraft 1.21.x runs on Java 21, same as the plugin
+      # Same wrapper-validation posture as the plugin (Scorecard Binary-Artifacts): prove the
+      # checked-in wrapper jar is an official Gradle release before running it.
+      - uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+
+      - name: Build
+        run: ./gradlew build --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: papermc-despawned-items-client-jar
+          path: client/fabric/build/libs/*.jar
+          if-no-files-found: warn

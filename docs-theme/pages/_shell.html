@@ -43,10 +43,12 @@
   r.style.setProperty("--glow","color-mix(in srgb, "+h+" 40%, transparent)");}}catch(e){}})();
   </script>
 
-  <!-- 3 · Fonts (verbatim) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- 3 · Fonts — SELF-HOSTED (chrome bundle 2.3.0, self-hosted-assets standard). No Google
+       Fonts: the three OFL variable subsets are vendored beside main.css and served from this
+       origin, so no visitor IP leaks to Google on load. -->
+  <link rel="preload" href="{{FF_ROOT}}inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{FF_ROOT}}fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{FF_ROOT}}fonts.css">
 
   <!-- 4 · The vendored master stylesheet -->
   <link rel="stylesheet" href="{{FF_ROOT}}main.css">
@@ -114,6 +116,7 @@
       <a href="{{FF_ROOT}}notes/systems/index.html"{{ACTIVE_SYSTEMS}}>Systems</a>
       <a href="{{FF_ROOT}}notes/reference/index.html"{{ACTIVE_REFERENCE}}>Reference</a>
       <a href="{{FF_ROOT}}tutorials.html"{{ACTIVE_TUTORIALS}}>Tutorials</a>
+      <a href="{{FF_ROOT}}screenshots.html"{{ACTIVE_SCREENSHOTS}}>Screenshots</a>
       <a href="{{FF_ROOT}}changelog.html"{{ACTIVE_CHANGELOG}}>Changelog</a>
       <a href="{{FF_ROOT}}api/index.html">API</a>
       <a href="{{FF_ROOT}}downloads.html"{{ACTIVE_DOWNLOAD}}>Download</a>

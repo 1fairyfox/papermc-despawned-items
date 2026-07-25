@@ -114,6 +114,35 @@ class LocationManager(private val plugin: PaperMcDespawnedItems) {
 
     fun ofOwner(owner: UUID): Set<DespawnLocation> = store.ofOwner(owner)
 
+    // --- per-target options (the state behind the in-world toggle button) ---
+
+    /** The stored target at [location] owned by [owner], or null. */
+    fun targetAt(
+        location: Location,
+        owner: UUID,
+    ): DespawnLocation? = store.at(keyOf(location)).firstOrNull { it.owner == owner }
+
+    /** Any stored target at [location], whoever owns it — what a click on the block resolves to. */
+    fun anyTargetAt(location: Location): DespawnLocation? = store.at(keyOf(location)).firstOrNull()
+
+    /**
+     * Applies [transform] to the options of the target at [location] owned by [owner].
+     * Returns the updated target, or null when there is nothing there.
+     */
+    fun updateOptions(
+        location: Location,
+        owner: UUID,
+        transform: (TargetOptions) -> TargetOptions,
+    ): DespawnLocation? {
+        val existing = targetAt(location, owner) ?: return null
+        val updated = existing.copy(options = transform(existing.options))
+        if (store.update(updated)) scheduleFlush()
+        return updated
+    }
+
+    /** Number of targets currently switched on. */
+    val enabledCount: Int get() = store.enabledCount()
+
     fun firstOfOwner(owner: UUID): DespawnLocation? = store.ofOwner(owner).firstOrNull()
 
     val count: Int get() = store.size
@@ -125,6 +154,9 @@ class LocationManager(private val plugin: PaperMcDespawnedItems) {
     fun all(): List<DespawnLocation> = store.all()
 
     fun random(): DespawnLocation? = store.randomOrNull()
+
+    /** A random target that is switched on, weighted by its priority. */
+    fun randomEnabled(): DespawnLocation? = store.randomEnabledOrNull()
 
     // --- persistence ---
 

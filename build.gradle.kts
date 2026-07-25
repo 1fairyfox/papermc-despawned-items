@@ -186,7 +186,12 @@ dokka {
 // Chrome assets into the Dokka tree, so API pages resolve them via ${'$'}{pathToRoot}.
 tasks.register<Copy>("vendorChromeAssets") {
     from(layout.projectDirectory.dir("docs-theme/chrome")) {
-        include("main.css", "reader.js", "nav.js", "coins.js", "fox.png")
+        // Chrome bundle 2.3.0: self-hosted fonts (fonts.css + the three OFL .woff2 subsets)
+        // ship alongside main.css so the /api/ pages resolve them via ${'$'}{pathToRoot}.
+        include(
+            "main.css", "reader.js", "nav.js", "coins.js", "fox.png",
+            "fonts.css", "fraunces-latin.woff2", "inter-latin.woff2", "jetbrains-mono-latin.woff2",
+        )
     }
     into(layout.buildDirectory.dir("dokka/html"))
 }
@@ -242,7 +247,7 @@ tasks.register("renderDocsSite") {
             h =
                 h.replace("{{ACTIVE_HOME}}", if (active == "HOME") " active" else "")
                     .replace("{{ARIA_HOME}}", if (active == "HOME") " aria-current=\"page\"" else "")
-            for (t in listOf("OVERVIEW", "NOTES", "SYSTEMS", "REFERENCE", "TUTORIALS", "CHANGELOG", "DOWNLOAD", "LEGAL")) {
+            for (t in listOf("OVERVIEW", "NOTES", "SYSTEMS", "REFERENCE", "TUTORIALS", "SCREENSHOTS", "CHANGELOG", "DOWNLOAD", "LEGAL")) {
                 h =
                     h.replace(
                         "{{ACTIVE_$t}}",
@@ -273,6 +278,19 @@ tasks.register("renderDocsSite") {
                 "TUTORIALS",
                 true,
                 body("tutorials.html"),
+            ),
+        )
+        // The gallery of automatically captured release screenshots. The page is static;
+        // the images + manifest.json are injected into build/docs-site/screenshots/ by the
+        // Docs workflow, so a newer capture set needs no rebuild of this page.
+        File(out, "screenshots.html").writeText(
+            page(
+                "",
+                "Screenshots · PaperMC Despawned Items",
+                "Automatically captured screenshots of PaperMC Despawned Items, taken from a real Paper server on every build.",
+                "SCREENSHOTS",
+                false,
+                body("screenshots.html"),
             ),
         )
         File(out, "downloads.html").writeText(
@@ -480,7 +498,11 @@ tasks.register<Copy>("assembleDocsSite") {
     into(layout.buildDirectory.dir("docs-site"))
     from(layout.buildDirectory.dir("docs-pages"))
     from(layout.projectDirectory.dir("docs-theme/chrome")) {
-        include("main.css", "reader.js", "nav.js", "coins.js", "fox.png")
+        // Chrome bundle 2.3.0: self-hosted fonts vendored flat at the site root.
+        include(
+            "main.css", "reader.js", "nav.js", "coins.js", "fox.png",
+            "fonts.css", "fraunces-latin.woff2", "inter-latin.woff2", "jetbrains-mono-latin.woff2",
+        )
     }
     from(layout.projectDirectory.file("assets/icon.png"))
     from(layout.buildDirectory.dir("dokka/html")) { into("api") }
