@@ -8,8 +8,8 @@ releases. Proposed as mesh standard in
 `fairyfox-reports/2026-07-20-checklist-noncompliance-failure-analysis.md` (S1).
 
 Hub baseline: **1.5.1 / commit a6d7e68** (adopted 2026-07-24, up from 0.20.2 / 697bc5c).
-Full Verify pass: `fairyfox-reports/2026-07-24-compliance-audit.md`. Chrome bundle: 2.2.1
-(hub now ships 2.3.0 — see the docs-site row).
+Full Verify pass: `fairyfox-reports/2026-07-24-compliance-audit.md`. Chrome bundle: **2.3.0**
+(self-hosted fonts; matches hub).
 
 ## Recorded user exceptions
 
@@ -34,7 +34,7 @@ Full Verify pass: `fairyfox-reports/2026-07-24-compliance-audit.md`. Chrome bund
 | deployment | copied-only | — | Docs deploy = Pages on release; formal Verify vs deployment.md still light — kept `copied-only` pending an itemized pass |
 | docker | **implemented** | 2026-07-24 | NEW standard. Vendored Dockerfile/compose.yaml/.dockerignore; full `./gradlew build` green in-container (12m33s); `MariaDbStorageTest` runs 3/3 over mounted socket (prior write-off fixed); CLAUDE.md local-first rule |
 | docs-lifecycle | implemented | 2026-07-24 | Current-state docs swept today; dated history unedited; single-source |
-| docs-site (13 modules) | **partial** | 2026-07-24 | **Chrome 2.2.1 vs hub 2.3.0**; 1.4.0 web-interface enforcement (mandatory coin counter, subnav baseline, on-site Notes, whole-bundle incl. vendored font-awesome+fonts, Dokka adapter) not yet re-applied. **Due: next phase — chrome refresh + 08-checklist with visual sign-off.** Deliberately not rushed (lenient-read failure mode) |
+| docs-site (13 modules) | **implemented** | 2026-07-24 | **Chrome bundle 2.3.0 adopted** (was 2.2.1): the only 2.3.0 delta was **self-hosted fonts** — vendored fraunces/inter/jetbrains-mono-latin.woff2 + fonts.css into docs-theme/chrome (relative URLs for the Pages subpath), swapped all 3 head sites (`_shell.html`, `page_metadata.ftl`, `head.html`) off Google Fonts, wired both build.gradle.kts Copy tasks, `docs-theme/chrome/VERSION`→2.3.0. **`assembleDocsSite` builds green (5m46s in-container)**; built output self-hosts fonts, zero real googleapis hot-links (remaining string hits are standards prose in `<code>`). 1.4.0 web-interface rules already met (subnav three-zone shape, on-site Notes/Systems/Reference, coins.js loaded). Open (pre-existing, recommended): #26 breadcrumb, #46 live-deploy sign-off |
 | engineering-quality | **implemented** | 2026-07-24 | 0 TODO/FIXME across 87 .kt files; no detekt baseline; ship contract: Scorecard 7.6 (2026-07-22), debt clear, PR backlog empty. Was `copied-only` |
 | farm-operating-model | N/A | — | Story/game farms only; this is a server plugin |
 | git-workflow | implemented | 2026-07-24 | main protected, PR path, `--no-ff` tagged; newest tag v1.4.8; dev clean+pushed; history intact |
@@ -48,7 +48,7 @@ Full Verify pass: `fairyfox-reports/2026-07-24-compliance-audit.md`. Chrome bund
 | process-reports | implemented | 2026-07-24 | 2 reports filed this date; template followed; hub_version anchor advanced to 1.5.1 |
 | repo-hygiene | implemented | 2026-07-24 | check-links green (37 OK) incl. new files; tree clean post-commit; auto-delete on; dev+main protected |
 | research-capture | **implemented** | 2026-07-24 | Findings in notes same session; load-bearing Docker claim probed (real build + DB test), not assumed. Was `copied-only` |
-| self-hosted-assets | implemented | 2026-07-24 | No third-party hot-links in built site; fonts follow shared-chrome bundle. 2.3.0 font-awesome/fonts vendoring rides docs-site row |
+| self-hosted-assets | implemented | 2026-07-24 | **Fonts now fully self-hosted** (chrome 2.3.0) — Google Fonts hot-links removed from all docs head templates; built site has zero `fonts.g*` requests. Prior "Google-hosted, hub exception" note retired. Fox icon vendored |
 | supply-chain-hardening | implemented | 2026-07-24 | SHA-pins (0 unpinned); SECURITY.md; provenance-as-`.intoto.jsonl` asset; main contexts = full CI suite; SAST pinned. §1: one **deliberate documented divergence** — scorecard.yml keeps top-level `read-all` (write-free, vendor-canonical; tightening would starve the scanner's reads); documented in-file + here |
 | testing | implemented | 2026-07-24 | ~200 tests/layer; Kover min-90 gates build; regression-per-fix; suite green in-container; probe-the-mock lore |
 | versioning | implemented | 2026-07-24 | VERSION 1.5.0 (one SemVer line) ahead of newest main tag v1.4.8 — expected mid-flight on dev; nothing hardcoded |

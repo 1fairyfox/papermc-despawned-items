@@ -186,7 +186,12 @@ dokka {
 // Chrome assets into the Dokka tree, so API pages resolve them via ${'$'}{pathToRoot}.
 tasks.register<Copy>("vendorChromeAssets") {
     from(layout.projectDirectory.dir("docs-theme/chrome")) {
-        include("main.css", "reader.js", "nav.js", "coins.js", "fox.png")
+        // Chrome bundle 2.3.0: self-hosted fonts (fonts.css + the three OFL .woff2 subsets)
+        // ship alongside main.css so the /api/ pages resolve them via ${'$'}{pathToRoot}.
+        include(
+            "main.css", "reader.js", "nav.js", "coins.js", "fox.png",
+            "fonts.css", "fraunces-latin.woff2", "inter-latin.woff2", "jetbrains-mono-latin.woff2",
+        )
     }
     into(layout.buildDirectory.dir("dokka/html"))
 }
@@ -493,7 +498,11 @@ tasks.register<Copy>("assembleDocsSite") {
     into(layout.buildDirectory.dir("docs-site"))
     from(layout.buildDirectory.dir("docs-pages"))
     from(layout.projectDirectory.dir("docs-theme/chrome")) {
-        include("main.css", "reader.js", "nav.js", "coins.js", "fox.png")
+        // Chrome bundle 2.3.0: self-hosted fonts vendored flat at the site root.
+        include(
+            "main.css", "reader.js", "nav.js", "coins.js", "fox.png",
+            "fonts.css", "fraunces-latin.woff2", "inter-latin.woff2", "jetbrains-mono-latin.woff2",
+        )
     }
     from(layout.projectDirectory.file("assets/icon.png"))
     from(layout.buildDirectory.dir("dokka/html")) { into("api") }

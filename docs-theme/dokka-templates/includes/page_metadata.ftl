@@ -31,10 +31,14 @@
     r.style.setProperty("--glow","color-mix(in srgb, "+h+" 40%, transparent)");}}catch(e){}})();
     </script>
 
-    <#-- 3 · Fonts — same families/weights + preconnect/display=swap so type doesn't reflow -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <#-- 3 · Fonts — SELF-HOSTED (chrome bundle 2.3.0, self-hosted-assets standard); no Google
+         Fonts. The .woff2 subsets are vendored beside main.css at the site root; fonts.css
+         resolves them relative to itself, so it works from the /api/ depth too. -->
+    <@template_cmd name="pathToRoot">
+    <link rel="preload" href="${pathToRoot}inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="${pathToRoot}fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="${pathToRoot}fonts.css">
+    </@template_cmd>
 
     <#-- 4 · The master stylesheet — vendored copy of fairyfox.io's main.css at the site root. -->
     <@template_cmd name="pathToRoot">

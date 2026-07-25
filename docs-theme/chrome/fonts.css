@@ -1,0 +1,36 @@
+/* Self-hosted web fonts — served from this project's own docs origin, never Google Fonts.
+   Removes the third-party IP exposure a Google Fonts request creates on every page load
+   (see the self-hosted-assets + legal-docs standards). Files are the latin variable
+   subsets from Fontsource: Fraunces, Inter, and JetBrains Mono — all OFL-1.1 licensed and
+   freely redistributable. Family names below match the theme tokens in main.css
+   (--font-display / --font-sans / --font-mono).
+
+   Adapted from the hub master (chrome bundle 2.3.0): the URLs are RELATIVE to this file,
+   not the hub's absolute /assets/fonts/, because this docs site is served from a Pages
+   subpath (fairyfox.io/papermc-despawned-items/) and the .woff2 are vendored flat beside
+   this file at the docs root (build.gradle.kts vendorChromeAssets/assembleDocsSite). CSS
+   url() resolves relative to the stylesheet, so this works from every page depth. */
+
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("fraunces-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("inter-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("jetbrains-mono-latin.woff2") format("woff2");
+}
