@@ -39,7 +39,7 @@ Full Verify pass: `fairyfox-reports/2026-07-24-compliance-audit.md`. Chrome bund
 | farm-operating-model | N/A | — | Story/game farms only; this is a server plugin |
 | git-workflow | implemented | 2026-07-24 | main protected, PR path, `--no-ff` tagged; newest tag v1.4.8; dev clean+pushed; history intact |
 | legal-docs | **implemented** | 2026-07-24 | NEW reference copy. Self-hosted privacy/terms/cookies/index under docs-theme/…/legal/; accurate to code (no data-practice change since 2026-07-21); footer legal column intact |
-| maintenance-sweep | copied-only | — | First whole-repo sweep **still never run** (pre-existing); due within a month of active work — recommend next |
+| maintenance-sweep | **implemented** | 2026-07-24 | **First whole-repo sweep run** this date: working tree clean; `dev` contains `main` (ancestor check) + green (in-container build + docs build + check-links); only `dev`/`main` branches (no stale); one docs-currency fix surfaced + applied (status.md `Version:` header 1.4.3 → 1.5.0/v1.4.8). No destructive git action needed. Recorded in `sessions/2026-07/2026-07-24.md` |
 | mandate-ledger | **implemented** | 2026-07-24 | NEW standard. CLAUDE.md "Owner Mandates Become Ledgers"; owner directive + GitHub-details exception transcribed this session |
 | new-project-setup | N/A | — | One-time runbook; project predates mesh |
 | notes-system | implemented | 2026-07-24 | Full tree; status current; inline changelog; session logs; reference copy refreshed |

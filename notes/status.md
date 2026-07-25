@@ -3,7 +3,8 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.4.3` (source of truth: repo-root `VERSION`). Released: v1.1.0 → v1.2.0
+**Version:** `1.5.0` — in flight on `dev`, newest released tag **v1.4.8** (source of truth:
+repo-root `VERSION`). Released: v1.1.0 → v1.2.0
 (Brigadier commands) → v1.3.0 (naming + quality gates) → v1.3.1 (package →
 `io.fairyfox.papermc.despawneditems`) → v1.3.2 (docs site wears the shared fairyfox chrome,
 bundle v2.2.1) → v1.3.3 (full standards audit: nav/subnav corrected, Downloads page,
@@ -16,8 +17,12 @@ v1.3.7 (badge wall + supply-chain/quality tooling parity with `random-ai-prompt`
 Paper 1.21.11 + 26.1.2 smoke, Mineflayer in-game acceptance; Sonar CI scan wired) →
 **v1.4.2** (123-node permission matrix, combined load + throughput proofs,
 Kotest/Pitest/JMH adopted, spark+JFR profiling) → **v1.4.3** (docs/process: the
-"Owner Mandates Become Ledgers" standing instruction + mandate-execution failure analysis).
-Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
+"Owner Mandates Become Ledgers" standing instruction + mandate-execution failure analysis) →
+**v1.4.4–v1.4.8** (patch releases incl. the `sqlite-jdbc` library-loader fix server-smoke
+caught; per-commit detail in `version/2026-07.md`). **v1.5.0** is the current in-flight `dev`
+milestone (per-user throttling, void chance, per-target commands, optional client-mod protocol,
+multi-platform publishing) plus the 2026-07-24 fairyfox adoption (hub 1.5.1, Docker local-first,
+docs-site chrome 2.3.0). Artifact/plugin-id/data-folder are all `papermc-despawned-items`.
 
 **Release path (since 2026-07-20):** `main` is branch-protected — releases go through a
 **PR** (`gh pr create --base main` → checks green → `gh pr merge --merge` → back-merge
