@@ -7,7 +7,7 @@ marker; an overdue gap on a mandatory standard (git-workflow, supply-chain-harde
 releases. Proposed as mesh standard in
 `fairyfox-reports/2026-07-20-checklist-noncompliance-failure-analysis.md` (S1).
 
-Hub baseline: **1.5.1 / commit a6d7e68** (adopted 2026-07-24, up from 0.20.2 / 697bc5c).
+Hub baseline: **1.6.0 / commit 8c6a50e** (readme standard adopted 2026-07-25, up from 1.5.1 / a6d7e68).
 Full Verify pass: `fairyfox-reports/2026-07-24-compliance-audit.md`. Chrome bundle: **2.3.0**
 (self-hosted fonts; matches hub).
 
@@ -45,7 +45,8 @@ Full Verify pass: `fairyfox-reports/2026-07-24-compliance-audit.md`. Chrome bund
 | notes-system | implemented | 2026-07-24 | Full tree; status current; inline changelog; session logs; reference copy refreshed |
 | onboarding-existing-project | N/A | — | Completed 2026-07-19; hub-registration + GitHub-details are hub-side (details exception recorded above) |
 | planning | implemented | 2026-07-24 | Phased task list + runbook-as-plan; CLAUDE.md phase-by-default; reference copy refreshed |
-| process-reports | implemented | 2026-07-24 | 2 reports filed this date; template followed; hub_version anchor advanced to 1.5.1 |
+| process-reports | implemented | 2026-07-25 | Reports filed 2026-07-24 (×2) + 2026-07-25 (adopting-updates); template followed; hub_version anchor advanced to 1.6.0 |
+| readme | **implemented** | 2026-07-25 | NEW standard (hub 1.6.0). Added worded **docs link** (`fairyfox.io/papermc-despawned-items/`) near top, an organized **"Get it"** section (Documentation · Download/Releases · Source; Modrinth/Hangar/CurseForge noted as pending — projects not yet created, so legitimately absent per "nothing to link yet"), and a **mesh footer** near the bottom. `## Verify` run: docs link ✅, Get it grouped+labelled ✅, live-app N/A (server plugin; no deployed web app — docs Pages is the docs link), publish targets none-live-yet ✅, mesh footer ✅, no dropped destination → no exception needed. `check-links` green (40 files) |
 | repo-hygiene | implemented | 2026-07-24 | check-links green (37 OK) incl. new files; tree clean post-commit; auto-delete on; dev+main protected |
 | research-capture | **implemented** | 2026-07-24 | Findings in notes same session; load-bearing Docker claim probed (real build + DB test), not assumed. Was `copied-only` |
 | self-hosted-assets | implemented | 2026-07-24 | **Fonts now fully self-hosted** (chrome 2.3.0) — Google Fonts hot-links removed from all docs head templates; built site has zero `fonts.g*` requests. Prior "Google-hosted, hub exception" note retired. Fox icon vendored |
