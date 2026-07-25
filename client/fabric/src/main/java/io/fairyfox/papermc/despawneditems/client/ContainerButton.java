@@ -7,6 +7,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * The button drawn on a container screen: <i>"Mark as despawn target"</i> / <i>"Despawn
@@ -115,7 +116,12 @@ public final class ContainerButton {
             return;
         }
         MinecraftClient client = MinecraftClient.getInstance();
-        boolean shift = client.currentScreen != null && net.minecraft.client.gui.screen.Screen.hasShiftDown();
+        // MC 1.21.11 removed the static Screen.hasShiftDown(); read the shift key straight from
+        // GLFW off the window handle instead (stable across mapping churn).
+        long window = client.getWindow().getHandle();
+        boolean shift = client.currentScreen != null
+                && (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
+                        || GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS);
 
         TargetState state = ServerLink.lastState();
         if (shift && state != null && state.registered()) {

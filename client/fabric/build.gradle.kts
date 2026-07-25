@@ -1,5 +1,5 @@
 plugins {
-    id("fabric-loom") version "1.11-SNAPSHOT"
+    id("fabric-loom") version "1.13-SNAPSHOT"
 }
 
 version = "${property("mod_version")}"
@@ -43,10 +43,13 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.processResources {
+    // Loom 1.13 configures processResources in a context where Project.property(String) can
+    // throw "unknown property"; the provider API reads gradle.properties reliably regardless of
+    // task-config timing. Values are captured to plain strings for expand().
     val props = mapOf(
-        "version" to project.version,
-        "minecraft_version" to property("minecraft_version"),
-        "loader_version" to property("loader_version"),
+        "version" to project.version.toString(),
+        "minecraft_version" to providers.gradleProperty("minecraft_version").get(),
+        "loader_version" to providers.gradleProperty("loader_version").get(),
     )
     inputs.properties(props)
     filesMatching("fabric.mod.json") { expand(props) }
