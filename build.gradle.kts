@@ -41,7 +41,7 @@ dependencies {
     // (not the newer 26.x) so the MockBukkit test framework — which supports 1.21.x
     // but not 26.x yet — is available; a 1.21-built plugin still loads on 26.1
     // servers (Paper forward-compat). compileOnly: the server provides it at runtime.
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.84-stable")
 
     // The Kotlin standard library is shaded into the plugin jar (see shadowJar
     // below) so the plugin is self-contained on a plain Paper server.
@@ -60,7 +60,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     // The Paper API is compileOnly for main; tests need it on their own classpath.
-    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:26.2.build.84-stable")
     // Database backend: HikariCP for the pool, SQLite driver to exercise JdbcLocationRepository.
     // In production these load at runtime via Paper's `libraries:` loader (see plugin.yml).
     testImplementation("com.zaxxer:HikariCP:7.1.0")
