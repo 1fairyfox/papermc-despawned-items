@@ -12,8 +12,8 @@ plugins {
     // supports Kotlin *up to 2.4.0*, and its extractor hard-rejects anything newer
     // ("Kotlin version 2.4.10 is too recent"). 2.4.0 keeps the full SAST scan alive;
     // bump only after CodeQL's supported range catches up.
-    kotlin("jvm") version "2.4.0"
-    id("com.gradleup.shadow") version "9.6.0"
+    kotlin("jvm") version "2.4.10"
+    id("com.gradleup.shadow") version "9.6.1"
     id("org.jetbrains.dokka") version "2.2.0"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
@@ -66,7 +66,7 @@ dependencies {
     testImplementation("com.zaxxer:HikariCP:7.1.0")
     // Kept in sync with plugin.yml `libraries:` (runtime). Held at 3.49.1.0: 3.53.2.1
     // is not on Paper's library-loader mirror yet, so it breaks runtime plugin load.
-    testRuntimeOnly("org.xerial:sqlite-jdbc:3.49.1.0")
+    testRuntimeOnly("org.xerial:sqlite-jdbc:3.53.2.1")
     // Real MySQL/MariaDB integration via Testcontainers (needs Docker; the tests disable
     // themselves cleanly where it's absent). Driver version matches plugin.yml `libraries:`.
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
