@@ -15,7 +15,7 @@ plugins {
     kotlin("jvm") version "2.4.0"
     id("com.gradleup.shadow") version "9.6.0"
     id("org.jetbrains.dokka") version "2.2.0"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
     id("org.jetbrains.kotlinx.kover") version "0.9.9"
     // JMH microbenchmarks (src/jmh/kotlin) — informational, NOT part of `check`.
