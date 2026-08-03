@@ -34,4 +34,10 @@ updates:
     schedule:
       interval: "weekly"
     target-branch: "dev"
+    # One grouped PR so multi-step actions bump together — a partial bump of a
+    # monorepo action (e.g. codeql-action/init vs /analyze) skews versions and fails
+    # the run ("Loaded a configuration file for version X, but running version Y").
+    groups:
+      actions:
+        patterns: ["*"]
     labels: ["dependencies", "github-actions"]
