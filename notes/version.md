@@ -10,6 +10,7 @@ under [`version/`](version/); this file is the index.
 
 | Month | Notes |
 |-------|-------|
+| [2026-08](version/2026-08.md) | v1.5.1 README cross-linking + v1.5.2 compliance sweep |
 | [2026-07](version/2026-07.md) | Kotlin/Paper 26.1 rewrite + fairyfox mesh onboarding |
 
 ## The inline rule

@@ -15,6 +15,17 @@ updates:
       minor-and-patch:
         update-types: ["minor", "patch"]
     labels: ["dependencies"]
+    ignore:
+      # Paper API stays on the deliberate 1.21.x target — largest install base and the only
+      # line MockBukkit supports for full integration testing; a 1.21-built plugin still
+      # forward-loads on 26.x (verified in CI). Do NOT let Dependabot pull the 26.x line.
+      # Rationale: notes/plans/refactor-2026-07.md + CLAUDE.md.
+      - dependency-name: "io.papermc.paper:paper-api"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # Kotlin is pinned to CodeQL's supported range (2.4.0). Bumping past what CodeQL
+      # analyzes silently drops SAST — Kotlin and CodeQL are bumped together, deliberately,
+      # never via a drive-by PR. See CLAUDE.md "Kotlin is pinned to CodeQL's supported range".
+      - dependency-name: "org.jetbrains.kotlin*"
 
   # GitHub Actions — keeps SHA-pinned Actions current so the OpenSSF Scorecard
   # Pinned-Dependencies check stays green without going stale.
