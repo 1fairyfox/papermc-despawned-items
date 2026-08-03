@@ -3,7 +3,7 @@
 _Current state only._ History → [`sessions/`](sessions/README.md); changelog →
 [`version.md`](version.md).
 
-**Version:** `1.5.1` — in flight on `dev`, newest released tag **v1.5.0** (source of truth:
+**Version:** `1.5.2` — in flight on `dev`, newest released tag **v1.5.1** (source of truth:
 repo-root `VERSION`). Released: v1.1.0 → v1.2.0
 (Brigadier commands) → v1.3.0 (naming + quality gates) → v1.3.1 (package →
 `io.fairyfox.papermc.despawneditems`) → v1.3.2 (docs site wears the shared fairyfox chrome,

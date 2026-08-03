@@ -1,5 +1,5 @@
 ---
-date: 2026-07-25
+date: 2026-08-02
 procedure: adopting-updates
 node: papermc-despawned-items
 outcome: completed
@@ -7,7 +7,7 @@ hub_version: 1.6.0
 hub_commit: 8c6a50e
 ---
 
-# Process Report — adopting-updates, 2026-07-25
+# Process Report — adopting-updates, 2026-08-02
 
 > A full, honest account of running a fairyfox system procedure. The point is to improve
 > the system — so say what was rough even if the run succeeded. Standard:

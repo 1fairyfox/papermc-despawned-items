@@ -9,7 +9,10 @@
 # on the host reflect immediately and no COPY/rebuild cycle is needed. Testcontainers
 # talks to the host Docker daemon over the socket mounted in compose.yaml (Java
 # docker-java client), so no Docker CLI is needed inside the image.
-FROM eclipse-temurin:21-jdk
+# Pinned by digest (supply-chain-hardening + OpenSSF Scorecard Pinned-Dependencies): the
+# tag stays for readability, the digest is what's actually resolved. To update: pull the
+# tag, then `docker image inspect eclipse-temurin:21-jdk --format '{{index .RepoDigests 0}}'`.
+FROM eclipse-temurin:21-jdk@sha256:da9d3a4f7650db39b918fc5a2c3da76556fb8cc8e5f3767cdea0bb409286951a
 
 # Match the plugin's toolchain (build.gradle.kts targets Java 21; foojay would provision
 # it if absent, but the base image already carries it, keeping the build offline-fast).

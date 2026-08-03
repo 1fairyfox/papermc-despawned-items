@@ -75,7 +75,7 @@ dependencies {
     // Surface Testcontainers/Hikari logs in test output (slf4j otherwise has no binding).
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.18")
     // Kotest property testing — generator-driven invariants (roundtrips, store ops).
-    testImplementation("io.kotest:kotest-property:5.9.1")
+    testImplementation("io.kotest:kotest-property:6.2.3")
     // checkAll is a suspend fun; runBlocking hosts it inside JUnit tests.
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 }
